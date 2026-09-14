@@ -28,7 +28,7 @@ export function ClientPipelineCard({ client, isDragging, handlers, onClick }: Cl
 
       <div className="space-y-1.5">
         <div className="flex items-center justify-between text-[11px] text-slate-400">
-          <span>{CLIENT_NICHE_LABEL[client.niche]}</span>
+          <span>{client.niche ? CLIENT_NICHE_LABEL[client.niche] : "—"}</span>
           <span className="font-mono">{client.mrr > 0 ? `${client.mrr / 1000}k ₽` : "—"}</span>
         </div>
         <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
@@ -43,7 +43,7 @@ export function ClientPipelineCard({ client, isDragging, handlers, onClick }: Cl
         </div>
       </div>
 
-      {client.plan === "early_access" && (
+      {client.planCode === "early_access" && (
         <div className="mt-2 pt-2 border-t border-slate-50">
           <span className="text-[10px] font-medium text-violet-600 bg-violet-50 px-1.5 py-0.5 rounded">
             Ранний доступ

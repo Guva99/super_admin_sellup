@@ -1,5 +1,4 @@
 export type ClientStatus = "lead" | "onboarding" | "active" | "paused" | "churned";
-export type ClientPlan = "full" | "early_access" | "custom";
 export type ClientNiche = "retail" | "services";
 
 /**
@@ -24,8 +23,6 @@ export interface OnboardingStep {
   assignee: string;
   hoursSpent: number;
   dueDate: string;
-  /** id связанной задачи, если этап выведен в задачи */
-  taskId?: string;
 }
 
 export interface Payment {
@@ -34,6 +31,21 @@ export interface Payment {
   amount: number;
   status: "paid" | "overdue" | "pending";
   description: string;
+}
+
+/** Данные формы «Подключить бизнес». */
+export interface NewClientInput {
+  name: string;
+  planId: string;
+  /** Только для тарифа с ценой на клиента (isCustom). */
+  customPrice?: number;
+  ownerName: string;
+  ownerPhone: string;
+  ownerEmail: string;
+  niche: ClientNiche;
+  size: string;
+  fixedPrice: boolean;
+  stages: { title: string; description: string }[];
 }
 
 export interface ClientHealth {
@@ -54,11 +66,18 @@ export interface Client {
   name: string;
   initials: string;
   color: string;
-  niche: ClientNiche;
-  plan: ClientPlan;
+  /** null — ниша не указана. */
+  niche: ClientNiche | null;
+  planId: string | null;
+  planName: string | null;
+  /** Системный код тарифа ("full", "early_access", "custom") или null. */
+  planCode: string | null;
   fixedPrice: boolean;
   status: ClientStatus;
   stage: ClientStage;
+  /** Цена, зафиксированная при подключении. */
+  monthlyPrice: number;
+  /** Вклад в MRR: monthlyPrice, только пока клиент «Активен», иначе 0. */
   mrr: number;
   healthScore: number;
   health: ClientHealth;

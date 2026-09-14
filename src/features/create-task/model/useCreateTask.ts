@@ -1,7 +1,7 @@
 import { useState } from "react";
-import type { Task, TaskAttachment, TaskType, TaskPriority } from "@/entities/task";
-import { MANAGERS } from "@/shared/api/mock";
-import { todayIso } from "@/shared/lib";
+import { attachmentError, useTasks, type NewTaskInput, type TaskPriority, type TaskType } from "@/entities/task";
+import { useSession } from "@/entities/session";
+import { describeApiError } from "@/shared/api";
 
 export interface CreateTaskDraft {
   title: string;
@@ -10,24 +10,27 @@ export interface CreateTaskDraft {
   type: TaskType;
   priority: TaskPriority;
   dueDate: string;
-  assignee: string;
+  /** id сотрудника; пусто — без исполнителя. */
+  assigneeId: string;
 }
 
-const emptyDraft = (): CreateTaskDraft => ({
+const emptyDraft = (assigneeId: string): CreateTaskDraft => ({
   title: "",
   description: "",
   clientId: "",
   type: "task",
   priority: "medium",
   dueDate: "",
-  assignee: MANAGERS[0],
+  assigneeId,
 });
 
 export interface CreateTaskController {
   isOpen: boolean;
   draft: CreateTaskDraft;
-  attachments: TaskAttachment[];
+  attachments: File[];
   clientPreset: string | null;
+  isSubmitting: boolean;
+  error: string | null;
   open: (clientId?: string) => void;
   close: () => void;
   patch: (patch: Partial<CreateTaskDraft>) => void;
@@ -36,17 +39,27 @@ export interface CreateTaskController {
   submit: () => void;
 }
 
-/** Состояние и правила создания задачи. UI-компонент только отображает это. */
-export function useCreateTask(onCreated: (task: Task) => void): CreateTaskController {
+/**
+ * Состояние и правила создания задачи. UI-компонент только отображает это.
+ * Исполнитель по умолчанию — тот, кто создаёт задачу.
+ */
+export function useCreateTask(): CreateTaskController {
+  const { addTask } = useTasks();
+  const { user } = useSession();
+  const currentUserId = user?.id ?? "";
+
   const [isOpen, setIsOpen] = useState(false);
-  const [draft, setDraft] = useState<CreateTaskDraft>(emptyDraft);
+  const [draft, setDraft] = useState<CreateTaskDraft>(() => emptyDraft(currentUserId));
   const [clientPreset, setClientPreset] = useState<string | null>(null);
-  const [attachments, setAttachments] = useState<TaskAttachment[]>([]);
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const open = (clientId?: string) => {
-    setDraft({ ...emptyDraft(), clientId: clientId ?? "" });
+    setDraft({ ...emptyDraft(currentUserId), clientId: clientId ?? "" });
     setClientPreset(clientId ?? null);
     setAttachments([]);
+    setError(null);
     setIsOpen(true);
   };
 
@@ -56,38 +69,41 @@ export function useCreateTask(onCreated: (task: Task) => void): CreateTaskContro
 
   const attachFiles = (files: FileList | null) => {
     if (!files) return;
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const dataUrl = e.target?.result as string;
-        setAttachments((prev) => [...prev, { name: file.name, size: file.size, type: file.type, dataUrl }]);
-      };
-      reader.readAsDataURL(file);
-    });
+    const accepted: File[] = [];
+    for (const file of Array.from(files)) {
+      const problem = attachmentError(file);
+      if (problem) setError(problem);
+      else accepted.push(file);
+    }
+    if (accepted.length > 0) setAttachments((prev) => [...prev, ...accepted]);
   };
 
-  const removeAttachment = (index: number) =>
-    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  const removeAttachment = (index: number) => setAttachments((prev) => prev.filter((_, i) => i !== index));
 
-  const submit = () => {
-    if (!draft.title.trim()) return;
-    onCreated({
-      id: `t${Date.now()}`,
+  const submit = async () => {
+    if (!draft.title.trim() || isSubmitting) return;
+    setIsSubmitting(true);
+    setError(null);
+
+    const input: NewTaskInput = {
       title: draft.title.trim(),
-      description: draft.description || undefined,
+      description: draft.description.trim(),
       clientId: draft.clientId || null,
       type: draft.type,
       priority: draft.priority,
-      status: "todo",
       dueDate: draft.dueDate || null,
-      assignee: draft.assignee,
-      createdAt: todayIso(),
-      attachments: attachments.length > 0 ? attachments : undefined,
-    });
+      assigneeId: draft.assigneeId || null,
+    };
+    const result = await addTask(input, attachments);
+    setIsSubmitting(false);
+    if (!result.ok) {
+      setError(describeApiError(result.error));
+      return;
+    }
     setIsOpen(false);
-    setDraft(emptyDraft());
+    setDraft(emptyDraft(currentUserId));
     setAttachments([]);
   };
 
-  return { isOpen, draft, attachments, clientPreset, open, close, patch, attachFiles, removeAttachment, submit };
+  return { isOpen, draft, attachments, clientPreset, isSubmitting, error, open, close, patch, attachFiles, removeAttachment, submit };
 }

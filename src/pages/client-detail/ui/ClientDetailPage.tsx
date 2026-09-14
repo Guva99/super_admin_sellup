@@ -1,15 +1,9 @@
-import { useState } from "react";
 import { AlertCircle, ArrowLeft, ExternalLink, Mail, Phone, Plus } from "lucide-react";
-import {
-  ClientAvatar,
-  CLIENT_NICHE_LABEL,
-  StatusBadge,
-  type Client,
-  type OnboardingStep,
-} from "@/entities/client";
-import type { Task } from "@/entities/task";
-import { PLAN_LABEL } from "@/entities/client";
-import { formatMoney } from "@/shared/lib";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { ClientAvatar, CLIENT_NICHE_LABEL, StatusBadge, useClient } from "@/entities/client";
+import { useTasks } from "@/entities/task";
+import { useOnboardingActions } from "@/features/manage-onboarding";
+import { formatMoney, useUiActions } from "@/shared/lib";
 import { ClientOverview } from "@/widgets/client-overview";
 import { ClientOnboarding } from "@/widgets/client-onboarding";
 import { ClientBilling } from "@/widgets/client-billing";
@@ -24,25 +18,28 @@ const TABS = [
   { id: "usage", label: "Использование" },
   { id: "tasks", label: "Задачи" },
   { id: "history", label: "История" },
-];
+] as const;
 
-interface Props {
-  clientId: string;
-  clients: Client[];
-  tasks: Task[];
-  onBack: () => void;
-  onOpenClient: (id: string) => void;
-  onAddTask: (clientId?: string) => void;
-  onUpdateTask: (id: string, patch: Partial<Task>) => void;
-  onDeleteTask: (id: string) => void;
-  onUpdateOnboardingStep: (clientId: string, stepId: string, patch: Partial<OnboardingStep>) => void;
-  onAddStepToTasks: (clientId: string, step: OnboardingStep) => void;
-  onRemoveStepFromTasks: (clientId: string, stepId: string, taskId: string) => void;
-}
+type TabId = (typeof TABS)[number]["id"];
 
-export default function ClientDetailPage({ clientId, clients, tasks, onBack, onAddTask, onUpdateTask, onDeleteTask, onUpdateOnboardingStep, onAddStepToTasks, onRemoveStepFromTasks }: Props) {
-  const client = clients.find((c) => c.id === clientId);
-  const [activeTab, setActiveTab] = useState("overview");
+const DEFAULT_TAB: TabId = "overview";
+
+const isTabId = (value: string | undefined): value is TabId =>
+  TABS.some((tab) => tab.id === value);
+
+export default function ClientDetailPage() {
+  // Вкладка — часть адреса (/clients/:clientId/:tab), поэтому на конкретную
+  // вкладку конкретного клиента можно дать ссылку.
+  const { clientId, tab } = useParams<{ clientId: string; tab?: string }>();
+  const navigate = useNavigate();
+  const client = useClient(clientId);
+  const { tasks, setStatus, deleteTask } = useTasks();
+  const { openCreateTask } = useUiActions();
+  const { updateStep, addStepToTasks, removeStepFromTasks } = useOnboardingActions();
+
+  const activeTab: TabId = isTabId(tab) ? tab : DEFAULT_TAB;
+  const goToTab = (next: TabId) =>
+    navigate(next === DEFAULT_TAB ? `/clients/${clientId}` : `/clients/${clientId}/${next}`);
 
   if (!client) return <div className="p-8 text-slate-400">Клиент не найден</div>;
 
@@ -55,23 +52,25 @@ export default function ClientDetailPage({ clientId, clients, tasks, onBack, onA
       {/* Left sidebar */}
       <aside className="w-64 flex-shrink-0 bg-white border-r border-slate-200 flex flex-col overflow-y-auto">
         <div className="p-5 border-b border-slate-100">
-          <button
-            onClick={onBack}
+          <Link
+            to="/clients"
             className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 mb-4 transition-colors"
           >
             <ArrowLeft size={13} />
             Все клиенты
-          </button>
+          </Link>
           <ClientAvatar client={client} className="w-12 h-12 rounded-xl text-sm mb-3" />
           <h2 className="text-sm font-semibold text-slate-900 leading-snug">{client.name}</h2>
           <div className="mt-2 flex flex-wrap gap-1.5">
             <StatusBadge status={client.status} className="text-[10px]" />
-            <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${
-              client.plan === "early_access" ? "bg-violet-50 text-violet-700 border border-violet-200" :
-              client.plan === "custom" ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-600"
-            }`}>
-              {PLAN_LABEL[client.plan]}
-            </span>
+            {client.planName && (
+              <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${
+                client.planCode === "early_access" ? "bg-violet-50 text-violet-700 border border-violet-200" :
+                client.planCode === "custom" ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-600"
+              }`}>
+                {client.planName}
+              </span>
+            )}
             {client.fixedPrice && (
               <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-600 border border-orange-200">Fix</span>
             )}
@@ -87,10 +86,10 @@ export default function ClientDetailPage({ clientId, clients, tasks, onBack, onA
           </div>
 
           <div className="space-y-3 text-xs">
-            <Row label="Ниша" value={CLIENT_NICHE_LABEL[client.niche]} />
+            <Row label="Ниша" value={client.niche ? CLIENT_NICHE_LABEL[client.niche] : "—"} />
             <Row label="Размер" value={client.size || "—"} />
             <Row label="Подключён" value={new Date(client.connectedAt).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" })} />
-            <Row label="Менеджер" value={client.manager} />
+            <Row label="Менеджер" value={client.manager || "—"} />
           </div>
 
           <div className="border-t border-slate-100 pt-3">
@@ -112,7 +111,7 @@ export default function ClientDetailPage({ clientId, clients, tasks, onBack, onA
           {openTasks.length > 0 && (
             <div className="border-t border-slate-100 pt-3">
               <button
-                onClick={() => setActiveTab("tasks")}
+                onClick={() => goToTab("tasks")}
                 className="flex items-center justify-between w-full group"
               >
                 <p className="text-[10px] text-slate-400 uppercase tracking-wide font-medium">Открытые задачи</p>
@@ -146,7 +145,7 @@ export default function ClientDetailPage({ clientId, clients, tasks, onBack, onA
         {/* Quick add task */}
         <div className="p-4 border-t border-slate-100">
           <button
-            onClick={() => onAddTask(clientId)}
+            onClick={() => openCreateTask(clientId)}
             className="w-full flex items-center justify-center gap-2 py-2 text-xs font-medium text-brand-500 hover:text-brand-600 border border-brand-200 hover:border-brand-300 rounded-lg bg-brand-50/50 hover:bg-brand-50 transition-colors"
           >
             <Plus size={12} />
@@ -162,7 +161,7 @@ export default function ClientDetailPage({ clientId, clients, tasks, onBack, onA
             {TABS.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => goToTab(tab.id)}
                 className={`px-4 py-3.5 text-xs font-medium border-b-2 transition-colors ${
                   activeTab === tab.id
                     ? "border-brand-500 text-brand-600"
@@ -189,9 +188,9 @@ export default function ClientDetailPage({ clientId, clients, tasks, onBack, onA
             <ClientOnboarding
               client={client}
               tasks={tasks}
-              onUpdateStep={(stepId, patch) => onUpdateOnboardingStep(client.id, stepId, patch)}
-              onAddToTasks={(step) => onAddStepToTasks(client.id, step)}
-              onRemoveFromTasks={(stepId, taskId) => onRemoveStepFromTasks(client.id, stepId, taskId)}
+              onUpdateStep={(stepId, patch) => updateStep(client.id, stepId, patch)}
+              onAddToTasks={(step) => addStepToTasks(client.id, step)}
+              onRemoveFromTasks={removeStepFromTasks}
             />
           )}
           {activeTab === "billing" && <ClientBilling client={client} />}
@@ -199,12 +198,12 @@ export default function ClientDetailPage({ clientId, clients, tasks, onBack, onA
           {activeTab === "tasks" && (
             <ClientTasks
               tasks={clientTasks}
-              onAddTask={() => onAddTask(clientId)}
-              onUpdateTask={onUpdateTask}
-              onDeleteTask={onDeleteTask}
+              onAddTask={() => openCreateTask(clientId)}
+              onStatusChange={setStatus}
+              onDeleteTask={deleteTask}
             />
           )}
-          {activeTab === "history" && <ClientHistory client={client} />}
+          {activeTab === "history" && <ClientHistory />}
         </div>
       </div>
     </div>

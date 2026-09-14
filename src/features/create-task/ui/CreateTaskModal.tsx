@@ -1,22 +1,24 @@
-import { X, Paperclip } from "lucide-react";
+import { X, Paperclip, AlertCircle } from "lucide-react";
 import type { Client } from "@/entities/client";
 import type { TaskType, TaskPriority } from "@/entities/task";
-import { TASK_TYPE_OPTION_LABEL, TASK_PRIORITY_OPTION_LABEL } from "@/entities/task";
+import { ATTACHMENT_ACCEPT, TASK_TYPE_OPTION_LABEL, TASK_PRIORITY_OPTION_LABEL } from "@/entities/task";
+import type { User } from "@/entities/user";
 import { ModalOverlay } from "@/shared/ui";
-import { MANAGERS } from "@/shared/api/mock";
 import { formatBytes } from "@/shared/lib";
 import type { CreateTaskController } from "../model/useCreateTask";
 
 interface CreateTaskModalProps {
   controller: CreateTaskController;
   clients: Client[];
+  /** Сотрудники из базы — кандидаты в исполнители. */
+  users: User[];
 }
 
 const TASK_TYPES: TaskType[] = ["call", "task", "update", "integration", "support", "onboarding"];
 const TASK_PRIORITIES: TaskPriority[] = ["high", "medium", "low"];
 
-export function CreateTaskModal({ controller, clients }: CreateTaskModalProps) {
-  const { isOpen, draft, attachments, clientPreset, close, patch, attachFiles, removeAttachment, submit } = controller;
+export function CreateTaskModal({ controller, clients, users }: CreateTaskModalProps) {
+  const { isOpen, draft, attachments, clientPreset, isSubmitting, error, close, patch, attachFiles, removeAttachment, submit } = controller;
 
   if (!isOpen) return null;
 
@@ -105,13 +107,14 @@ export function CreateTaskModal({ controller, clients }: CreateTaskModalProps) {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-600 block mb-1.5">Менеджер</label>
+              <label className="text-xs font-medium text-slate-600 block mb-1.5">Исполнитель</label>
               <select
-                value={draft.assignee}
-                onChange={(e) => patch({ assignee: e.target.value })}
+                value={draft.assigneeId}
+                onChange={(e) => patch({ assigneeId: e.target.value })}
                 className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-brand-400 bg-white text-slate-700 cursor-pointer"
               >
-                {MANAGERS.map((m) => <option key={m} value={m}>{m}</option>)}
+                <option value="">— Не назначен —</option>
+                {users.map((user) => <option key={user.id} value={user.id}>{user.fullName}</option>)}
               </select>
             </div>
           </div>
@@ -125,9 +128,13 @@ export function CreateTaskModal({ controller, clients }: CreateTaskModalProps) {
             <input
               type="file"
               multiple
-              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+              accept={ATTACHMENT_ACCEPT}
               className="hidden"
-              onChange={(e) => attachFiles(e.target.files)}
+              onChange={(e) => {
+                attachFiles(e.target.files);
+                // Иначе повторный выбор того же файла не вызовет onChange.
+                e.target.value = "";
+              }}
             />
           </label>
           {attachments.length > 0 && (
@@ -146,14 +153,21 @@ export function CreateTaskModal({ controller, clients }: CreateTaskModalProps) {
           )}
         </div>
 
+        {error && (
+          <div role="alert" className="mx-5 mb-3 flex items-start gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-xs text-red-600">
+            <AlertCircle size={13} className="flex-shrink-0 mt-px" />
+            <span>{error}</span>
+          </div>
+        )}
+
         <div className="px-5 pb-5 flex gap-2 justify-end border-t border-slate-100 pt-4">
           <button onClick={close} className="px-4 py-2 text-xs text-slate-500 hover:text-slate-700 rounded-lg hover:bg-slate-50 transition-colors">Отмена</button>
           <button
             onClick={submit}
-            disabled={!draft.title.trim()}
+            disabled={!draft.title.trim() || isSubmitting}
             className="px-5 py-2 text-xs font-medium bg-brand-500 hover:bg-brand-600 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-lg transition-colors"
           >
-            Создать
+            {isSubmitting ? "Создаём…" : "Создать"}
           </button>
         </div>
       </div>

@@ -16,9 +16,8 @@ export function Header({ title, onOpenSearch }: HeaderProps) {
         <Search size={12} /><span>Поиск</span>
         <kbd className="ml-1 px-1 py-0.5 text-[10px] bg-slate-50 border border-slate-200 rounded font-mono">⌘K</kbd>
       </button>
-      <button className="relative text-slate-500 hover:text-slate-700 p-1.5 rounded-md hover:bg-slate-50 transition-colors">
+      <button className="text-slate-500 hover:text-slate-700 p-1.5 rounded-md hover:bg-slate-50 transition-colors">
         <Bell size={16} />
-        <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-brand-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">3</span>
       </button>
     </header>
   );

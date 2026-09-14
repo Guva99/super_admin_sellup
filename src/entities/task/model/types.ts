@@ -2,20 +2,22 @@ export type TaskType = "call" | "task" | "update" | "integration" | "support" | 
 export type TaskPriority = "high" | "medium" | "low";
 export type TaskStatus = "todo" | "in_progress" | "review" | "done";
 
+/** Файл, сохранённый на сервере. Содержимое скачивается отдельно — `downloadFile` стора. */
 export interface TaskAttachment {
+  id: string;
   name: string;
   size: number;
   type: string;
-  dataUrl: string;
 }
 
 export interface TaskComment {
   id: string;
-  author: string;
+  authorId: string;
+  authorName: string;
   text: string;
   createdAt: string;
   editedAt?: string;
-  attachments?: TaskAttachment[];
+  attachments: TaskAttachment[];
 }
 
 export interface Task {
@@ -26,13 +28,28 @@ export interface Task {
   type: TaskType;
   priority: TaskPriority;
   status: TaskStatus;
+  /** Календарная дата YYYY-MM-DD. */
   dueDate: string | null;
-  assignee: string;
+  assigneeId: string | null;
+  /** Пустая строка — исполнитель не назначен. */
+  assigneeName: string;
   createdAt: string;
   /** id этапа онбординга, если задача выведена из него */
   onboardingStepId?: string;
-  attachments?: TaskAttachment[];
-  comments?: TaskComment[];
+  attachments: TaskAttachment[];
+  comments: TaskComment[];
+}
+
+/** Данные для создания задачи. */
+export interface NewTaskInput {
+  title: string;
+  description: string;
+  clientId: string | null;
+  type: TaskType;
+  priority: TaskPriority;
+  dueDate: string | null;
+  assigneeId: string | null;
+  onboardingStepId?: string;
 }
 
 /** Просрочена ли задача на сегодняшний день. */

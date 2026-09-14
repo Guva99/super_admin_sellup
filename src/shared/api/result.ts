@@ -3,8 +3,11 @@
  * Точка подмены мока на HTTP: меняется реализация, а не потребители.
  */
 export interface ApiError {
-  code: "not_found" | "network" | "unknown";
+  code: "bad_request" | "unauthorized" | "forbidden" | "not_found" | "conflict" | "network" | "unknown";
+  /** Сообщение бэкенда как есть (англ.). Для показа пользователю — describeApiError. */
   message: string;
+  /** HTTP-статус; отсутствует, если до сервера не достучались. */
+  status?: number;
 }
 
 export type Result<T, E = ApiError> =

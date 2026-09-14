@@ -1,6 +1,5 @@
 import { CreditCard } from "lucide-react";
 import type { Client } from "@/entities/client";
-import { PLAN_LABEL } from "@/entities/client";
 import { formatMoney } from "@/shared/lib";
 
 export function ClientBilling({ client }: { client: Client }) {
@@ -10,7 +9,7 @@ export function ClientBilling({ client }: { client: Client }) {
       <div className="grid grid-cols-3 gap-3">
         <div className="bg-white border border-slate-200 rounded-xl p-4">
           <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">Тариф</p>
-          <p className="text-sm font-semibold text-slate-900 mt-1">{PLAN_LABEL[client.plan]}</p>
+          <p className="text-sm font-semibold text-slate-900 mt-1">{client.planName ?? "—"}</p>
         </div>
         <div className="bg-white border border-slate-200 rounded-xl p-4">
           <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">MRR</p>

@@ -1,15 +1,4 @@
-import {
-  TrendingUp,
-  Users,
-  Clock,
-  AlertTriangle,
-  Calendar,
-  Activity,
-  ArrowUpRight,
-  CreditCard,
-  Zap,
-  Layers,
-} from "lucide-react";
+import { TrendingUp, Users, AlertTriangle, Calendar, ArrowUpRight, Layers } from "lucide-react";
 import {
   AreaChart,
   Area,
@@ -22,66 +11,32 @@ import {
   BarChart,
   Cell,
 } from "recharts";
-import type { Client } from "@/entities/client";
+import { useNavigate } from "react-router-dom";
+import { useClients } from "@/entities/client";
 import { healthLevel, HEALTH_LEVEL_LABEL, HEALTH_THRESHOLDS, HEALTH_HEX, HEALTH_BAR_CLASS } from "@/entities/client";
 import type { HealthLevel } from "@/entities/client";
-import type { MrrPoint, AttentionItem, UpcomingEvent } from "@/entities/analytics";
+import { emptyMrrHistory } from "@/entities/analytics";
 import { formatMoney } from "@/shared/lib";
-import { CHART_COLORS } from "@/shared/config";
+import { CHART_COLORS, valueAxis } from "@/shared/config";
 
-interface DashboardPageProps {
-  clients: Client[];
-  mrrHistory: MrrPoint[];
-  attentionItems: AttentionItem[];
-  upcomingEvents: UpcomingEvent[];
-  onOpenClient: (id: string) => void;
-  onNavigateClients: (healthFilter: "good" | "ok" | "risk") => void;
-}
+/**
+ * История MRR и списки «Нужно внимание» / «Ближайшие события» появятся, когда
+ * их будет считать бэкенд. До тех пор — нули и пустые блоки: выдуманные цифры
+ * на дашборде опаснее пустоты.
+ */
+const mrrHistory = emptyMrrHistory();
 
-const eventTypeIcon = {
-  training: Layers,
-  renewal: CreditCard,
-  launch: Zap,
-  pricing: TrendingUp,
-};
+export default function DashboardPage() {
+  const { clients } = useClients();
+  const navigate = useNavigate();
 
-const eventTypeColors = {
-  training: "bg-blue-50 text-blue-600",
-  renewal: "bg-brand-50 text-brand-500",
-  launch: "bg-emerald-50 text-emerald-600",
-  pricing: "bg-amber-50 text-amber-600",
-};
+  /** Клик по сегменту health уводит в список, уже отфильтрованный этим уровнем. */
+  const openClientsByHealth = (health: HealthLevel) => navigate(`/clients?health=${health}`);
 
-const severityColors = {
-  high: "border-l-red-500",
-  medium: "border-l-amber-400",
-  low: "border-l-blue-400",
-};
-
-const attentionTypeIcon = {
-  payment: CreditCard,
-  health: Activity,
-  integration: Zap,
-  onboarding: Layers,
-};
-
-export default function DashboardPage({
-  clients,
-  mrrHistory,
-  attentionItems,
-  upcomingEvents,
-  onOpenClient,
-  onNavigateClients,
-}: DashboardPageProps) {
   const activeClients = clients.filter((c) => c.status === "active").length;
   const onboardingClients = clients.filter((c) => c.status === "onboarding").length;
   const mrr = clients.reduce((sum, c) => sum + c.mrr, 0);
   const arr = mrr * 12;
-  const avgHealth = Math.round(
-    clients.filter((c) => c.healthScore > 0).reduce((sum, c) => sum + c.healthScore, 0) /
-      clients.filter((c) => c.healthScore > 0).length
-  );
-  const totalHoursWeek = 42;
 
   /** Клиенты без оценки (healthScore === 0) в распределение не попадают. */
   const healthCount = (level: HealthLevel) =>
@@ -93,7 +48,6 @@ export default function DashboardPage({
       value: formatMoney(mrr),
       sub: `ARR ${formatMoney(arr)}`,
       icon: TrendingUp,
-      trend: "+12%",
       color: "text-brand-500",
       bg: "bg-brand-50",
     },
@@ -102,38 +56,20 @@ export default function DashboardPage({
       value: String(activeClients),
       sub: `${clients.filter((c) => c.status !== "churned" && c.status !== "lead").length} всего подключено`,
       icon: Users,
-      trend: "+2",
       color: "text-emerald-600",
       bg: "bg-emerald-50",
     },
     {
       label: "В онбординге",
       value: String(onboardingClients),
-      sub: "Средний срок 34 дня",
+      sub: `${clients.filter((c) => c.status === "lead").length} лидов в воронке`,
       icon: Layers,
-      trend: null,
       color: "text-blue-600",
       bg: "bg-blue-50",
     },
-    {
-      label: "Avg Health Score",
-      value: String(avgHealth),
-      sub: "Цель ≥ 80",
-      icon: Activity,
-      trend: avgHealth >= 80 ? "↑" : "↓",
-      color: avgHealth >= 75 ? "text-emerald-600" : "text-amber-600",
-      bg: avgHealth >= 75 ? "bg-emerald-50" : "bg-amber-50",
-    },
-    {
-      label: "Часов за неделю",
-      value: String(totalHoursWeek),
-      sub: "Цель < 30 ч",
-      icon: Clock,
-      trend: null,
-      color: totalHoursWeek < 30 ? "text-emerald-600" : "text-amber-600",
-      bg: totalHoursWeek < 30 ? "bg-emerald-50" : "bg-amber-50",
-    },
   ];
+
+  const healthCounts = [healthCount("good"), healthCount("ok"), healthCount("risk")];
 
   const formatYAxis = (value: number) => {
     if (value >= 1000) return `${value / 1000}k`;
@@ -143,7 +79,7 @@ export default function DashboardPage({
   return (
     <div className="p-6 space-y-6 max-w-[1440px]">
       {/* KPI Row */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         {kpis.map((kpi) => {
           const Icon = kpi.icon;
           return (
@@ -158,14 +94,9 @@ export default function DashboardPage({
                 </div>
               </div>
               <div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-semibold text-slate-900 tracking-tight">
-                    {kpi.value}
-                  </span>
-                  {kpi.trend && (
-                    <span className={`text-xs font-medium ${kpi.color}`}>{kpi.trend}</span>
-                  )}
-                </div>
+                <span className="text-2xl font-semibold text-slate-900 tracking-tight">
+                  {kpi.value}
+                </span>
                 <p className="text-xs text-slate-400 mt-0.5">{kpi.sub}</p>
               </div>
             </div>
@@ -215,6 +146,7 @@ export default function DashboardPage({
               />
               <YAxis
                 yAxisId="mrr"
+                {...valueAxis(mrrHistory.map((point) => point.mrr))}
                 tickFormatter={formatYAxis}
                 tick={{ fontSize: 11, fill: "#94a3b8" }}
                 axisLine={false}
@@ -226,7 +158,7 @@ export default function DashboardPage({
                 tick={{ fontSize: 11, fill: "#94a3b8" }}
                 axisLine={false}
                 tickLine={false}
-                domain={[0, 15]}
+                {...valueAxis(mrrHistory.map((point) => point.clients))}
               />
               <Tooltip
                 contentStyle={{
@@ -273,17 +205,17 @@ export default function DashboardPage({
           <ResponsiveContainer width="100%" height={160}>
             <BarChart
               data={[
-                { range: `${HEALTH_THRESHOLDS.good}–100`, count: healthCount("good"), key: "good" },
-                { range: `${HEALTH_THRESHOLDS.ok}–${HEALTH_THRESHOLDS.good - 1}`, count: healthCount("ok"), key: "ok" },
-                { range: `0–${HEALTH_THRESHOLDS.ok - 1}`, count: healthCount("risk"), key: "risk" },
+                { range: `${HEALTH_THRESHOLDS.good}–100`, count: healthCounts[0], key: "good" },
+                { range: `${HEALTH_THRESHOLDS.ok}–${HEALTH_THRESHOLDS.good - 1}`, count: healthCounts[1], key: "ok" },
+                { range: `0–${HEALTH_THRESHOLDS.ok - 1}`, count: healthCounts[2], key: "risk" },
               ]}
               margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
-              onClick={(d: any) => d?.activePayload?.[0] && onNavigateClients(d.activePayload[0].payload.key)}
+              onClick={(d: any) => d?.activePayload?.[0] && openClientsByHealth(d.activePayload[0].payload.key)}
               style={{ cursor: "pointer" }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
               <XAxis dataKey="range" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} {...valueAxis(healthCounts)} />
               <Tooltip
                 contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0" }}
                 formatter={(v) => [Number(v), "клиентов"]}
@@ -304,7 +236,7 @@ export default function DashboardPage({
             ].map((row) => (
               <button
                 key={row.label}
-                onClick={() => onNavigateClients(row.filter)}
+                onClick={() => openClientsByHealth(row.filter)}
                 className="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-slate-50 transition-colors group text-left"
               >
                 <span className={`w-2 h-2 rounded-sm flex-shrink-0 ${row.color}`} />
@@ -324,36 +256,11 @@ export default function DashboardPage({
       <div className="grid grid-cols-2 gap-4">
         {/* Attention */}
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100">
-            <div className="flex items-center gap-2">
-              <AlertTriangle size={14} className="text-amber-500" />
-              <h3 className="text-sm font-semibold text-slate-900">Нужно внимание</h3>
-              <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-red-50 text-red-600 rounded-full">
-                {attentionItems.filter((a) => a.severity === "high").length} срочных
-              </span>
-            </div>
+          <div className="flex items-center gap-2 px-5 py-3.5 border-b border-slate-100">
+            <AlertTriangle size={14} className="text-amber-500" />
+            <h3 className="text-sm font-semibold text-slate-900">Нужно внимание</h3>
           </div>
-          <ul className="divide-y divide-slate-50">
-            {attentionItems.map((item) => {
-              const Icon = attentionTypeIcon[item.type];
-              return (
-                <li
-                  key={item.id}
-                  className={`flex items-start gap-3 px-5 py-3 border-l-2 ${severityColors[item.severity]} hover:bg-slate-50 cursor-pointer transition-colors`}
-                  onClick={() => onOpenClient(item.clientId)}
-                >
-                  <Icon size={13} className="mt-0.5 text-slate-400 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-slate-700 truncate">
-                      {item.client}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-0.5">{item.message}</p>
-                  </div>
-                  <ArrowUpRight size={12} className="text-slate-300 mt-0.5 flex-shrink-0" />
-                </li>
-              );
-            })}
-          </ul>
+          <p className="px-5 py-8 text-center text-sm text-slate-400">Нет данных</p>
         </div>
 
         {/* Upcoming events */}
@@ -362,31 +269,7 @@ export default function DashboardPage({
             <Calendar size={14} className="text-slate-400" />
             <h3 className="text-sm font-semibold text-slate-900">Ближайшие события</h3>
           </div>
-          <ul className="divide-y divide-slate-50">
-            {upcomingEvents.map((event) => {
-              const Icon = eventTypeIcon[event.type];
-              const colorClass = eventTypeColors[event.type];
-              const dateObj = new Date(event.date);
-              const day = dateObj.getDate();
-              const monthNames = ["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
-              const month = monthNames[dateObj.getMonth()];
-              return (
-                <li key={event.id} className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 transition-colors">
-                  <div className="flex-shrink-0 w-10 text-center">
-                    <div className="text-lg font-semibold text-slate-800 leading-none">{day}</div>
-                    <div className="text-[10px] text-slate-400 uppercase tracking-wide">{month}</div>
-                  </div>
-                  <div className={`w-7 h-7 rounded-lg ${colorClass} flex items-center justify-center flex-shrink-0`}>
-                    <Icon size={12} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-slate-700">{event.title}</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">{event.client}</p>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+          <p className="px-5 py-8 text-center text-sm text-slate-400">Нет данных</p>
         </div>
       </div>
     </div>

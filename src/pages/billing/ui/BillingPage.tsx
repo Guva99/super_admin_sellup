@@ -1,43 +1,30 @@
 import { TrendingUp, CreditCard, Users, ArrowDownRight } from "lucide-react";
-import type { Client } from "@/entities/client";
+import { useClients } from "@/entities/client";
 import { ClientAvatar } from "@/entities/client";
-import type { MrrPoint, RetentionCohort } from "@/entities/analytics";
+import { emptyMrrHistory } from "@/entities/analytics";
 import { formatMoney } from "@/shared/lib";
-import { CHART_COLORS } from "@/shared/config";
-import { FULL_PLAN_PRICE } from "@/entities/client";
+import { CHART_COLORS, valueAxis } from "@/shared/config";
+import { usePlans } from "@/entities/plan";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 
-function CellColor({ value }: { value: number | null }) {
-  if (value === null) return <td className="px-3 py-2 text-slate-200 text-center text-xs">—</td>;
-  const bg =
-    value >= 95 ? "bg-emerald-100 text-emerald-800" :
-    value >= 80 ? "bg-emerald-50 text-emerald-700" :
-    value >= 60 ? "bg-amber-50 text-amber-700" :
-    "bg-red-50 text-red-600";
-  return (
-    <td className={`px-3 py-2 text-center text-xs font-mono font-semibold rounded ${bg}`}>
-      {value}%
-    </td>
-  );
-}
+// Историю MRR и когорты удержания бэкенд пока не считает.
+const mrrHistory = emptyMrrHistory();
 
-interface BillingPageProps {
-  clients: Client[];
-  mrrHistory: MrrPoint[];
-  retentionCohorts: RetentionCohort[];
-}
+export default function BillingPage() {
+  const { clients } = useClients();
+  const { plans } = usePlans();
+  // Цена полного тарифа — база для расчёта апсейла с раннего доступа.
+  const fullPlanPrice = plans.find((plan) => plan.code === "full")?.price ?? 0;
 
-export default function BillingPage({ clients, mrrHistory, retentionCohorts }: BillingPageProps) {
   const mrr = clients.reduce((s, c) => s + c.mrr, 0);
   const arr = mrr * 12;
-  const avgCheck = Math.round(
-    clients.filter((c) => c.mrr > 0).reduce((s, c) => s + c.mrr, 0) /
-    clients.filter((c) => c.mrr > 0).length
-  );
-  const earlyAccessClients = clients.filter((c) => c.plan === "early_access" && c.mrr > 0);
-  const potentialUpsell = earlyAccessClients.reduce((s, c) => s + (FULL_PLAN_PRICE - c.mrr), 0);
+  const payingClients = clients.filter((c) => c.mrr > 0);
+  // Без платящих клиентов делить не на что — иначе на экране «NaN ₽».
+  const avgCheck = payingClients.length > 0 ? Math.round(mrr / payingClients.length) : 0;
+  const earlyAccessClients = clients.filter((c) => c.planCode === "early_access" && c.mrr > 0);
+  const potentialUpsell = earlyAccessClients.reduce((s, c) => s + (fullPlanPrice - c.mrr), 0);
 
   return (
     <div className="p-6 space-y-6 max-w-[1200px]">
@@ -78,7 +65,7 @@ export default function BillingPage({ clients, mrrHistory, retentionCohorts }: B
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-              <YAxis tickFormatter={(v) => `${v / 1000}k`} tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={(v) => `${v / 1000}k`} tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} {...valueAxis(mrrHistory.map((point) => point.mrr))} />
               <Tooltip
                 contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0" }}
                 formatter={(v) => [formatMoney(Number(v)), "MRR"]}
@@ -91,30 +78,7 @@ export default function BillingPage({ clients, mrrHistory, retentionCohorts }: B
         {/* Cohort retention */}
         <div className="bg-white border border-slate-200 rounded-xl p-5">
           <h3 className="text-sm font-semibold text-slate-900 mb-4">Cohort Retention</h3>
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="text-slate-400">
-                <th className="px-3 py-1.5 text-left font-medium">Когорта</th>
-                <th className="px-3 py-1.5 text-center font-medium">M0</th>
-                <th className="px-3 py-1.5 text-center font-medium">M1</th>
-                <th className="px-3 py-1.5 text-center font-medium">M3</th>
-                <th className="px-3 py-1.5 text-center font-medium">M6</th>
-                <th className="px-3 py-1.5 text-center font-medium">M12</th>
-              </tr>
-            </thead>
-            <tbody>
-              {retentionCohorts.map((row) => (
-                <tr key={row.cohort} className="border-t border-slate-50">
-                  <td className="px-3 py-2 text-slate-600 font-medium">{row.cohort}</td>
-                  <CellColor value={row.m0} />
-                  <CellColor value={row.m1} />
-                  <CellColor value={row.m3} />
-                  <CellColor value={row.m6} />
-                  <CellColor value={row.m12} />
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <p className="py-12 text-center text-sm text-slate-400">Нет данных</p>
         </div>
       </div>
 
@@ -146,8 +110,8 @@ export default function BillingPage({ clients, mrrHistory, retentionCohorts }: B
                 </td>
                 <td className="px-5 py-3 font-mono text-slate-700">{formatMoney(c.mrr)}</td>
                 <td className="px-5 py-3 text-slate-500">{c.fixedPrice ? "Да" : "Нет"}</td>
-                <td className="px-5 py-3 font-mono text-emerald-600">+{formatMoney(FULL_PLAN_PRICE - c.mrr)}/мес</td>
-                <td className="px-5 py-3 text-slate-500">{c.manager}</td>
+                <td className="px-5 py-3 font-mono text-emerald-600">+{formatMoney(fullPlanPrice - c.mrr)}/мес</td>
+                <td className="px-5 py-3 text-slate-500">{c.manager || "—"}</td>
               </tr>
             ))}
           </tbody>

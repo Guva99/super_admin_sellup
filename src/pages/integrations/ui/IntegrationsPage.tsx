@@ -1,16 +1,15 @@
 import { AlertCircle, Wifi, WifiOff } from "lucide-react";
-import type { Client } from "@/entities/client";
-import { ClientAvatar } from "@/entities/client";
-
-interface IntegrationsPageProps {
-  clients: Client[];
-  onOpenClient: (id: string) => void;
-}
+import { useNavigate } from "react-router-dom";
+import { ClientAvatar, useClients } from "@/entities/client";
 
 const INTEGRATIONS = ["1С", "МойСклад", "Ozon", "Wildberries", "СДЭК", "WhatsApp", "Telegram", "Сайт"];
 const integKey = ["1c", "moysklad", "ozon", "wb", "cdek", "whatsapp", "telegram", "site"];
 
-export default function IntegrationsPage({ clients, onOpenClient }: IntegrationsPageProps) {
+export default function IntegrationsPage() {
+  const { clients } = useClients();
+  const navigate = useNavigate();
+  const openClient = (id: string) => navigate(`/clients/${id}`);
+
   const activeClients = clients.filter((c) => c.status === "active" || c.status === "onboarding");
   const allErrors = clients.flatMap((c) =>
     c.integrations.filter((i) => i.status === "error").map((i) => ({ client: c, integ: i }))
@@ -37,7 +36,7 @@ export default function IntegrationsPage({ clients, onOpenClient }: Integrations
               <div
                 key={i}
                 className="flex items-start gap-3 bg-white rounded-lg p-3 border border-red-100 cursor-pointer hover:border-red-300 transition-colors"
-                onClick={() => onOpenClient(client.id)}
+                onClick={() => openClient(client.id)}
               >
                 <ClientAvatar client={client} className="w-6 h-6 rounded text-[10px]" />
                 <div className="flex-1 min-w-0">
@@ -75,7 +74,7 @@ export default function IntegrationsPage({ clients, onOpenClient }: Integrations
                 <tr
                   key={client.id}
                   className="border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors"
-                  onClick={() => onOpenClient(client.id)}
+                  onClick={() => openClient(client.id)}
                 >
                   <td className="px-5 py-2.5">
                     <div className="flex items-center gap-2">

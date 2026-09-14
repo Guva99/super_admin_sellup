@@ -1,13 +1,12 @@
-import type { Client, ClientStage } from "@/entities/client";
+import { useNavigate } from "react-router-dom";
+import { useClients } from "@/entities/client";
 import { ClientPipelineBoard } from "@/features/move-client-stage";
 
-interface PipelinePageProps {
-  clients: Client[];
-  onMoveStage: (clientId: string, stage: ClientStage) => void;
-  onOpenClient: (id: string) => void;
-}
+export default function PipelinePage() {
+  const { clients, moveStage } = useClients();
+  const navigate = useNavigate();
+  const openClient = (id: string) => navigate(`/clients/${id}`);
 
-export default function PipelinePage({ clients, onMoveStage, onOpenClient }: PipelinePageProps) {
   const visibleClients = clients.filter((c) => c.status !== "churned" && c.status !== "paused");
 
   return (
@@ -24,8 +23,8 @@ export default function PipelinePage({ clients, onMoveStage, onOpenClient }: Pip
 
       <ClientPipelineBoard
         clients={visibleClients}
-        onMoveStage={onMoveStage}
-        onOpenClient={onOpenClient}
+        onMoveStage={moveStage}
+        onOpenClient={openClient}
       />
     </div>
   );

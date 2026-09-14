@@ -1,2 +1,2 @@
 export { default as App } from "./App";
-export { ROUTES, routeTitle, activeNavId, navRoutes, type PageId, type RouteDefinition } from "./routes";
+export { APP_ROUTES, navRoutes, router, type RouteHandle } from "./routes";

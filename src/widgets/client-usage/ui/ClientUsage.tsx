@@ -1,15 +1,19 @@
 import { FileText, MessageSquare, Users, Zap } from "lucide-react";
 import type { Client } from "@/entities/client";
 
+/**
+ * Использование платформы клиентом собирает его собственная система — в
+ * контрольной панели этих цифр пока нет, поэтому везде нули.
+ */
 export function ClientUsage({ client }: { client: Client }) {
   if (client.status === "lead" || client.status === "churned") {
     return <p className="text-sm text-slate-400">Данные об использовании отсутствуют</p>;
   }
   const stats = [
-    { label: "Сотрудников", value: "7", icon: Users, color: "text-brand-500 bg-brand-50" },
-    { label: "Заказов за месяц", value: "342", icon: FileText, color: "text-emerald-600 bg-emerald-50" },
-    { label: "Сообщений в чатах", value: "1 284", icon: MessageSquare, color: "text-blue-600 bg-blue-50" },
-    { label: "Активных SKU", value: "834", icon: Zap, color: "text-amber-600 bg-amber-50" },
+    { label: "Сотрудников", value: "0", icon: Users, color: "text-brand-500 bg-brand-50" },
+    { label: "Заказов за месяц", value: "0", icon: FileText, color: "text-emerald-600 bg-emerald-50" },
+    { label: "Сообщений в чатах", value: "0", icon: MessageSquare, color: "text-blue-600 bg-blue-50" },
+    { label: "Активных SKU", value: "0", icon: Zap, color: "text-amber-600 bg-amber-50" },
   ];
   return (
     <div className="space-y-5 max-w-[700px]">
@@ -27,21 +31,7 @@ export function ClientUsage({ client }: { client: Client }) {
       </div>
       <div className="bg-white border border-slate-200 rounded-xl p-5">
         <h3 className="text-sm font-semibold text-slate-900 mb-4">Топ функций за месяц</h3>
-        {[
-          { feature: "Чат-центр (входящие)", pct: 88 },
-          { feature: "Управление заказами", pct: 76 },
-          { feature: "Склад / инвентарь", pct: 64 },
-          { feature: "CRM-карточки", pct: 55 },
-          { feature: "Отчёты", pct: 32 },
-        ].map((f) => (
-          <div key={f.feature} className="flex items-center gap-3 mb-2.5">
-            <span className="text-xs text-slate-600 w-44 flex-shrink-0">{f.feature}</span>
-            <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-              <div className="h-full bg-brand-400 rounded-full" style={{ width: `${f.pct}%` }} />
-            </div>
-            <span className="text-xs text-slate-400 font-mono w-8 text-right">{f.pct}%</span>
-          </div>
-        ))}
+        <p className="py-6 text-center text-sm text-slate-400">Нет данных</p>
       </div>
     </div>
   );

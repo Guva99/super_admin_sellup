@@ -8,7 +8,7 @@ interface ClientOnboardingProps {
   tasks: Task[];
   onUpdateStep: (stepId: string, patch: Partial<OnboardingStep>) => void;
   onAddToTasks: (step: OnboardingStep) => void;
-  onRemoveFromTasks: (stepId: string, taskId: string) => void;
+  onRemoveFromTasks: (taskId: string) => void;
 }
 
 export function ClientOnboarding({
@@ -56,7 +56,7 @@ export function ClientOnboarding({
       <div className="space-y-2">
         {client.onboardingSteps.map((step, i) => {
           const isEditing = editingId === step.id;
-          const linkedTask = step.taskId ? tasks.find((t) => t.id === step.taskId) : null;
+          const linkedTask = tasks.find((t) => t.onboardingStepId === step.id) ?? null;
           const statusBg = step.status === "done" ? "border-emerald-200 bg-emerald-50/20" :
                            step.status === "in_progress" ? "border-brand-200 bg-brand-50/20" :
                            "border-slate-200 bg-white";
@@ -115,7 +115,7 @@ export function ClientOnboarding({
                           <Rocket size={9} />
                           <span>В задачах</span>
                           <button
-                            onClick={() => onRemoveFromTasks(step.id, step.taskId!)}
+                            onClick={() => onRemoveFromTasks(linkedTask.id)}
                             className="ml-0.5 text-emerald-400 hover:text-red-400 transition-colors"
                             title="Убрать из задач"
                           >
@@ -150,7 +150,7 @@ export function ClientOnboarding({
 
                   {/* Meta row */}
                   <div className="flex items-center gap-4 mt-2 text-xs text-slate-400">
-                    <span className="flex items-center gap-1"><Users size={10} />{step.assignee}</span>
+                    {step.assignee && <span className="flex items-center gap-1"><Users size={10} />{step.assignee}</span>}
                     {step.hoursSpent > 0 && (
                       <span className="flex items-center gap-1"><Clock size={10} />{step.hoursSpent} ч</span>
                     )}

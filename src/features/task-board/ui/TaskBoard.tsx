@@ -27,7 +27,7 @@ interface TaskBoardProps {
   onTypeFilterChange: (value: string) => void;
   onSelectTask: (id: string) => void;
   onAddTask: (clientId?: string) => void;
-  onUpdateTask: (id: string, patch: Partial<Task>) => void;
+  onStatusChange: (id: string, status: TaskStatus) => void;
   onDeleteTask: (id: string) => void;
   onOpenClient: (id: string) => void;
 }
@@ -43,7 +43,7 @@ export function TaskBoard({
   onTypeFilterChange,
   onSelectTask,
   onAddTask,
-  onUpdateTask,
+  onStatusChange,
   onDeleteTask,
   onOpenClient,
 }: TaskBoardProps) {
@@ -113,7 +113,7 @@ export function TaskBoard({
         items={filteredTasks}
         getItemId={(task) => task.id}
         getItemColumn={(task) => task.status}
-        onMove={(taskId, status) => onUpdateTask(taskId, { status })}
+        onMove={onStatusChange}
         columnClassName="w-72"
         boardClassName="gap-4"
         listClassName="px-3 pb-3 min-h-[60px]"
@@ -147,7 +147,7 @@ export function TaskBoard({
             handlers={handlers}
             isDragging={isDragging}
             isSelected={selectedTaskId === task.id}
-            onUpdate={onUpdateTask}
+            onStatusChange={onStatusChange}
             onDelete={onDeleteTask}
             onOpenClient={onOpenClient}
             onClick={() => onSelectTask(task.id)}

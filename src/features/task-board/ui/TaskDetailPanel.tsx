@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Trash2,
   ExternalLink,
@@ -11,26 +11,68 @@ import {
   Send,
   Pencil,
   Check,
+  AlertCircle,
 } from "lucide-react";
 import type { Client } from "@/entities/client";
 import type { Task, TaskAttachment, TaskComment, TaskStatus } from "@/entities/task";
 import {
+  ATTACHMENT_ACCEPT,
+  attachmentError,
+  isImageAttachment,
+  useTasks,
   TASK_PRIORITY_DOT,
   TASK_PRIORITY_LABEL,
   TASK_STATUS_LABEL,
   TASK_TYPE_CLASS,
   TASK_TYPE_LABEL,
 } from "@/entities/task";
-import { CURRENT_USER } from "@/shared/api/mock";
-import { formatBytes } from "@/shared/lib";
+import { useSession } from "@/entities/session";
+import { describeApiError } from "@/shared/api";
+import { formatBytes, saveBlob } from "@/shared/lib";
 
-function isImageFile(att: TaskAttachment) {
-  return att.type.startsWith("image/");
+/**
+ * Картинка из вложения. Файлы отдаются по токену, поэтому обычный <img src>
+ * на адрес API не работает: содержимое скачивается и показывается как Blob.
+ */
+function AttachmentImage({ taskId, file, className }: { taskId: string; file: TaskAttachment; className: string }) {
+  const { downloadFile } = useTasks();
+  const [url, setUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let objectUrl: string | null = null;
+    let cancelled = false;
+    downloadFile(taskId, file.id).then((result) => {
+      if (!result.ok || cancelled) return;
+      objectUrl = URL.createObjectURL(result.data);
+      setUrl(objectUrl);
+    });
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [downloadFile, taskId, file.id]);
+
+  if (!url) return <div className={`${className} bg-slate-100 animate-pulse`} />;
+  return <img src={url} alt={file.name} className={className} onClick={() => window.open(url, "_blank")} />;
 }
 
-function AttachmentPreview({ att }: { att: TaskAttachment }) {
+/** Скачивание файла — тем же запросом с токеном. */
+function useDownload(taskId: string) {
+  const { downloadFile } = useTasks();
+  const [error, setError] = useState<string | null>(null);
+
+  const download = async (file: TaskAttachment) => {
+    const result = await downloadFile(taskId, file.id);
+    if (result.ok) saveBlob(result.data, file.name);
+    else setError(describeApiError(result.error));
+  };
+  return { download, downloadError: error };
+}
+
+function AttachmentPreview({ taskId, file }: { taskId: string; file: TaskAttachment }) {
   const [expanded, setExpanded] = useState(false);
-  const isImg = isImageFile(att);
+  const { download } = useDownload(taskId);
+  const isImg = isImageAttachment(file.type);
 
   return (
     <div className="border border-slate-200 rounded-lg overflow-hidden">
@@ -42,78 +84,88 @@ function AttachmentPreview({ att }: { att: TaskAttachment }) {
           ? <ImageIcon size={12} className="text-brand-400 flex-shrink-0" />
           : <FileText size={12} className="text-slate-400 flex-shrink-0" />
         }
-        <span className="text-[11px] text-slate-700 flex-1 truncate">{att.name}</span>
-        <span className="text-[10px] text-slate-400 flex-shrink-0">{formatBytes(att.size)}</span>
+        <span className="text-[11px] text-slate-700 flex-1 truncate">{file.name}</span>
+        <span className="text-[10px] text-slate-400 flex-shrink-0">{formatBytes(file.size)}</span>
         <ChevronDown size={10} className={`text-slate-300 flex-shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`} />
       </button>
       {expanded && isImg && (
         <div className="border-t border-slate-100">
-          <img src={att.dataUrl} alt={att.name} className="w-full object-contain max-h-48" />
+          <AttachmentImage taskId={taskId} file={file} className="w-full object-contain max-h-48 cursor-pointer" />
         </div>
       )}
       {expanded && !isImg && (
         <div className="border-t border-slate-100 px-3 py-2">
-          <a href={att.dataUrl} download={att.name} className="text-[11px] text-brand-500 hover:underline">
+          <button onClick={() => download(file)} className="text-[11px] text-brand-500 hover:underline">
             Скачать файл
-          </a>
+          </button>
         </div>
       )}
     </div>
   );
 }
 
+/** Предпросмотр ещё не отправленного файла: он есть только в браузере. */
+function LocalImage({ file, className }: { file: File; className: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    const objectUrl = URL.createObjectURL(file);
+    setUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [file]);
+  return url ? <img src={url} alt={file.name} className={className} /> : null;
+}
+
 export function TaskDetailPanel({
   task,
   client,
   onClose,
-  onUpdate,
+  onStatusChange,
   onDelete,
   onOpenClient,
 }: {
   task: Task;
   client: Client | null;
   onClose: () => void;
-  onUpdate: (id: string, patch: Partial<Task>) => void;
+  onStatusChange: (id: string, status: TaskStatus) => void;
   onDelete: (id: string) => void;
   onOpenClient: (id: string) => void;
 }) {
+  const { addComment, editComment, deleteComment } = useTasks();
+  const { user } = useSession();
+  const { download, downloadError } = useDownload(task.id);
+
   const [commentText, setCommentText] = useState("");
-  const [commentAttachments, setCommentAttachments] = useState<TaskAttachment[]>([]);
+  const [commentFiles, setCommentFiles] = useState<File[]>([]);
+  const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
 
-  const comments = task.comments ?? [];
+  const comments = task.comments;
 
   const handleCommentFiles = (files: FileList | null) => {
     if (!files) return;
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setCommentAttachments((prev) => [
-          ...prev,
-          { name: file.name, size: file.size, type: file.type, dataUrl: e.target?.result as string },
-        ]);
-      };
-      reader.readAsDataURL(file);
-    });
+    const accepted: File[] = [];
+    for (const file of Array.from(files)) {
+      const problem = attachmentError(file);
+      if (problem) setError(problem);
+      else accepted.push(file);
+    }
+    if (accepted.length > 0) setCommentFiles((prev) => [...prev, ...accepted]);
   };
 
-  const addComment = () => {
-    if (!commentText.trim() && commentAttachments.length === 0) return;
-    const c: TaskComment = {
-      id: `c${Date.now()}`,
-      author: CURRENT_USER,
-      text: commentText.trim(),
-      createdAt: new Date().toISOString(),
-      attachments: commentAttachments.length > 0 ? commentAttachments : undefined,
-    };
-    onUpdate(task.id, { comments: [...comments, c] });
+  const send = async () => {
+    if ((!commentText.trim() && commentFiles.length === 0) || isSending) return;
+    setIsSending(true);
+    setError(null);
+    const result = await addComment(task.id, commentText.trim(), commentFiles);
+    setIsSending(false);
+    if (!result.ok) {
+      setError(describeApiError(result.error));
+      return;
+    }
     setCommentText("");
-    setCommentAttachments([]);
-  };
-
-  const deleteComment = (id: string) => {
-    onUpdate(task.id, { comments: comments.filter((c) => c.id !== id) });
+    setCommentFiles([]);
   };
 
   const startEdit = (c: TaskComment) => {
@@ -121,13 +173,12 @@ export function TaskDetailPanel({
     setEditingText(c.text);
   };
 
-  const saveEdit = (id: string) => {
-    if (!editingText.trim()) return;
-    onUpdate(task.id, {
-      comments: comments.map((c) =>
-        c.id === id ? { ...c, text: editingText.trim(), editedAt: new Date().toISOString() } : c
-      ),
-    });
+  const saveEdit = async (id: string) => {
+    const result = await editComment(task.id, id, editingText.trim());
+    if (!result.ok) {
+      setError(describeApiError(result.error));
+      return;
+    }
     setEditingId(null);
   };
 
@@ -182,7 +233,7 @@ export function TaskDetailPanel({
               <p className="text-[10px] text-slate-400 mb-1.5">Статус</p>
               <select
                 value={task.status}
-                onChange={(e) => onUpdate(task.id, { status: e.target.value as TaskStatus })}
+                onChange={(e) => onStatusChange(task.id, e.target.value as TaskStatus)}
                 className="text-xs font-medium text-slate-700 bg-transparent outline-none cursor-pointer w-full"
               >
                 {(Object.keys(TASK_STATUS_LABEL) as TaskStatus[]).map((s) => (
@@ -204,7 +255,7 @@ export function TaskDetailPanel({
             </div>
             <div className="bg-slate-50 rounded-lg px-3 py-2.5">
               <p className="text-[10px] text-slate-400 mb-1.5">Исполнитель</p>
-              <p className="text-xs font-medium text-slate-700">{task.assignee}</p>
+              <p className="text-xs font-medium text-slate-700">{task.assigneeName || "Не назначен"}</p>
             </div>
           </div>
 
@@ -234,14 +285,14 @@ export function TaskDetailPanel({
           )}
 
           {/* Attachments */}
-          {task.attachments && task.attachments.length > 0 && (
+          {task.attachments.length > 0 && (
             <div>
               <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
                 Вложения ({task.attachments.length})
               </p>
               <div className="space-y-2">
-                {task.attachments.map((att, i) => (
-                  <AttachmentPreview key={i} att={att} />
+                {task.attachments.map((file) => (
+                  <AttachmentPreview key={file.id} taskId={task.id} file={file} />
                 ))}
               </div>
             </div>
@@ -260,15 +311,15 @@ export function TaskDetailPanel({
                   <div key={c.id} className="flex gap-2.5 group/comment">
                     {/* Avatar */}
                     <div className="w-6 h-6 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-[9px] font-bold text-brand-600">{authorInitials(c.author)}</span>
+                      <span className="text-[9px] font-bold text-brand-600">{authorInitials(c.authorName)}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[11px] font-semibold text-slate-700">{c.author}</span>
+                        <span className="text-[11px] font-semibold text-slate-700">{c.authorName}</span>
                         <span className="text-[10px] text-slate-400">{formatTime(c.createdAt)}</span>
                         {c.editedAt && <span className="text-[9px] text-slate-300 italic">ред.</span>}
                         {/* Actions — only own comments */}
-                        {c.author === CURRENT_USER && editingId !== c.id && (
+                        {c.authorId === user?.id && editingId !== c.id && (
                           <div className="ml-auto flex items-center gap-1 opacity-0 group-hover/comment:opacity-100 transition-opacity">
                             <button
                               onClick={() => startEdit(c)}
@@ -277,7 +328,7 @@ export function TaskDetailPanel({
                               <Pencil size={10} />
                             </button>
                             <button
-                              onClick={() => deleteComment(c.id)}
+                              onClick={() => deleteComment(task.id, c.id)}
                               className="p-1 rounded text-slate-300 hover:text-red-400 hover:bg-red-50 transition-colors"
                             >
                               <Trash2 size={10} />
@@ -310,28 +361,26 @@ export function TaskDetailPanel({
                       ) : (
                         <div className="space-y-2">
                           {c.text && <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-wrap">{c.text}</p>}
-                          {c.attachments && c.attachments.length > 0 && (
+                          {c.attachments.length > 0 && (
                             <div className="space-y-1.5">
-                              {c.attachments.map((att, ai) =>
-                                att.type.startsWith("image/") ? (
-                                  <img
-                                    key={ai}
-                                    src={att.dataUrl}
-                                    alt={att.name}
+                              {c.attachments.map((file) =>
+                                isImageAttachment(file.type) ? (
+                                  <AttachmentImage
+                                    key={file.id}
+                                    taskId={task.id}
+                                    file={file}
                                     className="rounded-lg border border-slate-200 max-w-full max-h-40 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                                    onClick={() => window.open(att.dataUrl, "_blank")}
                                   />
                                 ) : (
-                                  <a
-                                    key={ai}
-                                    href={att.dataUrl}
-                                    download={att.name}
-                                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-brand-50 hover:border-brand-200 transition-colors group/file"
+                                  <button
+                                    key={file.id}
+                                    onClick={() => download(file)}
+                                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-brand-50 hover:border-brand-200 transition-colors group/file"
                                   >
                                     <FileText size={11} className="text-slate-400 group-hover/file:text-brand-500 flex-shrink-0" />
-                                    <span className="text-[11px] text-slate-600 group-hover/file:text-brand-600 truncate flex-1">{att.name}</span>
-                                    <span className="text-[10px] text-slate-400 flex-shrink-0">{(att.size / 1024).toFixed(0)} KB</span>
-                                  </a>
+                                    <span className="text-[11px] text-slate-600 group-hover/file:text-brand-600 truncate flex-1 text-left">{file.name}</span>
+                                    <span className="text-[10px] text-slate-400 flex-shrink-0">{formatBytes(file.size)}</span>
+                                  </button>
                                 )
                               )}
                             </div>
@@ -347,29 +396,29 @@ export function TaskDetailPanel({
             {/* New comment input */}
             <div className="flex gap-2.5">
               <div className="w-6 h-6 rounded-full bg-brand-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-[9px] font-bold text-white">{authorInitials(CURRENT_USER)}</span>
+                <span className="text-[9px] font-bold text-white">{authorInitials(user?.fullName ?? "")}</span>
               </div>
               <div className="flex-1 space-y-2">
                 <textarea
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   placeholder="Написать комментарий… (⌘↵ отправить)"
-                  rows={commentText || commentAttachments.length > 0 ? 3 : 2}
+                  rows={commentText || commentFiles.length > 0 ? 3 : 2}
                   className="w-full text-xs text-slate-700 px-3 py-2 border border-slate-200 rounded-lg outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-50 resize-none placeholder:text-slate-300 transition-colors bg-slate-50 focus:bg-white"
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) addComment();
+                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) send();
                   }}
                 />
 
                 {/* Attached files preview */}
-                {commentAttachments.length > 0 && (
+                {commentFiles.length > 0 && (
                   <div className="space-y-1.5">
-                    {commentAttachments.map((att, i) =>
-                      att.type.startsWith("image/") ? (
+                    {commentFiles.map((file, i) =>
+                      isImageAttachment(file.type) ? (
                         <div key={i} className="relative inline-block">
-                          <img src={att.dataUrl} alt={att.name} className="rounded-lg border border-slate-200 max-h-28 object-cover" />
+                          <LocalImage file={file} className="rounded-lg border border-slate-200 max-h-28 object-cover" />
                           <button
-                            onClick={() => setCommentAttachments((p) => p.filter((_, j) => j !== i))}
+                            onClick={() => setCommentFiles((p) => p.filter((_, j) => j !== i))}
                             className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
                           >
                             <X size={8} />
@@ -378,9 +427,9 @@ export function TaskDetailPanel({
                       ) : (
                         <div key={i} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50">
                           <FileText size={11} className="text-slate-400 flex-shrink-0" />
-                          <span className="text-[11px] text-slate-600 truncate flex-1">{att.name}</span>
+                          <span className="text-[11px] text-slate-600 truncate flex-1">{file.name}</span>
                           <button
-                            onClick={() => setCommentAttachments((p) => p.filter((_, j) => j !== i))}
+                            onClick={() => setCommentFiles((p) => p.filter((_, j) => j !== i))}
                             className="text-slate-300 hover:text-red-400 transition-colors flex-shrink-0"
                           >
                             <X size={10} />
@@ -388,6 +437,13 @@ export function TaskDetailPanel({
                         </div>
                       )
                     )}
+                  </div>
+                )}
+
+                {(error || downloadError) && (
+                  <div role="alert" className="flex items-start gap-1.5 text-[11px] text-red-600">
+                    <AlertCircle size={11} className="flex-shrink-0 mt-px" />
+                    <span>{error ?? downloadError}</span>
                   </div>
                 )}
 
@@ -399,19 +455,23 @@ export function TaskDetailPanel({
                     <input
                       type="file"
                       multiple
-                      accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                      accept={ATTACHMENT_ACCEPT}
                       className="hidden"
-                      onChange={(e) => handleCommentFiles(e.target.files)}
+                      onChange={(e) => {
+                        handleCommentFiles(e.target.files);
+                        e.target.value = "";
+                      }}
                     />
                   </label>
                   <div className="flex-1" />
-                  {(commentText.trim() || commentAttachments.length > 0) && (
+                  {(commentText.trim() || commentFiles.length > 0) && (
                     <button
-                      onClick={addComment}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition-colors"
+                      onClick={send}
+                      disabled={isSending}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-brand-500 hover:bg-brand-600 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-lg transition-colors"
                     >
                       <Send size={10} />
-                      Отправить
+                      {isSending ? "Отправка…" : "Отправить"}
                     </button>
                   )}
                 </div>
@@ -433,7 +493,7 @@ export function TaskDetailPanel({
         <div className="flex-1" />
         <select
           value={task.status}
-          onChange={(e) => onUpdate(task.id, { status: e.target.value as TaskStatus })}
+          onChange={(e) => onStatusChange(task.id, e.target.value as TaskStatus)}
           className="text-xs font-medium text-brand-500 bg-brand-50 border border-brand-200 rounded-lg px-2 py-1.5 outline-none cursor-pointer hover:bg-brand-100 transition-colors"
         >
           {(Object.keys(TASK_STATUS_LABEL) as TaskStatus[]).map((s) => (

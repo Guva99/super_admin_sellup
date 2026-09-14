@@ -1,8 +1,12 @@
 import { useState } from "react";
-import { Plus, Trash2, GripVertical, Info } from "lucide-react";
-import type { TemplateStage } from "@/entities/onboarding-template";
-import { PLANS } from "@/entities/client";
-import { teamMembers } from "@/shared/api/mock";
+import { Plus, Trash2, GripVertical, Info, Pencil } from "lucide-react";
+import { useOnboardingTemplate } from "@/entities/onboarding-template";
+import { usePlans } from "@/entities/plan";
+import { usePlanForm, PlanFormModal } from "@/features/edit-plan";
+import { useAddTeamMember, AddTeamMemberModal } from "@/features/add-team-member";
+import { useSession } from "@/entities/session";
+import { canManageTeam, ROLE_LABEL, useUsers } from "@/entities/user";
+import { describeApiError } from "@/shared/api";
 
 const SETTINGS_TABS = [
   { id: "plans", label: "Тарифы и скидки" },
@@ -10,13 +14,25 @@ const SETTINGS_TABS = [
   { id: "templates", label: "Шаблоны онбординга" },
 ];
 
-interface SettingsPageProps {
-  onboardingTemplate: TemplateStage[];
-  onUpdateTemplate: (template: TemplateStage[]) => void;
-}
+export default function SettingsPage() {
+  const { template: onboardingTemplate, setTemplate: onUpdateTemplate } = useOnboardingTemplate();
+  const { activePlans, isLoading: plansLoading, error: plansError } = usePlans();
+  const { users, removeUser } = useUsers();
+  const { user: currentUser } = useSession();
+  const planForm = usePlanForm();
+  const addMember = useAddTeamMember();
 
-export default function SettingsPage({ onboardingTemplate, onUpdateTemplate }: SettingsPageProps) {
   const [tab, setTab] = useState("templates");
+  const [teamError, setTeamError] = useState<string | null>(null);
+
+  const canEditTeam = canManageTeam(currentUser?.roleKey);
+
+  const deleteMember = async (id: string, name: string) => {
+    if (!window.confirm(`Удалить сотрудника «${name}»? Он больше не сможет войти в консоль.`)) return;
+    setTeamError(null);
+    const result = await removeUser(id);
+    if (!result.ok) setTeamError(describeApiError(result.error));
+  };
 
   const addStage = () => {
     onUpdateTemplate([
@@ -54,27 +70,42 @@ export default function SettingsPage({ onboardingTemplate, onUpdateTemplate }: S
         <div className="space-y-4">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold text-slate-900">Тарифные планы</h3>
-            <button className="flex items-center gap-1.5 text-xs text-brand-500 hover:text-brand-600">
+            <button onClick={planForm.openCreate} className="flex items-center gap-1.5 text-xs text-brand-500 hover:text-brand-600">
               <Plus size={12} />
               Добавить тариф
             </button>
           </div>
-          {PLANS.map((plan) => (
-            <div key={plan.id} className="bg-white border border-slate-200 rounded-xl p-5">
-              <div className="flex items-start justify-between">
-                <div>
+          {plansLoading && <p className="text-xs text-slate-400">Загрузка тарифов…</p>}
+          {plansError && <p className="text-xs text-red-600">Не удалось загрузить тарифы: {plansError}</p>}
+          {activePlans.map((plan) => (
+            <div key={plan.id} className="group bg-white border border-slate-200 rounded-xl p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
                   <h4 className="text-sm font-semibold text-slate-900">{plan.name}</h4>
                   <p className="text-xs text-slate-500 mt-0.5">{plan.description}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-slate-900 font-mono">{plan.price.toLocaleString("ru-RU")} ₽/мес</p>
-                  {plan.setup > 0 && (
-                    <p className="text-xs text-slate-400 mt-0.5">+{plan.setup.toLocaleString("ru-RU")} ₽ разово</p>
-                  )}
+                <div className="flex items-start gap-3">
+                  <div className="text-right">
+                    <p className="text-sm font-semibold text-slate-900 font-mono">
+                      {plan.isCustom ? "Цена для каждого клиента" : `${plan.price.toLocaleString("ru-RU")} ₽/мес`}
+                    </p>
+                    {plan.setupPrice > 0 && (
+                      <p className="text-xs text-slate-400 mt-0.5">+{plan.setupPrice.toLocaleString("ru-RU")} ₽ разово</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => planForm.openEdit(plan)}
+                    title="Редактировать тариф"
+                    aria-label={`Редактировать тариф ${plan.name}`}
+                    className="text-slate-300 hover:text-brand-500 transition-colors mt-0.5"
+                  >
+                    <Pencil size={13} />
+                  </button>
                 </div>
               </div>
             </div>
           ))}
+          <PlanFormModal controller={planForm} />
         </div>
       )}
 
@@ -82,29 +113,42 @@ export default function SettingsPage({ onboardingTemplate, onUpdateTemplate }: S
         <div className="space-y-4">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold text-slate-900">Команда</h3>
-            <button className="flex items-center gap-1.5 text-xs text-brand-500 hover:text-brand-600">
-              <Plus size={12} />
-              Пригласить
-            </button>
+            {canEditTeam && (
+              <button onClick={addMember.open} className="flex items-center gap-1.5 text-xs text-brand-500 hover:text-brand-600">
+                <Plus size={12} />
+                Добавить сотрудника
+              </button>
+            )}
           </div>
-          {teamMembers.map((member) => (
-            <div key={member.name} className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-4">
+          {teamError && <p className="text-xs text-red-600">{teamError}</p>}
+          {users.map((member) => (
+            <div key={member.id} className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-4">
               <div className="w-9 h-9 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0">
                 <span className="text-xs font-semibold text-brand-600">
-                  {member.name.split(" ").map((n) => n[0]).join("")}
+                  {member.fullName.split(" ").slice(0, 2).map((n) => n[0]?.toUpperCase() ?? "").join("")}
                 </span>
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-slate-800">{member.name}</p>
-                <p className="text-xs text-slate-400">{member.email}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-slate-800 truncate">
+                  {member.fullName}
+                  {member.id === currentUser?.id && <span className="ml-1.5 text-[10px] text-slate-400">— это вы</span>}
+                </p>
+                <p className="text-xs text-slate-400 truncate">{member.email}</p>
               </div>
-              <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">{member.role}</span>
-              <span className="text-xs text-slate-400">{member.clients} клиентов</span>
-              <button className="text-slate-300 hover:text-red-400 transition-colors">
-                <Trash2 size={13} />
-              </button>
+              <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded flex-shrink-0">{ROLE_LABEL[member.roleKey]}</span>
+              {/* Себя удалить нельзя — бэкенд такой запрос отклоняет. */}
+              {canEditTeam && member.id !== currentUser?.id && (
+                <button
+                  onClick={() => deleteMember(member.id, member.fullName)}
+                  title={`Удалить сотрудника ${member.fullName}`}
+                  className="text-slate-300 hover:text-red-400 transition-colors flex-shrink-0"
+                >
+                  <Trash2 size={13} />
+                </button>
+              )}
             </div>
           ))}
+          <AddTeamMemberModal controller={addMember} />
         </div>
       )}
 

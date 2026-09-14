@@ -1,4 +1,4 @@
-import type { Client } from "@/entities/client";
+import { useClients } from "@/entities/client";
 import {
   ClientAvatar,
   healthLevel,
@@ -6,38 +6,46 @@ import {
   HEALTH_BAR_CLASS,
   HEALTH_THRESHOLDS,
 } from "@/entities/client";
-import type { MonthlyHours, OnboardingDuration } from "@/entities/analytics";
-import { CHART_COLORS } from "@/shared/config";
+import { emptyMonthlyHours, emptyOnboardingDuration } from "@/entities/analytics";
+import { CHART_COLORS, valueAxis } from "@/shared/config";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line,
 } from "recharts";
 
-interface MetricsPageProps {
-  clients: Client[];
-  monthlyHours: MonthlyHours[];
-  onboardingDuration: OnboardingDuration[];
-}
+/** Целевые 20 ч/мес — план, а не измерение: его и показываем пунктиром. */
+const HOURS_TARGET = 20;
+// Часов и сроков онбординга бэкенд пока не считает — ряды нулевые.
+const monthlyHours = emptyMonthlyHours(HOURS_TARGET);
+const onboardingDuration = emptyOnboardingDuration();
 
-export default function MetricsPage({ clients, monthlyHours, onboardingDuration }: MetricsPageProps) {
-  const avgHealth = Math.round(
-    clients.filter((c) => c.healthScore > 0).reduce((s, c) => s + c.healthScore, 0) /
-    clients.filter((c) => c.healthScore > 0).length
-  );
+export default function MetricsPage() {
+  const { clients } = useClients();
+
+  const scoredClients = clients.filter((c) => c.healthScore > 0);
+  // Без оценённых клиентов делить не на что — иначе на экране «NaN».
+  const avgHealth = scoredClients.length > 0
+    ? Math.round(scoredClients.reduce((s, c) => s + c.healthScore, 0) / scoredClients.length)
+    : 0;
 
   return (
     <div className="p-6 space-y-6 max-w-[1100px]">
       <div className="grid grid-cols-4 gap-4">
         {[
-          { label: "Ср. часов на клиента/мес", value: "19 ч", trend: "↓ тренд", good: true },
-          { label: "Ср. срок онбординга", value: "34 дня", trend: "↓ 18 дн за полгода", good: true },
-          { label: "Avg Health Score", value: String(avgHealth), trend: avgHealth >= HEALTH_THRESHOLDS.good ? "Хорошо" : "Нужно улучшать", good: avgHealth >= 75 },
-          { label: "NPS (оценочный)", value: "72", trend: "Цель 80+", good: false },
+          { label: "Ср. часов на клиента/мес", value: "0", note: "Нет данных", good: false },
+          { label: "Ср. срок онбординга", value: "0", note: "Нет данных", good: false },
+          {
+            label: "Avg Health Score",
+            value: String(avgHealth),
+            note: scoredClients.length === 0 ? "Нет оценённых клиентов" : avgHealth >= HEALTH_THRESHOLDS.good ? "Хорошо" : "Нужно улучшать",
+            good: scoredClients.length > 0 && avgHealth >= HEALTH_THRESHOLDS.good,
+          },
+          { label: "NPS (оценочный)", value: "0", note: "Нет данных", good: false },
         ].map((k) => (
           <div key={k.label} className="bg-white border border-slate-200 rounded-xl p-4">
             <p className="text-xs text-slate-400 mb-2">{k.label}</p>
             <p className="text-2xl font-semibold text-slate-900">{k.value}</p>
-            <p className={`text-xs mt-1 ${k.good ? "text-emerald-600" : "text-amber-500"}`}>{k.trend}</p>
+            <p className={`text-xs mt-1 ${k.good ? "text-emerald-600" : "text-slate-400"}`}>{k.note}</p>
           </div>
         ))}
       </div>
@@ -50,7 +58,7 @@ export default function MetricsPage({ clients, monthlyHours, onboardingDuration 
             <LineChart data={monthlyHours} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} {...valueAxis(monthlyHours.flatMap((point) => [point.avg, point.target]))} />
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0" }} />
               <Line type="monotone" dataKey="avg" stroke={CHART_COLORS.brand} strokeWidth={2} dot={{ r: 3, fill: CHART_COLORS.brand }} name="Факт" />
               <Line type="monotone" dataKey="target" stroke="#e2e8f0" strokeWidth={1.5} strokeDasharray="4 4" dot={false} name="Цель" />
@@ -65,7 +73,7 @@ export default function MetricsPage({ clients, monthlyHours, onboardingDuration 
             <BarChart data={onboardingDuration} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
               <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} {...valueAxis(onboardingDuration.map((point) => point.days))} />
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0" }} formatter={(v) => [`${v} дней`, "Срок"]} />
               <Bar dataKey="days" fill="#a5b4fc" radius={[4, 4, 0, 0]} />
             </BarChart>
@@ -78,6 +86,7 @@ export default function MetricsPage({ clients, monthlyHours, onboardingDuration 
         <div className="px-5 py-3.5 border-b border-slate-100">
           <h3 className="text-sm font-semibold text-slate-900">Health Score по клиентам</h3>
         </div>
+        {scoredClients.length === 0 && <p className="px-5 py-8 text-center text-sm text-slate-400">Нет данных</p>}
         <div className="divide-y divide-slate-50">
           {clients.filter((c) => c.healthScore > 0).sort((a, b) => b.healthScore - a.healthScore).map((c) => (
             <div key={c.id} className="flex items-center gap-4 px-5 py-3">

@@ -1,15 +1,16 @@
-import { X, Plus, Trash2, GripVertical, ChevronDown, ChevronUp } from "lucide-react";
-import type { ClientNiche, ClientPlan } from "@/entities/client";
+import { X, Plus, Trash2, GripVertical, ChevronDown, ChevronUp, AlertCircle, Loader2 } from "lucide-react";
+import type { ClientNiche } from "@/entities/client";
 import { CLIENT_NICHE_LABEL } from "@/entities/client";
 import { ModalOverlay } from "@/shared/ui";
-import { PLAN_LABEL } from "@/entities/client";
 import type { ConnectBusinessController } from "../model/useConnectBusiness";
 
 const NICHES: ClientNiche[] = ["retail", "services"];
-const PLANS: ClientPlan[] = ["full", "early_access", "custom"];
 
 export function ConnectBusinessModal({ controller }: { controller: ConnectBusinessController }) {
-  const { isOpen, draft, stagesExpanded, close, patch, toggleStages, addStage, removeStage, updateStage, submit } = controller;
+  const {
+    isOpen, draft, plans, selectedPlan, stagesExpanded, isSubmitting, error,
+    close, patch, toggleStages, addStage, removeStage, updateStage, submit,
+  } = controller;
 
   if (!isOpen || !draft) return null;
 
@@ -87,12 +88,15 @@ export function ConnectBusinessModal({ controller }: { controller: ConnectBusine
             <div>
               <label className="text-xs font-medium text-slate-600 block mb-1.5">Тариф</label>
               <select
-                value={draft.plan}
-                onChange={(e) => patch({ plan: e.target.value as ClientPlan })}
+                value={draft.planId}
+                onChange={(e) => patch({ planId: e.target.value })}
                 className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-brand-400 bg-white text-slate-700 cursor-pointer"
               >
-                {PLANS.map((plan) => (
-                  <option key={plan} value={plan}>{PLAN_LABEL[plan]}</option>
+                {!selectedPlan && <option value="">— Выберите тариф —</option>}
+                {plans.map((plan) => (
+                  <option key={plan.id} value={plan.id}>
+                    {plan.isCustom ? plan.name : `${plan.name} — ${plan.price.toLocaleString("ru-RU")} ₽/мес`}
+                  </option>
                 ))}
               </select>
             </div>
@@ -109,7 +113,7 @@ export function ConnectBusinessModal({ controller }: { controller: ConnectBusine
                 className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-brand-400 transition-colors placeholder:text-slate-300"
               />
             </div>
-            {draft.plan === "custom" ? (
+            {selectedPlan?.isCustom ? (
               <div>
                 <label className="text-xs font-medium text-slate-600 block mb-1.5">Фиксированная сумма ₽/мес *</label>
                 <input
@@ -181,14 +185,22 @@ export function ConnectBusinessModal({ controller }: { controller: ConnectBusine
           </div>
         </div>
 
+        {error && (
+          <div role="alert" className="mx-6 mb-1 flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-xs text-red-600 flex-shrink-0">
+            <AlertCircle size={13} className="flex-shrink-0" />
+            {error}
+          </div>
+        )}
+
         <div className="px-6 pb-5 pt-3 border-t border-slate-100 flex gap-2 justify-end flex-shrink-0">
-          <button onClick={close} className="px-4 py-2 text-xs text-slate-500 hover:text-slate-700 rounded-lg hover:bg-slate-50 transition-colors">Отмена</button>
+          <button onClick={close} disabled={isSubmitting} className="px-4 py-2 text-xs text-slate-500 hover:text-slate-700 rounded-lg hover:bg-slate-50 transition-colors">Отмена</button>
           <button
-            onClick={submit}
-            disabled={!draft.name.trim()}
-            className="px-5 py-2 text-xs font-semibold bg-brand-500 hover:bg-brand-600 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-lg transition-colors"
+            onClick={() => void submit()}
+            disabled={!draft.name.trim() || isSubmitting}
+            className="flex items-center gap-1.5 px-5 py-2 text-xs font-semibold bg-brand-500 hover:bg-brand-600 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-lg transition-colors"
           >
-            Добавить бизнес →
+            {isSubmitting && <Loader2 size={12} className="animate-spin" />}
+            {isSubmitting ? "Сохраняем…" : "Добавить бизнес →"}
           </button>
         </div>
       </div>

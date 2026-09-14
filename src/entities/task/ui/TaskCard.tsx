@@ -14,7 +14,7 @@ export function TaskCard({
   handlers,
   isDragging,
   isSelected,
-  onUpdate,
+  onStatusChange,
   onDelete,
   onOpenClient,
   onClick,
@@ -24,7 +24,7 @@ export function TaskCard({
   handlers: KanbanCardHandlers;
   isDragging: boolean;
   isSelected: boolean;
-  onUpdate: (id: string, patch: Partial<Task>) => void;
+  onStatusChange: (id: string, status: TaskStatus) => void;
   onDelete: (id: string) => void;
   onOpenClient: (id: string) => void;
   onClick: () => void;
@@ -34,7 +34,7 @@ export function TaskCard({
 
   const isOverdue = isTaskOverdue(task);
   const dueDateStr = task.dueDate ? formatDate(task.dueDate) : null;
-  const hasAttachments = task.attachments && task.attachments.length > 0;
+  const hasAttachments = task.attachments.length > 0;
 
   return (
     <div
@@ -109,12 +109,12 @@ export function TaskCard({
           {hasAttachments && (
             <span className="flex items-center gap-1 text-[10px] text-slate-400 ml-auto">
               <Paperclip size={9} className="text-brand-400" />
-              {task.attachments!.length}
+              {task.attachments.length}
             </span>
           )}
 
           {!hasAttachments && (
-            <span className="text-[10px] text-slate-400 ml-auto">{task.assignee.split(" ")[0]}</span>
+            <span className="text-[10px] text-slate-400 ml-auto">{task.assigneeName.split(" ")[0] || "—"}</span>
           )}
         </div>
       </div>
@@ -126,7 +126,7 @@ export function TaskCard({
           onClick={(e) => e.stopPropagation()}
         >
           {(Object.keys(TASK_STATUS_LABEL) as TaskStatus[]).filter((s) => s !== task.status).map((s) => (
-            <button key={s} onClick={() => { onUpdate(task.id, { status: s }); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-xs text-slate-600 hover:bg-slate-50 transition-colors">
+            <button key={s} onClick={() => { onStatusChange(task.id, s); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-xs text-slate-600 hover:bg-slate-50 transition-colors">
               → {TASK_STATUS_LABEL[s]}
             </button>
           ))}

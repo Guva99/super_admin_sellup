@@ -1,8 +1,8 @@
 import { useState } from "react";
-import type { Client, ClientNiche, ClientPlan, OnboardingStep } from "@/entities/client";
+import type { Client, ClientNiche, NewClientInput } from "@/entities/client";
+import type { Plan } from "@/entities/plan";
 import type { TemplateStage } from "@/entities/onboarding-template";
-import { MANAGERS } from "@/shared/api/mock";
-import { todayIso } from "@/shared/lib";
+import { describeApiError, type Result } from "@/shared/api";
 
 export interface StageDraft {
   id: string;
@@ -16,26 +16,23 @@ export interface ConnectBusinessDraft {
   ownerEmail: string;
   ownerPhone: string;
   niche: ClientNiche;
-  plan: ClientPlan;
+  planId: string;
   fixedPrice: boolean;
   customPrice: string;
   size: string;
   stages: StageDraft[];
 }
 
-/** Палитра аватаров: новый клиент получает следующий цвет по кругу. */
-const CLIENT_COLORS = [
-  "#6366f1", "#8b5cf6", "#06b6d4", "#10b981", "#f59e0b",
-  "#ec4899", "#0ea5e9", "#f97316", "#84cc16", "#14b8a6",
-];
-
-const initials = (name: string) =>
-  name.split(/\s+/).slice(0, 2).map((word) => word[0]?.toUpperCase() ?? "").join("") || "НК";
-
 export interface ConnectBusinessController {
   isOpen: boolean;
   draft: ConnectBusinessDraft | null;
+  /** Тарифы, доступные для выбора. */
+  plans: Plan[];
+  /** Выбранный тариф; у тарифа с isCustom цена вводится вручную. */
+  selectedPlan: Plan | undefined;
   stagesExpanded: boolean;
+  isSubmitting: boolean;
+  error: string | null;
   open: () => void;
   close: () => void;
   patch: (patch: Partial<ConnectBusinessDraft>) => void;
@@ -43,21 +40,26 @@ export interface ConnectBusinessController {
   addStage: () => void;
   removeStage: (id: string) => void;
   updateStage: (id: string, field: "title" | "description", value: string) => void;
-  submit: () => void;
+  submit: () => Promise<void>;
 }
 
 /**
- * Состояние и правила подключения бизнеса.
- * Этапы онбординга берутся из шаблона настроек и могут быть изменены перед созданием.
+ * Состояние и правила подключения бизнеса. Этапы онбординга берутся из шаблона
+ * настроек и могут быть изменены перед созданием. Сохраняет `onSubmit`
+ * (стор клиентов → API); проверки здесь — для быстрого отклика, окончательно
+ * решает бэкенд.
  */
 export function useConnectBusiness(
   template: TemplateStage[],
-  clientCount: number,
+  plans: Plan[],
+  onSubmit: (input: NewClientInput) => Promise<Result<Client>>,
   onCreated: (client: Client) => void,
 ): ConnectBusinessController {
   const [isOpen, setIsOpen] = useState(false);
   const [draft, setDraft] = useState<ConnectBusinessDraft | null>(null);
   const [stagesExpanded, setStagesExpanded] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const open = () => {
     setDraft({
@@ -66,7 +68,7 @@ export function useConnectBusiness(
       ownerEmail: "",
       ownerPhone: "",
       niche: "retail",
-      plan: "full",
+      planId: plans[0]?.id ?? "",
       fixedPrice: false,
       customPrice: "",
       size: "",
@@ -76,10 +78,12 @@ export function useConnectBusiness(
         description: stage.description,
       })),
     });
+    setError(null);
     setIsOpen(true);
   };
 
   const close = () => {
+    if (isSubmitting) return;
     setIsOpen(false);
     setDraft(null);
   };
@@ -100,47 +104,56 @@ export function useConnectBusiness(
       stages: (draft?.stages ?? []).map((stage) => (stage.id === id ? { ...stage, [field]: value } : stage)),
     });
 
-  const submit = () => {
-    if (!draft || !draft.name.trim()) return;
+  const selectedPlan = plans.find((plan) => plan.id === draft?.planId);
 
-    const steps: OnboardingStep[] = draft.stages.map((stage, index) => ({
-      id: `step_${Date.now()}_${index}`,
-      title: stage.title,
-      description: stage.description,
-      status: "pending",
-      assignee: MANAGERS[0],
-      hoursSpent: 0,
-      dueDate: "",
-    }));
+  const submit = async () => {
+    if (!draft || isSubmitting) return;
+    if (!draft.name.trim()) return setError("Укажите название бизнеса");
+    if (!selectedPlan) return setError("Выберите тариф");
+    const customPrice = Number(draft.customPrice);
+    if (selectedPlan.isCustom && !(customPrice > 0)) return setError("Укажите сумму в месяц для кастомного тарифа");
+    if (draft.stages.some((stage) => !stage.title.trim())) return setError("У каждого этапа онбординга должно быть название");
 
-    onCreated({
-      id: `c${Date.now()}`,
+    setIsSubmitting(true);
+    setError(null);
+    const result = await onSubmit({
       name: draft.name.trim(),
-      initials: initials(draft.name.trim()),
-      color: CLIENT_COLORS[clientCount % CLIENT_COLORS.length],
+      planId: selectedPlan.id,
+      customPrice: selectedPlan.isCustom ? customPrice : undefined,
+      ownerName: draft.ownerName.trim(),
+      ownerPhone: draft.ownerPhone.trim(),
+      ownerEmail: draft.ownerEmail.trim(),
       niche: draft.niche,
-      plan: draft.plan,
-      fixedPrice: draft.fixedPrice,
-      status: "lead",
-      stage: "lead",
-      mrr: draft.plan === "custom" && draft.customPrice ? parseInt(draft.customPrice, 10) : 0,
-      healthScore: 0,
-      health: { activity: 0, integrations: 0, payments: 0, support: 0 },
-      connectedAt: todayIso(),
-      hoursThisMonth: 0,
-      manager: MANAGERS[0],
-      owner: { name: draft.ownerName, email: draft.ownerEmail, phone: draft.ownerPhone },
-      size: draft.size,
-      nextAction: "Провести демо",
-      daysInStatus: 0,
-      notes: "",
-      integrations: [],
-      onboardingSteps: steps,
-      payments: [],
+      size: draft.size.trim(),
+      fixedPrice: selectedPlan.isCustom ? false : draft.fixedPrice,
+      stages: draft.stages.map((stage) => ({ title: stage.title.trim(), description: stage.description.trim() })),
     });
+    setIsSubmitting(false);
 
-    close();
+    if (!result.ok) {
+      setError(describeApiError(result.error));
+      return;
+    }
+    setIsOpen(false);
+    setDraft(null);
+    onCreated(result.data);
   };
 
-  return { isOpen, draft, stagesExpanded, open, close, patch, toggleStages, addStage, removeStage, updateStage, submit };
+  return {
+    isOpen,
+    draft,
+    plans,
+    selectedPlan,
+    stagesExpanded,
+    isSubmitting,
+    error,
+    open,
+    close,
+    patch,
+    toggleStages,
+    addStage,
+    removeStage,
+    updateStage,
+    submit,
+  };
 }

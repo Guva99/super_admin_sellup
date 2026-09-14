@@ -1,41 +1,205 @@
-# figma-make-app
+# SellUp Console
 
-React + Vite + Tailwind CSS project running inside Figma Make.
+Внутренняя админ-панель («operator console») владельца SaaS-платформы SellUp.
+React 19 + Vite 8 + Tailwind CSS v4. Проект создан в Figma Make, дальше
+развивается как обычный репозиторий.
+
+ТЗ, по которому собраны экраны: [docs/operator-console-spec.md](docs/operator-console-spec.md).
 
 ## Development Server
 
-A Vite development server is **already running** on `$PORT` (default 8443). You don't need to start it manually.
+Внутри Figma Make dev-сервер уже запущен на `$PORT` (по умолчанию 8443) —
+поднимать вручную не нужно. Локально: `pnpm install && pnpm dev`.
 
-- Preview URL: The user can access the running app through the preview panel
-- Hot reload: Changes to source files are reflected immediately
+## Архитектура
 
-## Project Structure
+Feature-Sliced Design. Импорты идут **только вниз** по этому списку, слайсы
+одного слоя друг друга не импортируют:
 
-This is the canonical project structure. Start with task-relevant files below. Only follow imports or inspect other files when required, when a documented path is missing, or when the repository contradicts this guide.
+```
+app/       роутер, провайдеры, каркас (меню, шапка, поиск)
+  ↓
+pages/     страницы разделов
+  ↓
+widgets/   составные блоки (вкладки карточки клиента)
+  ↓
+features/  пользовательские сценарии (модалки, канбан-доски)
+  ↓
+entities/  бизнес-сущности + их состояние
+  ↓
+shared/    переиспользуемое: ui, lib, config, api
+```
 
-- `src/main.tsx` - React entrypoint; imports `src/index.css` and mounts `src/App.tsx` into the `#root` element
-- `src/App.tsx` - Primary application component and the usual starting point for UI work
-- `src/index.css` - Global CSS entrypoint and Tailwind CSS v4 import
-- `index.html` - Vite HTML shell containing the `#root` element and loading `src/main.tsx`
-- `package.json` - Project dependencies and the Vite build, development, preview, and formatting scripts
-- `vite.config.ts` - Vite configuration with React, Tailwind CSS v4, and Figma Make plugins plus the `@` alias for `src`
-- `.mise.toml` - Toolchain versions for Node.js and pnpm
+### Три правила, без которых не собрать
 
-## Dependencies
+1. **Каждый слайс — папка с `index.ts`.** Наружу — только через него, внутрь
+   по полному пути (`@/entities/client/model/types`) не импортируют.
+   Внутри слайса: `model/` (типы, словари, хуки, стор), `ui/` (компоненты),
+   `api/` (загрузка данных).
+2. **Страницы — `export default`, всё остальное — named.** Бочка приводит к
+   одному виду: `export { default as ClientsPage } from "./ui/ClientsPage"`.
+3. **Фича = хук + UI.** Логика в `model/useXxx.ts`, компонент получает её
+   через проп `controller` и только рисует.
 
-- Runtime: React 19 and React DOM 19
-- Styling: Tailwind CSS v4 with the `@tailwindcss/vite` plugin
-- Build tooling: Vite 8, TypeScript 5.7, and `@vitejs/plugin-react`
-- Formatting: oxfmt
+### Состояние
 
-## Styling
+Состояние живёт в сторах сущностей, а не в `App.tsx`:
 
-This project uses **Tailwind CSS v4** through the `@tailwindcss/vite` plugin configured in `vite.config.ts`. `src/index.css` imports Tailwind with `@import 'tailwindcss';`. Use Tailwind utility classes directly in JSX and put global CSS or Tailwind v4 theme customization in `src/index.css`. This scaffold does not need a Tailwind config file or PostCSS config.
+| Стор | Файл | Хук | Где смонтирован |
+|---|---|---|---|
+| Сессия | `entities/session/model/store.tsx` | `useSession()` | `app/App.tsx` |
+| Клиенты | `entities/client/model/store.tsx` | `useClients()`, `useClient(id)` | `app/ui/AuthenticatedApp.tsx` |
+| Тарифы | `entities/plan/model/store.tsx` | `usePlans()` | `app/ui/AuthenticatedApp.tsx` |
+| Задачи | `entities/task/model/store.tsx` | `useTasks()` | `app/ui/AuthenticatedApp.tsx` |
+| Сотрудники | `entities/user/model/store.tsx` | `useUsers()` | `app/ui/AuthenticatedApp.tsx` |
+| Шаблон онбординга | `entities/onboarding-template/model/store.tsx` | `useOnboardingTemplate()` | `app/ui/AuthenticatedApp.tsx` |
+| Глобальные модалки | контракт и хук — `shared/lib/ui-actions.ts`, реализация — `app/model/ui-actions.tsx` | `useUiActions()` из `@/shared/lib` | `app/ui/AppLayout.tsx` |
 
-`src/main.tsx` imports `src/index.css`, so global font wiring belongs in `src/index.css`. Keep CSS `@import` statements first, then add any `@font-face` rules and font-family defaults there.
+Страницы и фичи **никогда не импортируют `@/app`** — это верхний слой. Если нижнему
+слою нужно что-то из app (как глобальные модалки), контракт кладётся в `shared`, а app
+подставляет реализацию через контекст.
+
+Страница берёт данные хуком, а не пропсами. Прокидывать состояние через
+несколько уровней не нужно и не надо.
+
+**Сторы данных монтируются только после входа** (`AuthenticatedApp`) и
+размонтируются при выходе — так данные одного пользователя не остаются в
+памяти для следующего. Новый стор данных добавляйте туда же, а не в `App.tsx`.
+
+### Бэкенд и авторизация
+
+С бэкендом работают: вход/выход, **клиенты** (`entities/client` — список, подключение
+бизнеса, перемещение в воронке, этапы онбординга), **тарифы** (`entities/plan`,
+«Настройки → Тарифы»), **задачи** (`entities/task` — задачи, комментарии, файлы) и
+**сотрудники** (`entities/user` — исполнители задач и «Настройки → Команда»).
+
+Фикстур в проекте **не осталось**: чего бэкенд не считает, того на экране нет.
+Аналитика (история MRR, часы, срок онбординга, NPS, когорты, «Нужно внимание»,
+«Ближайшие события»), Health Score, платежи, использование и история общения
+показывают нули и «Нет данных» — не подставляйте выдуманные числа, чтобы
+«оживить» экран. Пустые ряды графиков — `entities/analytics`
+(`emptyMrrHistory()` и соседи), ось без данных — `valueAxis()` из
+`shared/config`: она показывает один ноль вместо придуманной шкалы 0–4.
+
+Правила задач:
+- Создание, смена статуса (доска, меню карточки, «закрыть»), удаление,
+  комментарии и файлы сохраняются на сервере. Смена статуса и удаление
+  применяются сразу и откатываются при ошибке.
+- Файлы не приходят в теле задачи: `attachments` — это метаданные, содержимое
+  качается `downloadFile(taskId, fileId)` и показывается как Blob. Обычный
+  `<img src>` на адрес API не работает — запрос уходит без токена.
+- Ограничения вложений (`entities/task/model/files.ts`) повторяют бэкенд:
+  10 МБ на файл, 25 МБ на запрос, разрешённые расширения. Меняете здесь —
+  поменяйте и в `backend/internal/service/tasks.go`.
+- Менять и удалять комментарий может только его автор (проверяет бэкенд).
+- Связь этапа онбординга с задачей хранит сама задача (`onboardingStepId`):
+  «В задачи» создаёт задачу, «Убрать» — удаляет её.
+- Исполнитель — сотрудник из `useUsers()`; по умолчанию тот, кто создаёт задачу.
+  Новых сотрудников заводит владелец или администратор («Настройки → Команда»),
+  пароль задаётся сразу — писем бэкенд не шлёт.
+
+Правила данных клиентов:
+- MRR клиента (`mrr`) = цена, зафиксированная при подключении (`monthlyPrice`), но
+  только пока статус «Активен». Статус выставляет бэкенд по колонке воронки: «Запуск /
+  Активен» → активен, «Онбординг» → онбординг, остальные → лид.
+- Смена цены тарифа на уже подключённых клиентов не влияет.
+- Формат бэка (UPPER_CASE, другие имена полей) знает только `entities/client/api/mapper.ts`.
+- Health Score, платежи, интеграции, менеджер у реальных клиентов пустые — в бэкенде их нет.
+- Перемещения в воронке и правки этапов применяются сразу и откатываются при ошибке;
+  текст ошибки — `mutationError` в сторе клиентов, показывается полосой в `AppLayout`.
+
+**Все запросы — только через `apiFetch` из `@/shared/api`.** Не вызывайте
+`fetch` напрямую: `apiFetch` подставляет access-токен, на 401 один раз
+обновляет сессию и повторяет запрос, а если сессия кончилась — стирает токены
+и отправляет на экран входа. Возвращает `Result<T>`, не бросает исключений.
+
+- Адрес API — `VITE_API_URL` (см. `.env.example`), по умолчанию `http://localhost:8080`.
+- Access-токен живёт 15 минут, сессия (refresh) — 6 месяцев от входа.
+  Refresh одноразовый; параллельные 401 делят один запрос обновления.
+- Токены — в `localStorage` (`shared/api/tokenStorage.ts`), пользователь из
+  ответа логина — рядом (`sellup.user`). После перезагрузки сессия
+  восстанавливается из хранилища, без запроса на сервер.
+- Конец сессии по сроку отслеживается таймером в сторе сессии — пользователя
+  выкинет на `/login?reason=expired`, даже если экран не ходит в API.
+- Ошибки бэкенда показывайте через `describeApiError(error)`
+  (`shared/api/errorMessages.ts`).
+- Файлы: `body: FormData` уходит как multipart (заголовок ставит браузер),
+  `responseType: "blob"` возвращает содержимое файла.
+
+Контракт API — Swagger бэкенда: `http://localhost:8080/docs`.
+
+Новый экран подключайте так же, как клиентов и задачи: функция в
+`entities/<сущность>/api/` через `apiFetch`, формат бэка (UPPER_CASE, другие
+имена полей) знает только `api/mapper.ts`, состояние — стор сущности с
+`isLoading`/`error`/`mutationError`.
+
+### Навигация
+
+Роутер — `react-router-dom`, все разделы описаны в `app/routes.tsx`
+(массив `APP_ROUTES`). Путь, заголовок шапки и пункт меню лежат в одном
+описании маршрута и разъехаться не могут.
+
+Публичный маршрут один — `/login`. Всё из `APP_ROUTES` вложено в
+`AuthenticatedApp`, который без сессии уводит на
+`/login?from=<куда шёл>`; после входа пользователь возвращается туда.
+Ушёл сам через «Выйти» — на чистый `/login`.
+
+Состояние интерфейса, которое стоит переживать перезагрузку и быть ссылкой,
+живёт в URL: вкладка карточки клиента (`/clients/:id/:tab`), фильтр по
+health (`/clients?health=risk`).
+
+Страницы загружаются лениво (`lazyPage` в `routes.tsx`) — не тащите импорт
+страницы в общий бандл статически.
+
+## Как добавить
+
+**Раздел:** страница в `pages/<имя>/ui/` + `index.ts` → одна запись в
+`APP_ROUTES`. Меню и заголовок появятся сами.
+
+**Операцию над сущностью:** метод в её стор (`model/store.tsx`) + в тип
+стора. `App.tsx` и страницы трогать не нужно.
+
+**Сущность:** папка в `entities/` с `model/types.ts`, `model/store.tsx`,
+`index.ts`; провайдер добавить в `app/ui/AuthenticatedApp.tsx`.
+
+**Запрос к API:** функция в `entities/<сущность>/api/` через `apiFetch`,
+возвращает `Result<T>`.
+
+## Локальный запуск с бэкендом
+
+```bash
+# терминал 1 — backend/ (нужен Postgres, см. backend/.env.example)
+go run ./cmd/migrate up && go run ./cmd/api
+# терминал 2 — админка
+pnpm dev
+```
+
+Вход: `admin@sellup.local` / `ChangeMe123!`. Проверить истечение сессии
+быстро: запустить бэкенд с `JWT_ACCESS_TTL=20s JWT_REFRESH_TTL=90s`.
+
+## Проверка перед сдачей
+
+```bash
+pnpm typecheck   # tsc --noEmit, включены noUnusedLocals/noUnusedParameters
+pnpm build       # прогоняет typecheck и собирает
+pnpm format      # oxfmt
+```
+
+`pnpm build` падает на ошибках типов — это намеренно. Тестов в проекте нет.
+
+## Стек
+
+- React 19, react-router-dom 7
+- Tailwind CSS v4 через `@tailwindcss/vite`; токены темы (цвет бренда,
+  шрифты) — в `src/index.css`, блок `@theme`. Отдельного tailwind.config нет.
+  Палитра графиков дублируется hex-ами в `shared/config/chart.ts`, потому что
+  recharts не понимает Tailwind-классы — меняя цвет, поправьте оба места.
+- recharts — графики, lucide-react — иконки
+- Vite 8, TypeScript 5.9, oxfmt
 
 ## Code quality
 
-- Use double quotes for strings containing apostrophes (`"We're here to help"`), or escape them in single-quoted strings. An unescaped apostrophe in a single-quoted string breaks the build.
-- Ensure JSX tags are closed and braces are balanced.
-- Export components as default exports.
+- Двойные кавычки для строк с апострофом (`"We're here to help"`).
+- Следите за закрытыми тегами JSX и балансом скобок.
+- Комментарии объясняют **почему**, а не пересказывают код. Это уже
+  сложившийся стиль репозитория — держите его.

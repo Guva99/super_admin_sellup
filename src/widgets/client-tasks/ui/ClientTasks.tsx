@@ -9,16 +9,17 @@ import {
   TASK_TYPE_CLASS,
   TASK_TYPE_LABEL,
   type Task,
+  type TaskStatus,
 } from "@/entities/task";
 
 interface ClientTasksProps {
   tasks: Task[];
   onAddTask: () => void;
-  onUpdateTask: (id: string, patch: Partial<Task>) => void;
+  onStatusChange: (id: string, status: TaskStatus) => void;
   onDeleteTask: (id: string) => void;
 }
 
-export function ClientTasks({ tasks, onAddTask, onUpdateTask, onDeleteTask }: ClientTasksProps) {
+export function ClientTasks({ tasks, onAddTask, onStatusChange, onDeleteTask }: ClientTasksProps) {
   const [showDone, setShowDone] = useState(false);
   const open = tasks.filter((t) => t.status !== "done");
   const done = tasks.filter((t) => t.status === "done");
@@ -49,13 +50,13 @@ export function ClientTasks({ tasks, onAddTask, onUpdateTask, onDeleteTask }: Cl
                 {new Date(task.dueDate).toLocaleDateString("ru-RU", { day: "numeric", month: "short" })}
               </span>
             )}
-            <span className="text-[10px] text-slate-400">{task.assignee}</span>
+            {task.assigneeName && <span className="text-[10px] text-slate-400">{task.assigneeName}</span>}
           </div>
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
           {task.status !== "done" && (
             <button
-              onClick={() => onUpdateTask(task.id, { status: "done" })}
+              onClick={() => onStatusChange(task.id, "done")}
               className="p-1 text-slate-300 hover:text-emerald-500 transition-colors"
               title="Закрыть задачу"
             >

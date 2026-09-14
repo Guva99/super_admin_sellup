@@ -1,5 +1,6 @@
 export type {
   Task,
+  NewTaskInput,
   TaskType,
   TaskPriority,
   TaskStatus,
@@ -9,6 +10,14 @@ export type {
 } from "./model/types";
 
 export { isTaskOverdue } from "./model/types";
+
+export {
+  ATTACHMENT_ACCEPT,
+  MAX_FILE_BYTES,
+  MAX_UPLOAD_BYTES,
+  attachmentError,
+  isImageAttachment,
+} from "./model/files";
 
 export {
   TASK_TYPE_LABEL,
@@ -24,4 +33,5 @@ export {
 
 export { TaskTypeIcon, TASK_TYPE_ICON } from "./ui/TaskTypeIcon";
 export { TaskCard } from "./ui/TaskCard";
-export { mockTasks } from "./api/mock";
+
+export { TasksProvider, useTasks, type TasksStore } from "./model/store";

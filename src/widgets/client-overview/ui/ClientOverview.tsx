@@ -8,43 +8,24 @@ export function ClientOverview({ client }: { client: Client }) {
       <div className="bg-white border border-slate-200 rounded-xl p-5">
         <h3 className="text-sm font-semibold text-slate-900 mb-4">Health Score</h3>
         {client.healthScore > 0 ? (
-          <div className="grid grid-cols-2 gap-6">
-            <div className="flex items-center gap-5">
-              <div className="relative w-24 h-24 flex-shrink-0">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadialBarChart cx="50%" cy="50%" innerRadius="65%" outerRadius="100%" startAngle={180} endAngle={-180}
-                    data={[{ value: client.healthScore, fill: HEALTH_HEX[healthLevel(client.healthScore)] }]}>
-                    <RadialBar dataKey="value" cornerRadius={4} background={{ fill: "#f1f5f9" }} />
-                  </RadialBarChart>
-                </ResponsiveContainer>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className={`text-xl font-bold font-mono ${healthTextClass(client.healthScore)}`}>{client.healthScore}</span>
-                  <span className="text-[9px] text-slate-400">/100</span>
-                </div>
-              </div>
-              <div className="flex-1 space-y-3">
-                <HealthBar label="Активность" value={client.health.activity} />
-                <HealthBar label="Интеграции" value={client.health.integrations} />
-                <HealthBar label="Платежи" value={client.health.payments} />
-                <HealthBar label="Поддержка" value={client.health.support} />
+          <div className="flex items-center gap-5">
+            <div className="relative w-24 h-24 flex-shrink-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadialBarChart cx="50%" cy="50%" innerRadius="65%" outerRadius="100%" startAngle={180} endAngle={-180}
+                  data={[{ value: client.healthScore, fill: HEALTH_HEX[healthLevel(client.healthScore)] }]}>
+                  <RadialBar dataKey="value" cornerRadius={4} background={{ fill: "#f1f5f9" }} />
+                </RadialBarChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className={`text-xl font-bold font-mono ${healthTextClass(client.healthScore)}`}>{client.healthScore}</span>
+                <span className="text-[9px] text-slate-400">/100</span>
               </div>
             </div>
-            <div>
-              <h4 className="text-xs font-semibold text-slate-700 mb-3">Последние события</h4>
-              <ul className="space-y-2">
-                {[
-                  { icon: "💬", text: "Входящий чат от клиента", time: "2 ч назад" },
-                  { icon: "🔄", text: "Синхронизация завершена", time: "3 ч назад" },
-                  { icon: "📦", text: "Обработано 14 заказов", time: "Вчера" },
-                  { icon: "✅", text: "Платёж получен", time: "01 сен" },
-                ].map((e, i) => (
-                  <li key={i} className="flex items-center gap-2 text-xs text-slate-500">
-                    <span>{e.icon}</span>
-                    <span className="flex-1">{e.text}</span>
-                    <span className="text-slate-300">{e.time}</span>
-                  </li>
-                ))}
-              </ul>
+            <div className="flex-1 max-w-[320px] space-y-3">
+              <HealthBar label="Активность" value={client.health.activity} />
+              <HealthBar label="Интеграции" value={client.health.integrations} />
+              <HealthBar label="Платежи" value={client.health.payments} />
+              <HealthBar label="Поддержка" value={client.health.support} />
             </div>
           </div>
         ) : (

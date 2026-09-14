@@ -1,1 +1,1 @@
-export { CHART_COLORS } from "./chart";
+export { CHART_COLORS, valueAxis } from "./chart";

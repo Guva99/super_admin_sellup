@@ -1,28 +1,31 @@
-import type { ClientNiche, ClientPlan, ClientStatus } from "../model/types";
-
 /**
- * Форма клиента как её отдаёт бэкенд. Отделена от модели приложения:
- * поля бэка могут переименоваться, не задев UI.
+ * Клиент в том виде, в каком его отдаёт бэкенд (`Client` в Swagger).
+ * Отделён от модели приложения: поля бэка могут переименоваться, не задев UI.
  */
 export interface ClientDto {
   id: string;
-  name: string;
-  initials: string;
-  color: string;
-  niche: ClientNiche;
-  plan: ClientPlan;
-  fixed_price: boolean;
-  status: ClientStatus;
-  stage?: string;
-  mrr: number;
-  health_score: number;
-  health: { activity: number; integrations: number; payments: number; support: number };
-  connected_at: string;
-  hours_this_month: number;
-  manager: string;
-  owner: { name: string; email: string; phone: string };
-  size: string;
-  next_action: string;
-  days_in_status: number;
-  notes: string;
+  companyName: string;
+  status: "LEAD" | "ONBOARDING" | "TRIAL" | "ACTIVE" | "SUSPENDED" | "CANCELLED" | "ARCHIVED";
+  stage: "LEAD" | "DEMO" | "CONTRACT" | "ONBOARDING" | "ACTIVE";
+  stageChangedAt: string;
+  planId: string | null;
+  planName: string | null;
+  planCode: string | null;
+  monthlyPrice: number | null;
+  ownerName: string;
+  ownerPhone: string;
+  ownerEmail: string;
+  niche: "RETAIL" | "SERVICES" | "";
+  companySize: string;
+  fixedPrice: boolean;
+  createdAt: string;
+  onboardingSteps: OnboardingStepDto[];
+}
+
+export interface OnboardingStepDto {
+  id: string;
+  position: number;
+  title: string;
+  description: string;
+  status: "PENDING" | "IN_PROGRESS" | "DONE";
 }

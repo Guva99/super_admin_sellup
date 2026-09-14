@@ -1,58 +1,38 @@
-import type { Client, OnboardingStep } from "@/entities/client";
-import type { Task } from "@/entities/task";
-import { todayIso } from "@/shared/lib";
+import { useClients, type OnboardingStep } from "@/entities/client";
+import { useSession } from "@/entities/session";
+import { useTasks } from "@/entities/task";
+import { describeApiError } from "@/shared/api";
 
 export interface OnboardingActions {
   updateStep: (clientId: string, stepId: string, patch: Partial<OnboardingStep>) => void;
   addStepToTasks: (clientId: string, step: OnboardingStep) => void;
-  removeStepFromTasks: (clientId: string, stepId: string, taskId: string) => void;
+  removeStepFromTasks: (taskId: string) => void;
 }
 
 /**
- * Действия над этапами онбординга одной группой.
- * Раньше эти три колбэка прокидывались из App через страницу в таб — по одному пропу на действие.
+ * Связка «этап онбординга ↔ задача» — единственное место, где эти две
+ * сущности встречаются. Связь хранит сама задача (`onboardingStepId`), поэтому
+ * «В задачи» — это создание задачи, а «Убрать» — её удаление.
  */
-export function useOnboardingActions(
-  updateClients: (updater: (prev: Client[]) => Client[]) => void,
-  addTask: (task: Task) => void,
-  removeTask: (id: string) => void,
-): OnboardingActions {
-  const updateStep = (clientId: string, stepId: string, patch: Partial<OnboardingStep>) =>
-    updateClients((prev) =>
-      prev.map((client) =>
-        client.id === clientId
-          ? {
-              ...client,
-              onboardingSteps: client.onboardingSteps.map((step) =>
-                step.id === stepId ? { ...step, ...patch } : step,
-              ),
-            }
-          : client,
-      ),
-    );
+export function useOnboardingActions(): OnboardingActions {
+  const { updateOnboardingStep } = useClients();
+  const { addTask, deleteTask, reportError } = useTasks();
+  const { user } = useSession();
 
-  const addStepToTasks = (clientId: string, step: OnboardingStep) => {
-    const taskId = `t${Date.now()}`;
-    addTask({
-      id: taskId,
+  const addStepToTasks = async (clientId: string, step: OnboardingStep) => {
+    const result = await addTask({
       title: step.title,
-      description: step.description,
+      description: step.description ?? "",
       clientId,
       type: "onboarding",
       priority: "medium",
-      status: "todo",
       dueDate: step.dueDate || null,
-      assignee: step.assignee,
-      createdAt: todayIso(),
+      // Этап ведёт тот, кто вывел его в задачи.
+      assigneeId: user?.id ?? null,
       onboardingStepId: step.id,
     });
-    updateStep(clientId, step.id, { taskId });
+    if (!result.ok) reportError(`Не удалось создать задачу из этапа: ${describeApiError(result.error)}`);
   };
 
-  const removeStepFromTasks = (clientId: string, stepId: string, taskId: string) => {
-    removeTask(taskId);
-    updateStep(clientId, stepId, { taskId: undefined });
-  };
-
-  return { updateStep, addStepToTasks, removeStepFromTasks };
+  return { updateStep: updateOnboardingStep, addStepToTasks, removeStepFromTasks: deleteTask };
 }

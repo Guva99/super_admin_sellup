@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Search, ChevronUp, ChevronDown, SlidersHorizontal, UserPlus, X } from "lucide-react";
-import type { Client, ClientStatus, ClientNiche, ClientPlan, HealthLevel } from "@/entities/client";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import type { Client, ClientStatus, ClientNiche, HealthLevel } from "@/entities/client";
+import { useClients } from "@/entities/client";
+import { useUiActions } from "@/shared/lib";
 import {
   ClientAvatar,
   StatusBadge,
@@ -12,15 +15,7 @@ import {
   CLIENT_NICHE_LABEL,
 } from "@/entities/client";
 import { formatMoney } from "@/shared/lib";
-import { PLAN_LABEL } from "@/entities/client";
-
-interface ClientsPageProps {
-  clients: Client[];
-  onOpenClient: (id: string) => void;
-  onConnectBusiness: () => void;
-  healthFilter?: "good" | "ok" | "risk" | null;
-  onClearHealthFilter?: () => void;
-}
+import { usePlans } from "@/entities/plan";
 
 type SortKey = keyof Pick<Client, "name" | "mrr" | "healthScore" | "hoursThisMonth" | "connectedAt">;
 
@@ -30,24 +25,44 @@ const healthFilterLabel = (level: HealthLevel) => {
   return `${HEALTH_LEVEL_LABEL.risk} (<${HEALTH_THRESHOLDS.ok})`;
 };
 
-export default function ClientsPage({ clients, onOpenClient, onConnectBusiness, healthFilter, onClearHealthFilter }: ClientsPageProps) {
+const isHealthLevel = (value: string | null): value is HealthLevel =>
+  value === "good" || value === "ok" || value === "risk";
+
+export default function ClientsPage() {
+  const { clients } = useClients();
+  const { openConnectBusiness } = useUiActions();
+  const navigate = useNavigate();
+
+  // Фильтр по health живёт в URL (?health=risk), поэтому ссылка с дашборда
+  // воспроизводима и переживает перезагрузку.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const healthParam = searchParams.get("health");
+  const healthFilter = isHealthLevel(healthParam) ? healthParam : null;
+  const clearHealthFilter = () => {
+    searchParams.delete("health");
+    setSearchParams(searchParams, { replace: true });
+  };
+
+  const openClient = (id: string) => navigate(`/clients/${id}`);
+
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<ClientStatus | "all">("all");
   const [filterNiche, setFilterNiche] = useState<ClientNiche | "all">("all");
-  const [filterPlan, setFilterPlan] = useState<ClientPlan | "all">("all");
+  const { plans } = usePlans();
+  const [filterPlan, setFilterPlan] = useState<string>("all");
   const [filterManager, setFilterManager] = useState<string>("all");
   const [sortKey, setSortKey] = useState<SortKey>("mrr");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  const managers = Array.from(new Set(clients.map((c) => c.manager)));
+  const managers = Array.from(new Set(clients.map((c) => c.manager).filter(Boolean)));
 
   const filtered = clients
     .filter((c) => {
       if (search && !c.name.toLowerCase().includes(search.toLowerCase())) return false;
       if (filterStatus !== "all" && c.status !== filterStatus) return false;
       if (filterNiche !== "all" && c.niche !== filterNiche) return false;
-      if (filterPlan !== "all" && c.plan !== filterPlan) return false;
+      if (filterPlan !== "all" && c.planId !== filterPlan) return false;
       if (filterManager !== "all" && c.manager !== filterManager) return false;
       if (healthFilter && healthLevel(c.healthScore) !== healthFilter) return false;
       return true;
@@ -102,7 +117,7 @@ export default function ClientsPage({ clients, onOpenClient, onConnectBusiness, 
 
         {healthFilter && (
           <button
-            onClick={onClearHealthFilter}
+            onClick={clearHealthFilter}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors flex-shrink-0 ${
               healthFilter === "good" ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100" :
               healthFilter === "ok" ? "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100" :
@@ -139,12 +154,12 @@ export default function ClientsPage({ clients, onOpenClient, onConnectBusiness, 
           </select>
           <select
             value={filterPlan}
-            onChange={(e) => setFilterPlan(e.target.value as ClientPlan | "all")}
+            onChange={(e) => setFilterPlan(e.target.value)}
             className="text-xs border border-slate-200 rounded-md px-2 py-1.5 text-slate-600 outline-none focus:border-brand-400 bg-white cursor-pointer"
           >
             <option value="all">Все тарифы</option>
-            {(Object.keys(PLAN_LABEL) as ClientPlan[]).map((plan) => (
-              <option key={plan} value={plan}>{PLAN_LABEL[plan]}</option>
+            {plans.map((plan) => (
+              <option key={plan.id} value={plan.id}>{plan.name}</option>
             ))}
           </select>
           <select
@@ -163,7 +178,7 @@ export default function ClientsPage({ clients, onOpenClient, onConnectBusiness, 
           )}
           <span className="text-xs text-slate-400">{filtered.length} клиентов</span>
           <button
-            onClick={onConnectBusiness}
+            onClick={openConnectBusiness}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-brand-600 border border-brand-200 rounded-lg hover:bg-brand-50 hover:border-brand-300 transition-colors"
           >
             <UserPlus size={12} />
@@ -211,7 +226,7 @@ export default function ClientsPage({ clients, onOpenClient, onConnectBusiness, 
               <tr
                 key={client.id}
                 className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group"
-                onClick={() => onOpenClient(client.id)}
+                onClick={() => openClient(client.id)}
               >
                 <td className="px-4 py-2.5" onClick={(e) => { e.stopPropagation(); toggleSelect(client.id); }}>
                   <input type="checkbox" checked={selected.has(client.id)} onChange={() => toggleSelect(client.id)} className="accent-brand-500 cursor-pointer" />
@@ -222,15 +237,19 @@ export default function ClientsPage({ clients, onOpenClient, onConnectBusiness, 
                     <span className="font-medium text-slate-800 group-hover:text-brand-500 transition-colors">{client.name}</span>
                   </div>
                 </td>
-                <td className="px-4 py-2.5 text-slate-500">{CLIENT_NICHE_LABEL[client.niche]}</td>
+                <td className="px-4 py-2.5 text-slate-500">{client.niche ? CLIENT_NICHE_LABEL[client.niche] : "—"}</td>
                 <td className="px-4 py-2.5">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className={`px-2 py-0.5 rounded text-[11px] font-medium ${
-                      client.plan === "early_access" ? "bg-violet-50 text-violet-700 border border-violet-200" :
-                      client.plan === "custom" ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-600"
-                    }`}>
-                      {PLAN_LABEL[client.plan]}
-                    </span>
+                    {client.planName ? (
+                      <span className={`px-2 py-0.5 rounded text-[11px] font-medium ${
+                        client.planCode === "early_access" ? "bg-violet-50 text-violet-700 border border-violet-200" :
+                        client.planCode === "custom" ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-600"
+                      }`}>
+                        {client.planName}
+                      </span>
+                    ) : (
+                      <span className="text-slate-300">—</span>
+                    )}
                     {client.fixedPrice && (
                       <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-600 border border-orange-200">Fix</span>
                     )}
@@ -257,7 +276,7 @@ export default function ClientsPage({ clients, onOpenClient, onConnectBusiness, 
                 <td className="px-4 py-2.5 text-right text-slate-600">
                   {client.hoursThisMonth > 0 ? `${client.hoursThisMonth} ч` : "—"}
                 </td>
-                <td className="px-4 py-2.5 text-slate-500">{client.manager}</td>
+                <td className="px-4 py-2.5 text-slate-500">{client.manager || "—"}</td>
               </tr>
             ))}
           </tbody>
@@ -265,7 +284,7 @@ export default function ClientsPage({ clients, onOpenClient, onConnectBusiness, 
         {filtered.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <p className="text-sm text-slate-400">Клиенты не найдены</p>
-            <button onClick={onConnectBusiness} className="flex items-center gap-1.5 text-xs text-brand-500 hover:text-brand-600 transition-colors">
+            <button onClick={openConnectBusiness} className="flex items-center gap-1.5 text-xs text-brand-500 hover:text-brand-600 transition-colors">
               <UserPlus size={12} />Подключить первый бизнес
             </button>
           </div>

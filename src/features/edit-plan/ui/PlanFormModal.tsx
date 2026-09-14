@@ -56,17 +56,19 @@ export function PlanFormModal({ controller }: { controller: PlanFormController }
           )}
 
           <div className="grid grid-cols-2 gap-3">
-            {!draft.isCustom && (
-              <div>
-                <label htmlFor="plan-price" className="text-xs font-medium text-slate-600 block mb-1.5">Цена, ₽/мес *</label>
-                <input id="plan-price" type="number" min="0" value={draft.price} onChange={(e) => patch({ price: e.target.value })} placeholder="70000" className={inputClass} />
-              </div>
-            )}
+            <div>
+              <label htmlFor="plan-price" className="text-xs font-medium text-slate-600 block mb-1.5">
+                {draft.isCustom ? "Базовая цена, ₽/мес" : "Цена, ₽/мес *"}
+              </label>
+              <input id="plan-price" type="number" min="0" value={draft.price} onChange={(e) => patch({ price: e.target.value })} placeholder={draft.isCustom ? "0" : "70000"} className={inputClass} />
+            </div>
             <div>
               <label htmlFor="plan-setup" className="text-xs font-medium text-slate-600 block mb-1.5">Разовая оплата, ₽</label>
               <input id="plan-setup" type="number" min="0" value={draft.setupPrice} onChange={(e) => patch({ setupPrice: e.target.value })} placeholder="0" className={inputClass} />
             </div>
           </div>
+
+          {draft.isCustom && <p className="text-xs text-slate-400">Базовая цена подставится при подключении бизнеса — там её можно изменить под клиента.</p>}
 
           {error && (
             <div role="alert" className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-xs text-red-600">

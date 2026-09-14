@@ -1,10 +1,10 @@
 import { AlertTriangle, ChevronDown, Filter, Plus, Search, X } from "lucide-react";
 import type { Client } from "@/entities/client";
 import { TASK_KINDS, TASK_KIND_LABEL, TASK_TYPE_LABEL, type TaskKind, type TaskType } from "@/entities/task";
-import { UserAvatar, type User } from "@/entities/user";
+import type { User } from "@/entities/user";
 import { GROUP_MODE_LABEL, type GroupMode } from "@/features/group-tasks";
 import type { BoardFiltersController } from "@/features/filter-tasks";
-import { Dropdown, DropdownItem } from "@/shared/ui";
+import { Dropdown, DropdownItem, UserAvatar } from "@/shared/ui";
 
 const TASK_TYPES = Object.keys(TASK_TYPE_LABEL) as TaskType[];
 const GROUP_MODES = Object.keys(GROUP_MODE_LABEL) as GroupMode[];

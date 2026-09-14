@@ -5,3 +5,5 @@ export { Dropdown, DropdownItem } from "./Dropdown";
 export { Tabs, type TabItem } from "./Tabs";
 export { InlineEditable } from "./InlineEditable";
 export { Markdown } from "./Markdown";
+export { BlobImage } from "./BlobImage";
+export { UserAvatar, userInitials } from "./UserAvatar";

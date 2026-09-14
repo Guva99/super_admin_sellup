@@ -24,7 +24,13 @@ export interface PlanFormController {
   submit: () => Promise<void>;
 }
 
-const emptyDraft = (): PlanDraft => ({ name: "", description: "", price: "", setupPrice: "0", isCustom: false });
+const emptyDraft = (): PlanDraft => ({
+  name: "",
+  description: "",
+  price: "",
+  setupPrice: "0",
+  isCustom: false,
+});
 
 /**
  * Создание и редактирование тарифа. Новая цена действует только для клиентов,
@@ -66,7 +72,9 @@ export function usePlanForm(): PlanFormController {
 
   const submit = async () => {
     if (isSubmitting) return;
-    const price = draft.isCustom ? 0 : Number(draft.price);
+    // У кастомного тарифа цена — базовая: она подставляется при подключении
+    // бизнеса и там же меняется под клиента. Пустая базовая цена — это 0.
+    const price = draft.price.trim() === "" && draft.isCustom ? 0 : Number(draft.price);
     const setupPrice = Number(draft.setupPrice || 0);
     if (!draft.name.trim()) return setError("Укажите название тарифа");
     if (!Number.isFinite(price) || price < 0 || (!draft.isCustom && draft.price.trim() === "")) {
@@ -91,5 +99,16 @@ export function usePlanForm(): PlanFormController {
     else setError(describeApiError(result.error));
   };
 
-  return { isOpen, editing, draft, isSubmitting, error, openCreate, openEdit, close, patch, submit };
+  return {
+    isOpen,
+    editing,
+    draft,
+    isSubmitting,
+    error,
+    openCreate,
+    openEdit,
+    close,
+    patch,
+    submit,
+  };
 }

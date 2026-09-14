@@ -25,14 +25,6 @@ export interface OnboardingStep {
   dueDate: string;
 }
 
-export interface Payment {
-  id: string;
-  date: string;
-  amount: number;
-  status: "paid" | "overdue" | "pending";
-  description: string;
-}
-
 /** Данные формы «Подключить бизнес». */
 export interface NewClientInput {
   name: string;
@@ -64,6 +56,8 @@ export interface ClientOwner {
 export interface Client {
   id: string;
   name: string;
+  /** Префикс ключей задач: CG-1, CG-2. Задаётся при подключении бизнеса. */
+  taskKey: string;
   initials: string;
   color: string;
   /** null — ниша не указана. */
@@ -90,6 +84,5 @@ export interface Client {
   daysInStatus: number;
   integrations: Integration[];
   onboardingSteps: OnboardingStep[];
-  payments: Payment[];
   notes: string;
 }

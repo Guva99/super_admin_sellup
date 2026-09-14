@@ -61,6 +61,12 @@ export function useConnectBusiness(
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /** Базовая цена кастомного тарифа: подставляется в поле суммы, 0 — пусто. */
+  const basePriceOf = (planId: string): string => {
+    const plan = plans.find((p) => p.id === planId);
+    return plan?.isCustom && plan.price > 0 ? String(plan.price) : "";
+  };
+
   const open = () => {
     setDraft({
       name: "",
@@ -70,7 +76,7 @@ export function useConnectBusiness(
       niche: "retail",
       planId: plans[0]?.id ?? "",
       fixedPrice: false,
-      customPrice: "",
+      customPrice: basePriceOf(plans[0]?.id ?? ""),
       size: "",
       stages: template.map((stage) => ({
         id: `ns${stage.id}`,
@@ -89,12 +95,19 @@ export function useConnectBusiness(
   };
 
   const patch = (next: Partial<ConnectBusinessDraft>) =>
-    setDraft((prev) => (prev ? { ...prev, ...next } : prev));
+    setDraft((prev) => {
+      if (!prev) return prev;
+      // Сменили тариф — подставляем его базовую цену вместо суммы от прошлого.
+      const customPrice = next.planId !== undefined ? basePriceOf(next.planId) : prev.customPrice;
+      return { ...prev, customPrice, ...next };
+    });
 
   const toggleStages = () => setStagesExpanded((v) => !v);
 
   const addStage = () =>
-    patch({ stages: [...(draft?.stages ?? []), { id: `ns${Date.now()}`, title: "", description: "" }] });
+    patch({
+      stages: [...(draft?.stages ?? []), { id: `ns${Date.now()}`, title: "", description: "" }],
+    });
 
   const removeStage = (id: string) =>
     patch({ stages: (draft?.stages ?? []).filter((stage) => stage.id !== id) });
@@ -126,7 +139,10 @@ export function useConnectBusiness(
       niche: draft.niche,
       size: draft.size.trim(),
       fixedPrice: selectedPlan.isCustom ? false : draft.fixedPrice,
-      stages: draft.stages.map((stage) => ({ title: stage.title.trim(), description: stage.description.trim() })),
+      stages: draft.stages.map((stage) => ({
+        title: stage.title.trim(),
+        description: stage.description.trim(),
+      })),
     });
     setIsSubmitting(false);
 

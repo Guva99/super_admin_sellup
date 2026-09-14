@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Check, UserX } from "lucide-react";
 import type { Task } from "@/entities/task";
-import { UserAvatar } from "@/entities/user";
-import { Dropdown, DropdownItem } from "@/shared/ui";
+import { Dropdown, DropdownItem, UserAvatar } from "@/shared/ui";
 import { useChangeTaskAssignee } from "../model/useChangeTaskAssignee";
 
 /** Аватар + имя; клик открывает поиск по сотрудникам. Ниже — «Назначить на себя». */

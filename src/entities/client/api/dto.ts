@@ -5,6 +5,8 @@
 export interface ClientDto {
   id: string;
   companyName: string;
+  /** Префикс ключей задач этого бизнеса: CG-1, CG-2. */
+  taskKey: string;
   status: "LEAD" | "ONBOARDING" | "TRIAL" | "ACTIVE" | "SUSPENDED" | "CANCELLED" | "ARCHIVED";
   stage: "LEAD" | "DEMO" | "CONTRACT" | "ONBOARDING" | "ACTIVE";
   stageChangedAt: string;

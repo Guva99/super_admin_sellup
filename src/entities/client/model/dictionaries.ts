@@ -1,4 +1,4 @@
-import type { ClientStatus, ClientStage, ClientNiche } from "./types";
+import type { ClientStatus, ClientStage, ClientNiche, OnboardingStep } from "./types";
 
 export const CLIENT_STATUS_LABEL: Record<ClientStatus, string> = {
   lead: "Лид",
@@ -42,13 +42,31 @@ export const CLIENT_STAGE_ACCENT: Record<ClientStage, string> = {
 };
 
 /** Колонки воронки подключения, слева направо. */
-export const PIPELINE_STAGES: { id: ClientStage; label: string; description: string }[] = [
+export const PIPELINE_STAGES: {
+  id: ClientStage;
+  label: string;
+  description: string;
+}[] = [
   { id: "lead", label: "Лид", description: "Первый контакт" },
   { id: "demo", label: "Демо проведена", description: "Презентация сделана" },
   { id: "contract", label: "Договор", description: "Оформление" },
-  { id: "onboarding", label: "Онбординг", description: "Настройка и интеграции" },
-  { id: "active", label: "Запуск / Активен", description: "Работает в боевом режиме" },
+  {
+    id: "onboarding",
+    label: "Онбординг",
+    description: "Настройка и интеграции",
+  },
+  {
+    id: "active",
+    label: "Запуск / Активен",
+    description: "Работает в боевом режиме",
+  },
 ];
+
+export const STEP_STATUS_LABEL: Record<OnboardingStep["status"], string> = {
+  pending: "Ожидает",
+  in_progress: "В работе",
+  done: "Готово",
+};
 
 /** Порядок перебора статуса шага онбординга по клику. */
 export const STEP_STATUS_CYCLE = {

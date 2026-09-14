@@ -1,6 +1,6 @@
 import { AlertCircle, FileText, Paperclip, Send, X } from "lucide-react";
 import { ATTACHMENT_ACCEPT, LocalImage, isImageAttachment } from "@/entities/task";
-import { UserAvatar } from "@/entities/user";
+import { UserAvatar } from "@/shared/ui";
 import { COMMENT_PRESETS } from "../model/presets";
 import type { CommentComposerController } from "../model/useAddTaskComment";
 

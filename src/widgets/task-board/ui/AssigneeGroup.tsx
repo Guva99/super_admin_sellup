@@ -1,6 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
-import { UserAvatar } from "@/entities/user";
+import { UserAvatar } from "@/shared/ui";
 import type { TaskGroup } from "@/features/group-tasks";
 
 interface AssigneeGroupProps {

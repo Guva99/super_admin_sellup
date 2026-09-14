@@ -87,11 +87,10 @@ export default function SettingsPage() {
                 <div className="flex items-start gap-3">
                   <div className="text-right">
                     <p className="text-sm font-semibold text-slate-900 font-mono">
-                      {plan.isCustom ? "Цена для каждого клиента" : `${plan.price.toLocaleString("ru-RU")} ₽/мес`}
+                      {!plan.isCustom ? `${plan.price.toLocaleString("ru-RU")} ₽/мес` : plan.price > 0 ? `от ${plan.price.toLocaleString("ru-RU")} ₽/мес` : "Цена для каждого клиента"}
                     </p>
-                    {plan.setupPrice > 0 && (
-                      <p className="text-xs text-slate-400 mt-0.5">+{plan.setupPrice.toLocaleString("ru-RU")} ₽ разово</p>
-                    )}
+                    {plan.isCustom && plan.price > 0 && <p className="text-xs text-slate-400 mt-0.5">базовая, меняется при подключении</p>}
+                    {plan.setupPrice > 0 && <p className="text-xs text-slate-400 mt-0.5">+{plan.setupPrice.toLocaleString("ru-RU")} ₽ разово</p>}
                   </div>
                   <button
                     onClick={() => planForm.openEdit(plan)}

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Trash2, ExternalLink, AlertTriangle, Clock, Paperclip, Rocket, MessageSquare } from "lucide-react";
 import { formatDate } from "@/shared/lib";
 import type { KanbanCardHandlers } from "@/shared/ui";
-import { UserAvatar } from "@/entities/user";
+import { UserAvatar } from "@/shared/ui";
 import type { Task, TaskStatus, TaskCardClient } from "../model/types";
 import { isTaskOverdue } from "../model/types";
 import { TASK_PRIORITY_DOT, TASK_PRIORITY_LABEL, TASK_STATUS_LABEL } from "../model/dictionaries";

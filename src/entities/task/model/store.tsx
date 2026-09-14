@@ -33,6 +33,11 @@ export interface TasksStore {
   deleteTask: (id: string) => void;
   /** Приложить файлы к самой задаче (не к комментарию). */
   addFiles: (taskId: string, files: File[]) => Promise<Result<TaskAttachment[]>>;
+  /**
+   * Убрать из памяти задачи удалённого бизнеса — запроса не делает: на сервере
+   * они скрылись вместе с ним.
+   */
+  dropClientTasks: (clientId: string) => void;
   addComment: (taskId: string, text: string, files: File[]) => Promise<Result<TaskComment>>;
   editComment: (taskId: string, commentId: string, text: string) => Promise<Result<TaskComment>>;
   deleteComment: (taskId: string, commentId: string) => void;
@@ -99,7 +104,11 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       // Файлы грузятся по одному: лимит в 25 МБ считается на запрос.
       for (const file of files) {
         const uploaded = await taskApi.uploadFiles(task.id, [file]);
-        if (uploaded.ok) task = { ...task, attachments: [...task.attachments, ...uploaded.data] };
+        if (uploaded.ok)
+          task = {
+            ...task,
+            attachments: [...task.attachments, ...uploaded.data],
+          };
         // Задача уже создана, поэтому форма закрывается — об ошибке файла
         // сообщаем полосой в каркасе.
         else setMutationError(`Не удалось приложить «${file.name}»: ${describeApiError(uploaded.error)}`);
@@ -150,6 +159,8 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     return result;
   }, []);
 
+  const dropClientTasks = useCallback((clientId: string) => setTasks((prev) => prev.filter((t) => t.clientId !== clientId)), []);
+
   const addComment = useCallback(async (taskId: string, text: string, files: File[]) => {
     const result = await taskApi.addComment(taskId, text, files);
     if (result.ok) {
@@ -165,7 +176,12 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       const comment = result.data;
       setTasks((prev) =>
         prev.map((t) =>
-          t.id === taskId ? { ...t, comments: t.comments.map((c) => (c.id === commentId ? comment : c)) } : t,
+          t.id === taskId
+            ? {
+                ...t,
+                comments: t.comments.map((c) => (c.id === commentId ? comment : c)),
+              }
+            : t,
         ),
       );
     }
@@ -210,6 +226,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       updateTask,
       deleteTask,
       addFiles,
+      dropClientTasks,
       addComment,
       editComment,
       deleteComment,
@@ -217,7 +234,25 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       tasksOfClient,
       highPriorityCount,
     }),
-    [tasks, isLoading, error, mutationError, dismissMutationError, reportError, addTask, updateTask, deleteTask, addFiles, addComment, editComment, deleteComment, downloadFile, tasksOfClient, highPriorityCount],
+    [
+      tasks,
+      isLoading,
+      error,
+      mutationError,
+      dismissMutationError,
+      reportError,
+      addTask,
+      updateTask,
+      deleteTask,
+      addFiles,
+      dropClientTasks,
+      addComment,
+      editComment,
+      deleteComment,
+      downloadFile,
+      tasksOfClient,
+      highPriorityCount,
+    ],
   );
 
   return <TasksContext.Provider value={value}>{children}</TasksContext.Provider>;

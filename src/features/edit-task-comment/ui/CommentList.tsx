@@ -1,6 +1,6 @@
 import { Check, Pencil, Trash2 } from "lucide-react";
 import { CommentAttachment, type TaskComment } from "@/entities/task";
-import { UserAvatar } from "@/entities/user";
+import { UserAvatar } from "@/shared/ui";
 import type { EditCommentController } from "../model/useEditTaskComment";
 
 interface CommentListProps {

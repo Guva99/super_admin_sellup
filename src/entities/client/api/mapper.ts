@@ -79,6 +79,7 @@ export function toClient(dto: ClientDto): Client {
   return {
     id: dto.id,
     name: dto.companyName,
+    taskKey: dto.taskKey,
     initials: initialsOf(dto.companyName),
     color: colorFor(dto.id),
     niche: dto.niche === "RETAIL" ? "retail" : dto.niche === "SERVICES" ? "services" : null,
@@ -93,7 +94,11 @@ export function toClient(dto: ClientDto): Client {
     mrr: status === "active" ? monthlyPrice : 0,
     connectedAt: dto.createdAt,
     daysInStatus: Math.max(0, Math.floor((Date.now() - new Date(dto.stageChangedAt).getTime()) / DAY_MS)),
-    owner: { name: dto.ownerName, email: dto.ownerEmail, phone: dto.ownerPhone },
+    owner: {
+      name: dto.ownerName,
+      email: dto.ownerEmail,
+      phone: dto.ownerPhone,
+    },
     size: dto.companySize,
     onboardingSteps: dto.onboardingSteps.map(toOnboardingStep),
     // Этих данных в бэкенде пока нет.
@@ -104,9 +109,13 @@ export function toClient(dto: ClientDto): Client {
     nextAction: "",
     notes: "",
     integrations: [],
-    payments: [],
   };
 }
+
+/** Обозначения бэкенда из истории бизнеса → модель; неизвестное — undefined. */
+export const stageFromDto = (value: string): ClientStage | undefined => STAGE[value as ClientDto["stage"]];
+export const clientStatusFromDto = (value: string): ClientStatus | undefined => STATUS[value as ClientDto["status"]];
+export const stepStatusFromDto = (value: string): OnboardingStep["status"] | undefined => STEP_STATUS[value as OnboardingStepDto["status"]];
 
 export function toCreateClientBody(input: NewClientInput) {
   return {

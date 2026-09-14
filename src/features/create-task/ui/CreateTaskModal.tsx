@@ -2,6 +2,7 @@ import { X, Paperclip, AlertCircle } from "lucide-react";
 import type { Client } from "@/entities/client";
 import type { TaskType, TaskKind, TaskPriority } from "@/entities/task";
 import { ATTACHMENT_ACCEPT, TASK_KINDS, TASK_KIND_LABEL, TASK_TYPE_OPTION_LABEL, TASK_PRIORITY_OPTION_LABEL } from "@/entities/task";
+import { INTERNAL_TASK_KEY, MAX_TASK_KEY_LENGTH } from "@/entities/client";
 import type { User } from "@/entities/user";
 import { ModalOverlay } from "@/shared/ui";
 import { formatBytes } from "@/shared/lib";
@@ -18,7 +19,7 @@ const TASK_TYPES: TaskType[] = ["call", "task", "update", "integration", "suppor
 const TASK_PRIORITIES: TaskPriority[] = ["high", "medium", "low"];
 
 export function CreateTaskModal({ controller, clients, users }: CreateTaskModalProps) {
-  const { isOpen, draft, attachments, clientPreset, isSubmitting, error, close, patch, attachFiles, removeAttachment, submit } = controller;
+  const { isOpen, draft, attachments, clientPreset, selectedClient, canEditTaskKey, isSubmitting, error, close, patch, attachFiles, removeAttachment, submit } = controller;
 
   if (!isOpen) return null;
 
@@ -55,7 +56,7 @@ export function CreateTaskModal({ controller, clients, users }: CreateTaskModalP
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="text-xs font-medium text-slate-600 block mb-1.5">Бизнес</label>
               <select
@@ -69,6 +70,28 @@ export function CreateTaskModal({ controller, clients, users }: CreateTaskModalP
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-600 block mb-1.5">
+                Ключ задач
+                {selectedClient && !canEditTaskKey && <span className="ml-1 text-slate-400 font-normal">— задан</span>}
+              </label>
+              <input
+                type="text"
+                value={selectedClient ? draft.taskKey : INTERNAL_TASK_KEY}
+                onChange={(e) => patch({ taskKey: e.target.value })}
+                disabled={!canEditTaskKey}
+                maxLength={MAX_TASK_KEY_LENGTH}
+                placeholder="CG"
+                title={
+                  selectedClient
+                    ? canEditTaskKey
+                      ? "До 10 английских букв. После первой задачи ключ меняет только владелец в карточке бизнеса."
+                      : "У бизнеса уже есть задачи — ключ меняет владелец в карточке бизнеса"
+                    : "Задачи без бизнеса нумеруются как SC-1, SC-2"
+                }
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-50 transition-colors font-mono uppercase disabled:bg-slate-50 disabled:text-slate-400 placeholder:text-slate-300 placeholder:font-sans"
+              />
             </div>
             <div>
               <label className="text-xs font-medium text-slate-600 block mb-1.5">Категория</label>

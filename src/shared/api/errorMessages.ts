@@ -23,6 +23,12 @@ const MESSAGES: Record<string, string> = {
   "assigneeId must reference an existing user": "Исполнитель не найден — выберите другого",
   "onboardingStepId must reference a step of the task's client": "Этап онбординга не найден",
   "this onboarding step already has a task": "Этот этап уже есть в задачах",
+  "task key must be 1 to 10 English letters": "Ключ — до 10 английских букв, без цифр",
+  "this task key is reserved for tasks without a business": "Ключ SC занят внутренними задачами — выберите другой",
+  "this task key is already used by another business": "Такой ключ уже занят другим бизнесом",
+  "only an owner can change the task key of a business that already has tasks": "Менять ключ у бизнеса с задачами может только владелец",
+  "can't derive a free task key from this company name": "Не удалось подобрать свободный ключ — задайте его вручную",
+  "taskKey can't be combined with other fields": "Ключ сохраняется отдельно от других полей",
   "a comment needs text or at least one file": "Напишите текст или прикрепите файл",
   "only the author can change a comment": "Менять и удалять комментарий может только его автор",
   "a file is larger than 10 MB": "Файл больше 10 МБ",
@@ -35,6 +41,10 @@ const MESSAGES: Record<string, string> = {
   "you cannot delete your own account": "Нельзя удалить свой аккаунт",
   "only an owner can delete owners": "Удалить владельца может только владелец",
   "cannot delete the last active owner": "Нельзя удалить последнего владельца",
+  "amount must be greater than 0": "Сумма должна быть больше нуля",
+  "amount must be a number": "Сумма должна быть числом",
+  "paidAt must be a date in YYYY-MM-DD format": "Укажите дату платежа",
+  "a receipt must be an image or a PDF": "Чек — картинка или PDF",
 };
 
 const BY_CODE: Record<ApiError["code"], string> = {

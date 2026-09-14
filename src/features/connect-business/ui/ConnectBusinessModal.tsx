@@ -95,7 +95,7 @@ export function ConnectBusinessModal({ controller }: { controller: ConnectBusine
                 {!selectedPlan && <option value="">— Выберите тариф —</option>}
                 {plans.map((plan) => (
                   <option key={plan.id} value={plan.id}>
-                    {plan.isCustom ? plan.name : `${plan.name} — ${plan.price.toLocaleString("ru-RU")} ₽/мес`}
+                    {!plan.isCustom ? `${plan.name} — ${plan.price.toLocaleString("ru-RU")} ₽/мес` : plan.price > 0 ? `${plan.name} — от ${plan.price.toLocaleString("ru-RU")} ₽/мес` : plan.name}
                   </option>
                 ))}
               </select>

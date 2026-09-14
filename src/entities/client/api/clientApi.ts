@@ -12,14 +12,46 @@ export async function getClients(): Promise<Result<Client[]>> {
 
 /** Owner/Admin/Manager. Бизнес создаётся «Лидом» в первой колонке воронки. */
 export async function createClient(input: NewClientInput): Promise<Result<Client>> {
-  return mapResult(await apiFetch<ClientDto>("/clients", { method: "POST", body: toCreateClientBody(input) }), toClient);
+  return mapResult(
+    await apiFetch<ClientDto>("/clients", {
+      method: "POST",
+      body: toCreateClientBody(input),
+    }),
+    toClient,
+  );
 }
 
 /** Перемещение в воронке; статус (и попадание в MRR) бэкенд выставляет по колонке. */
 export async function moveClientStage(id: string, stage: ClientStage): Promise<Result<Client>> {
   const stageDto = toStageDto(stage);
   if (!stageDto) return err({ code: "bad_request", message: "invalid stage value" });
-  return mapResult(await apiFetch<ClientDto>(`/clients/${id}`, { method: "PATCH", body: { stage: stageDto } }), toClient);
+  return mapResult(
+    await apiFetch<ClientDto>(`/clients/${id}`, {
+      method: "PATCH",
+      body: { stage: stageDto },
+    }),
+    toClient,
+  );
+}
+
+/** Только владелец. Бизнес и его задачи пропадают из интерфейса. */
+export async function deleteClient(id: string): Promise<Result<void>> {
+  return apiFetch(`/clients/${id}`, { method: "DELETE" });
+}
+
+/**
+ * Переименование ключа задач бизнеса. Уходит отдельным запросом: у поля своё
+ * правило — пока у бизнеса нет задач ключ меняет любой, кто правит клиентов,
+ * дальше только владелец (проверяет бэкенд).
+ */
+export async function updateClientTaskKey(id: string, taskKey: string): Promise<Result<Client>> {
+  return mapResult(
+    await apiFetch<ClientDto>(`/clients/${id}`, {
+      method: "PATCH",
+      body: { taskKey },
+    }),
+    toClient,
+  );
 }
 
 export async function updateOnboardingStep(

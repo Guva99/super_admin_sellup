@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { describeApiError, type Result } from "@/shared/api";
-import { createClient, getClients, moveClientStage, updateOnboardingStep as saveOnboardingStep } from "../api/clientApi";
+import { createClient, deleteClient, getClients, moveClientStage, updateClientTaskKey, updateOnboardingStep as saveOnboardingStep } from "../api/clientApi";
 import type { Client, ClientStage, NewClientInput, OnboardingStep } from "./types";
 
 /**
@@ -20,6 +20,13 @@ export interface ClientsStore {
   dismissMutationError: () => void;
   addClient: (input: NewClientInput) => Promise<Result<Client>>;
   moveStage: (id: string, stage: ClientStage) => void;
+  /** Переименовать ключ задач бизнеса. Ошибку показывает вызывающая форма. */
+  setTaskKey: (id: string, taskKey: string) => Promise<Result<Client>>;
+  /**
+   * Удалить бизнес (только владелец). Данные остаются в базе, но из интерфейса
+   * бизнес пропадает; его задачи убирает вызывающая фича.
+   */
+  removeClient: (id: string) => Promise<Result<void>>;
   /** На сервере сохраняются title, description и status. */
   updateOnboardingStep: (clientId: string, stepId: string, patch: Partial<OnboardingStep>) => void;
 }
@@ -62,6 +69,21 @@ export function ClientsProvider({ children }: { children: ReactNode }) {
     return result;
   }, []);
 
+  const setTaskKey = useCallback(
+    async (id: string, taskKey: string) => {
+      const result = await updateClientTaskKey(id, taskKey);
+      if (result.ok) replaceClient(result.data);
+      return result;
+    },
+    [replaceClient],
+  );
+
+  const removeClient = useCallback(async (id: string) => {
+    const result = await deleteClient(id);
+    if (result.ok) setClients((prev) => prev.filter((c) => c.id !== id));
+    return result;
+  }, []);
+
   const moveStage = useCallback(
     (id: string, stage: ClientStage) => {
       const before = clientsRef.current.find((c) => c.id === id);
@@ -86,36 +108,51 @@ export function ClientsProvider({ children }: { children: ReactNode }) {
       const before = clientsRef.current.find((c) => c.id === clientId);
       if (!before) return;
 
-      const applyStepPatch = (client: Client, stepPatch: Partial<OnboardingStep>): Client => ({
-        ...client,
-        onboardingSteps: client.onboardingSteps.map((step) => (step.id === stepId ? { ...step, ...stepPatch } : step)),
-      });
-      setClients((prev) => prev.map((c) => (c.id === clientId ? applyStepPatch(c, patch) : c)));
+    const applyStepPatch = (client: Client, stepPatch: Partial<OnboardingStep>): Client => ({
+      ...client,
+      onboardingSteps: client.onboardingSteps.map((step) => (step.id === stepId ? { ...step, ...stepPatch } : step)),
+    });
+    setClients((prev) => prev.map((c) => (c.id === clientId ? applyStepPatch(c, patch) : c)));
 
-      const { title, description, status } = patch;
-      if (title === undefined && description === undefined && status === undefined) return;
+    const { title, description, status } = patch;
+    if (title === undefined && description === undefined && status === undefined) return;
 
-      saveOnboardingStep(clientId, stepId, { title, description, status }).then((result) => {
-        if (result.ok) return;
-        const previous = before.onboardingSteps.find((step) => step.id === stepId);
-        if (previous) {
-          setClients((prev) =>
-            prev.map((c) =>
-              c.id === clientId ? applyStepPatch(c, { title: previous.title, description: previous.description, status: previous.status }) : c,
-            ),
-          );
-        }
-        setMutationError(`Не удалось сохранить этап онбординга: ${describeApiError(result.error)}`);
-      });
-    },
-    [],
-  );
+    saveOnboardingStep(clientId, stepId, { title, description, status }).then((result) => {
+      if (result.ok) return;
+      const previous = before.onboardingSteps.find((step) => step.id === stepId);
+      if (previous) {
+        setClients((prev) =>
+          prev.map((c) =>
+            c.id === clientId
+              ? applyStepPatch(c, {
+                  title: previous.title,
+                  description: previous.description,
+                  status: previous.status,
+                })
+              : c,
+          ),
+        );
+      }
+      setMutationError(`Не удалось сохранить этап онбординга: ${describeApiError(result.error)}`);
+    });
+  }, []);
 
   const dismissMutationError = useCallback(() => setMutationError(null), []);
 
   const value = useMemo<ClientsStore>(
-    () => ({ clients, isLoading, error, mutationError, dismissMutationError, addClient, moveStage, updateOnboardingStep }),
-    [clients, isLoading, error, mutationError, dismissMutationError, addClient, moveStage, updateOnboardingStep],
+    () => ({
+      clients,
+      isLoading,
+      error,
+      mutationError,
+      dismissMutationError,
+      addClient,
+      moveStage,
+      setTaskKey,
+      removeClient,
+      updateOnboardingStep,
+    }),
+    [clients, isLoading, error, mutationError, dismissMutationError, addClient, moveStage, setTaskKey, removeClient, updateOnboardingStep],
   );
 
   return <ClientsContext.Provider value={value}>{children}</ClientsContext.Provider>;

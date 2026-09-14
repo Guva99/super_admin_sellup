@@ -1,14 +1,6 @@
 import { useState } from "react";
-import {
-  attachmentError,
-  useTasks,
-  TASK_COLUMNS,
-  type NewTaskInput,
-  type TaskKind,
-  type TaskPriority,
-  type TaskStatus,
-  type TaskType,
-} from "@/entities/task";
+import { attachmentError, useTasks, TASK_COLUMNS, type NewTaskInput, type TaskKind, type TaskPriority, type TaskStatus, type TaskType } from "@/entities/task";
+import { useClients, normaliseTaskKeyInput, taskKeyError, type Client } from "@/entities/client";
 import { useSession } from "@/entities/session";
 import { describeApiError } from "@/shared/api";
 import type { CreateTaskPreset } from "@/shared/lib";
@@ -23,6 +15,8 @@ export interface CreateTaskDraft {
   dueDate: string;
   /** id сотрудника; пусто — без исполнителя. */
   assigneeId: string;
+  /** Ключ выбранного бизнеса: подставляется из него, правится до первой задачи. */
+  taskKey: string;
 }
 
 const emptyDraft = (assigneeId: string): CreateTaskDraft => ({
@@ -34,6 +28,7 @@ const emptyDraft = (assigneeId: string): CreateTaskDraft => ({
   priority: "medium",
   dueDate: "",
   assigneeId,
+  taskKey: "",
 });
 
 export interface CreateTaskController {
@@ -41,6 +36,10 @@ export interface CreateTaskController {
   draft: CreateTaskDraft;
   attachments: File[];
   clientPreset: string | null;
+  /** Выбранный бизнес — от него зависит ключ задачи. */
+  selectedClient: Client | null;
+  /** Ключ ещё можно задать: у бизнеса нет задач. Дальше меняет владелец в карточке. */
+  canEditTaskKey: boolean;
   /** Колонка, из которой нажали «Создать»; задача попадёт в неё. */
   statusPreset: TaskStatus | null;
   isSubmitting: boolean;
@@ -62,7 +61,8 @@ const knownStatus = (value: string | undefined): TaskStatus | null =>
  * Исполнитель по умолчанию — тот, кто создаёт задачу.
  */
 export function useCreateTask(): CreateTaskController {
-  const { addTask, updateTask } = useTasks();
+  const { addTask, updateTask, tasksOfClient } = useTasks();
+  const { clients, setTaskKey } = useClients();
   const { user } = useSession();
   const currentUserId = user?.id ?? "";
 
@@ -74,8 +74,15 @@ export function useCreateTask(): CreateTaskController {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const clientById = (id: string): Client | null => clients.find((c) => c.id === id) ?? null;
+
   const open = (preset: CreateTaskPreset = {}) => {
-    setDraft({ ...emptyDraft(preset.assigneeId ?? currentUserId), clientId: preset.clientId ?? "" });
+    const client = preset.clientId ? clientById(preset.clientId) : null;
+    setDraft({
+      ...emptyDraft(preset.assigneeId ?? currentUserId),
+      clientId: preset.clientId ?? "",
+      taskKey: client?.taskKey ?? "",
+    });
     setClientPreset(preset.clientId ?? null);
     setStatusPreset(knownStatus(preset.status));
     setAttachments([]);
@@ -85,7 +92,12 @@ export function useCreateTask(): CreateTaskController {
 
   const close = () => setIsOpen(false);
 
-  const patch = (next: Partial<CreateTaskDraft>) => setDraft((prev) => ({ ...prev, ...next }));
+  const patch = (next: Partial<CreateTaskDraft>) =>
+    setDraft((prev) => {
+      // Сменили бизнес — подставляем его ключ.
+      const taskKey = next.clientId !== undefined ? (clientById(next.clientId)?.taskKey ?? "") : prev.taskKey;
+      return { ...prev, taskKey, ...next };
+    });
 
   const attachFiles = (files: FileList | null) => {
     if (!files) return;
@@ -99,6 +111,9 @@ export function useCreateTask(): CreateTaskController {
   };
 
   const removeAttachment = (index: number) => setAttachments((prev) => prev.filter((_, i) => i !== index));
+
+  const selectedClient = draft.clientId ? clientById(draft.clientId) : null;
+  const canEditTaskKey = selectedClient !== null && tasksOfClient(selectedClient.id).length === 0;
 
   const submit = async () => {
     if (!draft.title.trim() || isSubmitting) return;
@@ -115,6 +130,22 @@ export function useCreateTask(): CreateTaskController {
       dueDate: draft.dueDate || null,
       assigneeId: draft.assigneeId || null,
     };
+    // Ключ бизнеса сохраняется до задачи: её ключ строится уже из нового.
+    if (selectedClient && canEditTaskKey && draft.taskKey !== selectedClient.taskKey) {
+      const problem = taskKeyError(draft.taskKey);
+      if (problem) {
+        setError(problem);
+        setIsSubmitting(false);
+        return;
+      }
+      const keyResult = await setTaskKey(selectedClient.id, draft.taskKey);
+      if (!keyResult.ok) {
+        setError(describeApiError(keyResult.error));
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     const result = await addTask(input, attachments);
     setIsSubmitting(false);
     if (!result.ok) {
@@ -129,5 +160,21 @@ export function useCreateTask(): CreateTaskController {
     setAttachments([]);
   };
 
-  return { isOpen, draft, attachments, clientPreset, statusPreset, isSubmitting, error, open, close, patch, attachFiles, removeAttachment, submit };
+  return {
+    isOpen,
+    draft,
+    attachments,
+    clientPreset,
+    selectedClient,
+    canEditTaskKey,
+    statusPreset,
+    isSubmitting,
+    error,
+    open,
+    close,
+    patch: (next: Partial<CreateTaskDraft>) => patch(next.taskKey !== undefined ? { ...next, taskKey: normaliseTaskKeyInput(next.taskKey) } : next),
+    attachFiles,
+    removeAttachment,
+    submit,
+  };
 }

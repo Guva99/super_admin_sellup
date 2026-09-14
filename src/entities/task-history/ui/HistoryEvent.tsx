@@ -1,4 +1,4 @@
-import { UserAvatar } from "@/entities/user";
+import { UserAvatar } from "@/shared/ui";
 import { TASK_HISTORY_FIELD_LABEL, type TaskHistoryEvent, type TaskHistoryField } from "../model/types";
 
 /** Перевод значения из обозначений бэкенда в подпись; по умолчанию как есть. */

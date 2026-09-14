@@ -1,7 +1,9 @@
-import { AlertCircle, ArrowLeft, ExternalLink, Mail, Phone, Plus } from "lucide-react";
+import { ArrowLeft, ExternalLink, Mail, Phone, Plus } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ClientAvatar, CLIENT_NICHE_LABEL, StatusBadge, useClient } from "@/entities/client";
 import { useTasks } from "@/entities/task";
+import { DeleteClientButton } from "@/features/delete-client";
+import { ClientTaskKey } from "@/features/edit-client-task-key";
 import { useOnboardingActions } from "@/features/manage-onboarding";
 import { formatMoney, useUiActions } from "@/shared/lib";
 import { ClientOverview } from "@/widgets/client-overview";
@@ -45,7 +47,6 @@ export default function ClientDetailPage() {
 
   const clientTasks = tasks.filter((t) => t.clientId === clientId);
   const openTasks = clientTasks.filter((t) => t.status !== "done");
-  const overduePayments = client.payments.filter((p) => p.status === "overdue");
 
   return (
     <div className="flex h-full">
@@ -61,6 +62,9 @@ export default function ClientDetailPage() {
           </Link>
           <ClientAvatar client={client} className="w-12 h-12 rounded-xl text-sm mb-3" />
           <h2 className="text-sm font-semibold text-slate-900 leading-snug">{client.name}</h2>
+          <div className="mt-2">
+            <ClientTaskKey client={client} />
+          </div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             <StatusBadge status={client.status} className="text-[10px]" />
             {client.planName && (
@@ -88,7 +92,14 @@ export default function ClientDetailPage() {
           <div className="space-y-3 text-xs">
             <Row label="Ниша" value={client.niche ? CLIENT_NICHE_LABEL[client.niche] : "—"} />
             <Row label="Размер" value={client.size || "—"} />
-            <Row label="Подключён" value={new Date(client.connectedAt).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" })} />
+            <Row
+              label="Подключён"
+              value={new Date(client.connectedAt).toLocaleDateString("ru-RU", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            />
             <Row label="Менеджер" value={client.manager || "—"} />
           </div>
 
@@ -132,18 +143,10 @@ export default function ClientDetailPage() {
               </div>
             </div>
           )}
-
-          {overduePayments.length > 0 && (
-            <div className="border-t border-slate-100 pt-3">
-              <div className="flex items-center gap-1.5 text-xs text-red-600">
-                <AlertCircle size={11} />{overduePayments.length} просроченный платёж
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Quick add task */}
-        <div className="p-4 border-t border-slate-100">
+        <div className="p-4 border-t border-slate-100 space-y-1.5">
           <button
             onClick={() => openCreateTask({ clientId })}
             className="w-full flex items-center justify-center gap-2 py-2 text-xs font-medium text-brand-500 hover:text-brand-600 border border-brand-200 hover:border-brand-300 rounded-lg bg-brand-50/50 hover:bg-brand-50 transition-colors"
@@ -151,6 +154,8 @@ export default function ClientDetailPage() {
             <Plus size={12} />
             Добавить задачу
           </button>
+          {/* Кнопки нет ни у кого, кроме владельца. */}
+          <DeleteClientButton client={client} onDeleted={() => navigate("/clients")} />
         </div>
       </aside>
 
@@ -169,14 +174,7 @@ export default function ClientDetailPage() {
                 }`}
               >
                 {tab.label}
-                {tab.id === "tasks" && openTasks.length > 0 && (
-                  <span className="ml-1.5 px-1.5 py-0.5 text-[9px] bg-brand-100 text-brand-500 rounded-full font-semibold">
-                    {openTasks.length}
-                  </span>
-                )}
-                {tab.id === "billing" && overduePayments.length > 0 && (
-                  <span className="ml-1.5 w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
-                )}
+                {tab.id === "tasks" && openTasks.length > 0 && <span className="ml-1.5 px-1.5 py-0.5 text-[9px] bg-brand-100 text-brand-500 rounded-full font-semibold">{openTasks.length}</span>}
               </button>
             ))}
           </nav>
@@ -204,7 +202,7 @@ export default function ClientDetailPage() {
               onDeleteTask={deleteTask}
             />
           )}
-          {activeTab === "history" && <ClientHistory />}
+          {activeTab === "history" && <ClientHistory client={client} onOpenTask={(id) => navigate(`/tasks/${id}`)} />}
         </div>
       </div>
     </div>

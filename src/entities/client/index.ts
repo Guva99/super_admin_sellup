@@ -8,7 +8,6 @@ export type {
   Integration,
   NewClientInput,
   OnboardingStep,
-  Payment,
 } from "./model/types";
 
 export {
@@ -32,7 +31,10 @@ export {
   CLIENT_STAGE_ACCENT,
   PIPELINE_STAGES,
   STEP_STATUS_CYCLE,
+  STEP_STATUS_LABEL,
 } from "./model/dictionaries";
+
+export { stageFromDto, clientStatusFromDto, stepStatusFromDto } from "./api/mapper";
 
 export { ClientAvatar } from "./ui/ClientAvatar";
 export { StatusBadge } from "./ui/StatusBadge";
@@ -40,4 +42,5 @@ export { HealthBar } from "./ui/HealthBar";
 export { StepBadge } from "./ui/StepBadge";
 export { ClientPipelineCard } from "./ui/ClientPipelineCard";
 
+export { MAX_TASK_KEY_LENGTH, INTERNAL_TASK_KEY, normaliseTaskKeyInput, taskKeyError } from "./model/taskKey";
 export { ClientsProvider, useClients, useClient, type ClientsStore } from "./model/store";

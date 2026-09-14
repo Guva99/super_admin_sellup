@@ -35,3 +35,9 @@ export const ROLE_LABEL: Record<RoleKey, string> = {
 
 /** Добавлять и удалять сотрудников бэкенд разрешает владельцу и администратору. */
 export const canManageTeam = (roleKey: string | undefined): boolean => roleKey === "OWNER" || roleKey === "ADMIN";
+
+/** Платежи вносит и удаляет тот же круг, что ведёт команду: владелец и администратор. */
+export const canRecordPayments = canManageTeam;
+
+/** Владелец: удаление бизнеса и переименование ключа задач — только он. */
+export const isOwner = (roleKey: string | undefined): boolean => roleKey === "OWNER";

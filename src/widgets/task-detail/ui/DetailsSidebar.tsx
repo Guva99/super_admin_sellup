@@ -2,12 +2,11 @@ import type { ReactNode } from "react";
 import { ExternalLink } from "lucide-react";
 import type { Client } from "@/entities/client";
 import { isTaskOverdue, TASK_KIND_LABEL, TASK_KINDS, TASK_PRIORITY_LABEL, TASK_TYPE_LABEL, TaskKindIcon, useTasks, type Task, type TaskKind, type TaskPriority } from "@/entities/task";
-import { UserAvatar } from "@/entities/user";
 import { AssigneePicker } from "@/features/change-task-assignee";
 import { DateField, useChangeTaskDates } from "@/features/change-task-dates";
 import { LabelsField } from "@/features/change-task-labels";
 import { StatusDropdown } from "@/features/change-task-status";
-import { Collapsible } from "@/shared/ui";
+import { Collapsible, UserAvatar } from "@/shared/ui";
 
 interface DetailsSidebarProps {
   task: Task;

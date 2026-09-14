@@ -11,6 +11,7 @@ import {
   type Task,
 } from "@/entities/task";
 import { useTaskHistory, type HistoryValueFormatter, type TaskHistoryState } from "@/entities/task-history";
+import { formatRelativeTime } from "@/shared/lib";
 
 export interface TaskDetailData {
   task: Task | undefined;
@@ -38,21 +39,15 @@ const formatHistoryValue: HistoryValueFormatter = (field, value) => {
       return TASK_PRIORITY_LABEL[priorityFromDto(value) ?? "medium"] ?? value;
     case "dueDate":
     case "startDate":
-      return new Date(value).toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric" });
+      return new Date(value).toLocaleDateString("ru-RU", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
     default:
       return value;
   }
 };
-
-export function formatRelativeTime(iso: string): string {
-  const d = new Date(iso);
-  const diffMin = Math.floor((Date.now() - d.getTime()) / 60000);
-  if (diffMin < 1) return "только что";
-  if (diffMin < 60) return `${diffMin} мин назад`;
-  const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `${diffH} ч назад`;
-  return d.toLocaleDateString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-}
 
 /** Всё, что нужно карточке, — через хуки сущностей; сама она в API не ходит. */
 export function useTaskDetail(taskId: string): TaskDetailData {

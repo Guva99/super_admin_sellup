@@ -3,7 +3,7 @@ import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { ClientAvatar, useClients } from "@/entities/client";
-import { useTasks, TaskTypeIcon } from "@/entities/task";
+import { useTasks, TaskKey, TaskKindIcon } from "@/entities/task";
 import { ModalOverlay } from "@/shared/ui";
 
 const MAX_PER_GROUP = 5;
@@ -23,7 +23,7 @@ export function SearchDialog({ onClose }: { onClose: () => void }) {
     ? clients.filter((c) => c.name.toLowerCase().includes(needle)).slice(0, MAX_PER_GROUP)
     : [];
   const matchedTasks = needle
-    ? tasks.filter((t) => t.title.toLowerCase().includes(needle)).slice(0, MAX_PER_GROUP)
+    ? tasks.filter((t) => t.title.toLowerCase().includes(needle) || t.key.toLowerCase().includes(needle)).slice(0, MAX_PER_GROUP)
     : [];
   const isEmpty = needle !== "" && matchedClients.length === 0 && matchedTasks.length === 0;
 
@@ -79,10 +79,11 @@ export function SearchDialog({ onClose }: { onClose: () => void }) {
             {matchedTasks.map((task) => (
               <button
                 key={task.id}
-                onClick={() => go(task.clientId ? `/clients/${task.clientId}/tasks` : "/tasks")}
+                onClick={() => go(`/tasks/${task.id}`)}
                 className="w-full flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 text-left transition-colors"
               >
-                <TaskTypeIcon type={task.type} size={12} />
+                <TaskKindIcon kind={task.kind} size={12} />
+                <TaskKey value={task.key} />
                 <span className="text-xs text-slate-700 truncate">{task.title}</span>
               </button>
             ))}

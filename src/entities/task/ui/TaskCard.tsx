@@ -1,13 +1,19 @@
 import { useState } from "react";
-import { Trash2, ExternalLink, AlertTriangle, Clock, Paperclip, Rocket } from "lucide-react";
+import { Trash2, ExternalLink, AlertTriangle, Clock, Paperclip, Rocket, MessageSquare } from "lucide-react";
 import { formatDate } from "@/shared/lib";
 import type { KanbanCardHandlers } from "@/shared/ui";
+import { UserAvatar } from "@/entities/user";
 import type { Task, TaskStatus, TaskCardClient } from "../model/types";
 import { isTaskOverdue } from "../model/types";
-import { cardStyle } from "../model/cardStyle";
-import { TASK_PRIORITY_DOT, TASK_STATUS_LABEL, TASK_TYPE_CLASS, TASK_TYPE_LABEL } from "../model/dictionaries";
-import { TaskTypeIcon } from "./TaskTypeIcon";
+import { TASK_PRIORITY_DOT, TASK_PRIORITY_LABEL, TASK_STATUS_LABEL } from "../model/dictionaries";
+import { TaskKindIcon } from "./TaskKindIcon";
+import { TaskKey } from "./TaskKey";
 
+/**
+ * Карточка на доске, как в Trello/Jira: заголовок, метки, внизу — вид работы,
+ * ключ, срок и аватар исполнителя. Цвет карточки не несёт смысла — смысл
+ * несут ромб/галочка и красный срок у просроченных.
+ */
 export function TaskCard({
   task,
   client,
@@ -30,96 +36,93 @@ export function TaskCard({
   onClick: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { border, bg, strip } = cardStyle(task);
-
   const isOverdue = isTaskOverdue(task);
-  const dueDateStr = task.dueDate ? formatDate(task.dueDate) : null;
-  const hasAttachments = task.attachments.length > 0;
+  const isDone = task.status === "done";
 
   return (
     <div
       {...handlers}
       onClick={onClick}
-      className={`relative border rounded-xl overflow-hidden cursor-pointer select-none transition-all group ${border} ${bg} ${
-        isDragging ? "opacity-40 scale-95 shadow-lg" : "hover:shadow-sm"
-      } ${task.status === "done" ? "opacity-60" : ""} ${isSelected ? "ring-2 ring-brand-400 ring-offset-1" : ""}`}
+      className={`relative bg-white border rounded-lg cursor-pointer select-none transition-all group ${
+        isOverdue ? "border-red-200" : "border-slate-200"
+      } ${isDragging ? "opacity-40 scale-95 shadow-lg" : "hover:shadow-md hover:border-slate-300"} ${isDone ? "opacity-60" : ""} ${
+        isSelected ? "ring-2 ring-brand-400 ring-offset-1" : ""
+      }`}
     >
-      {/* Color strip */}
-      <div className={`h-[3px] w-full ${strip}`} />
-
       <div className="p-3">
-        {/* Header: priority + title + menu */}
-        <div className="flex items-start gap-2 mb-2">
-          <span className={`w-2 h-2 rounded-full flex-shrink-0 mt-1 ${TASK_PRIORITY_DOT[task.priority]}`} title={`Приоритет: ${task.priority}`} />
-          <p className={`text-xs font-medium text-slate-800 leading-snug flex-1 ${task.status === "done" ? "line-through text-slate-400" : ""}`}>
+        {/* Заголовок + меню */}
+        <div className="flex items-start gap-2">
+          <p className={`text-xs font-medium text-slate-800 leading-snug flex-1 ${isDone ? "line-through text-slate-400" : ""}`}>
             {task.title}
           </p>
           <button
             onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }}
-            className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-slate-500 transition-all flex-shrink-0 text-lg leading-none"
+            aria-label="Действия"
+            className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-slate-500 transition-all flex-shrink-0 text-lg leading-none -mt-1"
           >
             ···
           </button>
         </div>
 
-        {/* Description snippet */}
-        {task.description && (
-          <p className="text-[11px] text-slate-400 mb-2 leading-relaxed line-clamp-2">{task.description}</p>
-        )}
-
-        {/* Onboarding origin badge */}
-        {task.onboardingStepId && (
-          <div className="flex items-center gap-1 mb-1.5 px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-100 w-fit">
-            <Rocket size={9} className="text-emerald-500" />
-            <span className="text-[10px] text-emerald-600 font-medium">Этап онбординга</span>
+        {/* Метки и бизнес */}
+        {(task.labels.length > 0 || task.onboardingStepId || client) && (
+          <div className="flex items-center gap-1 mt-2 flex-wrap">
+            {task.onboardingStepId && (
+              <span className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-100 text-[10px] text-emerald-600 font-medium">
+                <Rocket size={9} />
+                Этап онбординга
+              </span>
+            )}
+            {task.labels.map((label) => (
+              <span key={label} className="px-1.5 py-0.5 rounded bg-slate-100 text-[10px] text-slate-600 font-medium">
+                {label}
+              </span>
+            ))}
+            {client && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onOpenClient(client.id); }}
+                className="flex items-center gap-1 px-1 py-0.5 rounded hover:bg-brand-50 group/chip"
+                title={client.name}
+              >
+                <span className="w-3.5 h-3.5 rounded flex items-center justify-center text-white text-[8px] font-bold" style={{ backgroundColor: client.color }}>
+                  {client.initials[0]}
+                </span>
+                <span className="text-[10px] text-slate-500 group-hover/chip:text-brand-500 truncate max-w-[120px]">{client.name}</span>
+                <ExternalLink size={8} className="text-slate-300 opacity-0 group-hover/chip:opacity-100" />
+              </button>
+            )}
           </div>
         )}
 
-        {/* Client chip */}
-        {client && (
-          <button
-            onClick={(e) => { e.stopPropagation(); onOpenClient(client.id); }}
-            className="flex items-center gap-1.5 mb-2 group/chip"
-          >
-            <div className="w-4 h-4 rounded flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0" style={{ backgroundColor: client.color }}>
-              {client.initials[0]}
-            </div>
-            <span className="text-[11px] text-slate-500 group-hover/chip:text-brand-500 transition-colors truncate max-w-[170px]">
-              {client.name}
-            </span>
-            <ExternalLink size={9} className="text-slate-300 group-hover/chip:text-brand-400 opacity-0 group-hover/chip:opacity-100 transition-all" />
-          </button>
-        )}
-
-        {/* Footer */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${TASK_TYPE_CLASS[task.type]}`}>
-            <TaskTypeIcon type={task.type} size={9} />
-            {TASK_TYPE_LABEL[task.type]}
-          </span>
-
-          {dueDateStr && (
+        {/* Низ: вид, ключ, срок, счётчики, аватар */}
+        <div className="flex items-center gap-2 mt-2.5">
+          <TaskKindIcon kind={task.kind} size={13} />
+          <TaskKey value={task.key} />
+          <span className={`w-1.5 h-1.5 rounded-full ${TASK_PRIORITY_DOT[task.priority]}`} title={`Приоритет: ${TASK_PRIORITY_LABEL[task.priority]}`} />
+          {task.dueDate && (
             <span className={`flex items-center gap-1 text-[10px] font-medium ${isOverdue ? "text-red-500" : "text-slate-400"}`}>
               {isOverdue ? <AlertTriangle size={9} /> : <Clock size={9} />}
-              {dueDateStr}
+              {formatDate(task.dueDate)}
             </span>
           )}
-
-          {/* Attachment indicator */}
-          {hasAttachments && (
-            <span className="flex items-center gap-1 text-[10px] text-slate-400 ml-auto">
-              <Paperclip size={9} className="text-brand-400" />
+          <span className="flex-1" />
+          {task.attachments.length > 0 && (
+            <span className="flex items-center gap-0.5 text-[10px] text-slate-400" title="Вложения">
+              <Paperclip size={9} />
               {task.attachments.length}
             </span>
           )}
-
-          {!hasAttachments && (
-            <span className="text-[10px] text-slate-400 ml-auto">{task.assigneeName.split(" ")[0] || "—"}</span>
+          {task.comments.length > 0 && (
+            <span className="flex items-center gap-0.5 text-[10px] text-slate-400" title="Комментарии">
+              <MessageSquare size={9} />
+              {task.comments.length}
+            </span>
           )}
+          <UserAvatar name={task.assignee?.name ?? ""} size="xs" />
         </div>
       </div>
 
-      {/* Context menu */}
+      {/* Контекстное меню */}
       {menuOpen && (
         <div
           className="absolute right-2 top-7 z-20 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden min-w-[160px]"

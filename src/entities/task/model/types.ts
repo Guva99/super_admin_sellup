@@ -1,6 +1,15 @@
+/** Категория обращения клиента — метка клиентской доски (звонок, поддержка…). */
 export type TaskType = "call" | "task" | "update" | "integration" | "support" | "onboarding";
+/** Вид работы на доске разработки. Точка расширения: story, epic. */
+export type TaskKind = "task" | "bug";
 export type TaskPriority = "high" | "medium" | "low";
 export type TaskStatus = "todo" | "in_progress" | "review" | "done";
+
+/** Сотрудник в роли исполнителя или автора задачи. */
+export interface TaskPerson {
+  id: string;
+  name: string;
+}
 
 /** Файл, сохранённый на сервере. Содержимое скачивается отдельно — `downloadFile` стора. */
 export interface TaskAttachment {
@@ -20,20 +29,36 @@ export interface TaskComment {
   attachments: TaskAttachment[];
 }
 
+/** Запись о потраченном времени. В бэкенде пока нет — тип на этап 3. */
+export interface TaskWorklog {
+  id: string;
+  author: TaskPerson;
+  minutes: number;
+  note: string;
+  at: string;
+}
+
 export interface Task {
   id: string;
+  /** Порядковый номер; ключ `SC-<number>` не меняется после создания. */
+  number: number;
+  key: string;
   title: string;
   description?: string;
   clientId: string | null;
   type: TaskType;
+  kind: TaskKind;
   priority: TaskPriority;
   status: TaskStatus;
-  /** Календарная дата YYYY-MM-DD. */
+  labels: string[];
+  /** Календарные даты YYYY-MM-DD. */
   dueDate: string | null;
-  assigneeId: string | null;
-  /** Пустая строка — исполнитель не назначен. */
-  assigneeName: string;
+  startDate: string | null;
+  assignee: TaskPerson | null;
+  /** Кто создал задачу; только для чтения. */
+  reporter: TaskPerson;
   createdAt: string;
+  updatedAt: string;
   /** id этапа онбординга, если задача выведена из него */
   onboardingStepId?: string;
   attachments: TaskAttachment[];
@@ -46,10 +71,29 @@ export interface NewTaskInput {
   description: string;
   clientId: string | null;
   type: TaskType;
+  kind: TaskKind;
   priority: TaskPriority;
+  labels?: string[];
   dueDate: string | null;
+  startDate?: string | null;
   assigneeId: string | null;
   onboardingStepId?: string;
+}
+
+/**
+ * Что изменить в задаче; отсутствующее поле не трогается. `null` в дате или
+ * исполнителе — очистить. Любое изменение бэкенд пишет в историю сам.
+ */
+export interface TaskPatch {
+  title?: string;
+  description?: string;
+  kind?: TaskKind;
+  priority?: TaskPriority;
+  status?: TaskStatus;
+  labels?: string[];
+  dueDate?: string | null;
+  startDate?: string | null;
+  assigneeId?: string | null;
 }
 
 /** Просрочена ли задача на сегодняшний день. */

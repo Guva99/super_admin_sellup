@@ -1,7 +1,7 @@
 import { X, Paperclip, AlertCircle } from "lucide-react";
 import type { Client } from "@/entities/client";
-import type { TaskType, TaskPriority } from "@/entities/task";
-import { ATTACHMENT_ACCEPT, TASK_TYPE_OPTION_LABEL, TASK_PRIORITY_OPTION_LABEL } from "@/entities/task";
+import type { TaskType, TaskKind, TaskPriority } from "@/entities/task";
+import { ATTACHMENT_ACCEPT, TASK_KINDS, TASK_KIND_LABEL, TASK_TYPE_OPTION_LABEL, TASK_PRIORITY_OPTION_LABEL } from "@/entities/task";
 import type { User } from "@/entities/user";
 import { ModalOverlay } from "@/shared/ui";
 import { formatBytes } from "@/shared/lib";
@@ -24,7 +24,7 @@ export function CreateTaskModal({ controller, clients, users }: CreateTaskModalP
 
   return (
     <ModalOverlay onClose={close}>
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
           <h2 className="text-sm font-semibold text-slate-900">Новая задача</h2>
           <button onClick={close} className="text-slate-400 hover:text-slate-600"><X size={16} /></button>
@@ -71,7 +71,7 @@ export function CreateTaskModal({ controller, clients, users }: CreateTaskModalP
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-600 block mb-1.5">Тип</label>
+              <label className="text-xs font-medium text-slate-600 block mb-1.5">Категория</label>
               <select
                 value={draft.type}
                 onChange={(e) => patch({ type: e.target.value as TaskType })}
@@ -84,7 +84,19 @@ export function CreateTaskModal({ controller, clients, users }: CreateTaskModalP
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
+            <div>
+              <label className="text-xs font-medium text-slate-600 block mb-1.5">Тип</label>
+              <select
+                value={draft.kind}
+                onChange={(e) => patch({ kind: e.target.value as TaskKind })}
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-brand-400 bg-white text-slate-700 cursor-pointer"
+              >
+                {TASK_KINDS.map((kind) => (
+                  <option key={kind} value={kind}>{TASK_KIND_LABEL[kind]}</option>
+                ))}
+              </select>
+            </div>
             <div>
               <label className="text-xs font-medium text-slate-600 block mb-1.5">Приоритет</label>
               <select

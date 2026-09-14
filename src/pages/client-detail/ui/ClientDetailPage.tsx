@@ -33,7 +33,7 @@ export default function ClientDetailPage() {
   const { clientId, tab } = useParams<{ clientId: string; tab?: string }>();
   const navigate = useNavigate();
   const client = useClient(clientId);
-  const { tasks, setStatus, deleteTask } = useTasks();
+  const { tasks, updateTask, deleteTask } = useTasks();
   const { openCreateTask } = useUiActions();
   const { updateStep, addStepToTasks, removeStepFromTasks } = useOnboardingActions();
 
@@ -145,7 +145,7 @@ export default function ClientDetailPage() {
         {/* Quick add task */}
         <div className="p-4 border-t border-slate-100">
           <button
-            onClick={() => openCreateTask(clientId)}
+            onClick={() => openCreateTask({ clientId })}
             className="w-full flex items-center justify-center gap-2 py-2 text-xs font-medium text-brand-500 hover:text-brand-600 border border-brand-200 hover:border-brand-300 rounded-lg bg-brand-50/50 hover:bg-brand-50 transition-colors"
           >
             <Plus size={12} />
@@ -198,8 +198,9 @@ export default function ClientDetailPage() {
           {activeTab === "tasks" && (
             <ClientTasks
               tasks={clientTasks}
-              onAddTask={() => openCreateTask(clientId)}
-              onStatusChange={setStatus}
+              onAddTask={() => openCreateTask({ clientId })}
+              onOpenTask={(id) => navigate(`/tasks/${id}`)}
+              onStatusChange={(id, status) => updateTask(id, { status })}
               onDeleteTask={deleteTask}
             />
           )}

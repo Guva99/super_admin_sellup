@@ -89,6 +89,12 @@ export const APP_ROUTES: AppRoute[] = [
     handle: { title: "Задачи", navLabel: "Задачи", icon: CheckSquare, placement: "main", showTaskBadge: true },
   },
   {
+    // Карточка задачи — модалка поверх доски; адрес нужен, чтобы делиться ссылкой.
+    path: "/tasks/:taskId",
+    element: <TasksPage />,
+    handle: { title: "Задачи" },
+  },
+  {
     path: "/billing",
     element: <BillingPage />,
     handle: { title: "Биллинг и финансы", navLabel: "Биллинг", icon: Wallet, placement: "main" },

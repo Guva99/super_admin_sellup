@@ -25,6 +25,7 @@ export function useOnboardingActions(): OnboardingActions {
       description: step.description ?? "",
       clientId,
       type: "onboarding",
+      kind: "task",
       priority: "medium",
       dueDate: step.dueDate || null,
       // Этап ведёт тот, кто вывел его в задачи.

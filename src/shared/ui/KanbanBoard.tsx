@@ -23,6 +23,13 @@ interface KanbanBoardProps<TItem, TId extends string> {
   renderCard: (item: TItem, handlers: KanbanCardHandlers, isDragging: boolean) => ReactNode;
   renderColumnHeader: (column: KanbanColumn<TId>, count: number) => ReactNode;
   renderEmptyColumn?: (column: KanbanColumn<TId>, isDragOver: boolean) => ReactNode;
+  /** Низ колонки — например, кнопка «Создать». */
+  renderColumnFooter?: (column: KanbanColumn<TId>) => ReactNode;
+  /**
+   * Обёртка доски. По умолчанию доска занимает всю высоту страницы и
+   * скроллится по горизонтали; секция внутри группы задаёт свои отступы.
+   */
+  wrapperClassName?: string;
   /** Ширина колонки, например "w-72". */
   columnClassName?: string;
   /** Отступ между колонками, например "gap-4". */
@@ -44,6 +51,8 @@ export function KanbanBoard<TItem, TId extends string>({
   renderCard,
   renderColumnHeader,
   renderEmptyColumn,
+  renderColumnFooter,
+  wrapperClassName = "flex-1 overflow-x-auto overflow-y-hidden p-5",
   columnClassName = "w-72",
   boardClassName = "gap-4",
   listClassName = "px-3 pb-3 min-h-[60px]",
@@ -62,7 +71,7 @@ export function KanbanBoard<TItem, TId extends string>({
   };
 
   return (
-    <div className="flex-1 overflow-x-auto overflow-y-hidden p-5">
+    <div className={wrapperClassName}>
       <div className={`flex h-full min-w-fit ${boardClassName}`}>
         {columns.map((col) => {
           const colItems = items.filter((item) => getItemColumn(item) === col.id);
@@ -100,6 +109,8 @@ export function KanbanBoard<TItem, TId extends string>({
 
                 {colItems.length === 0 && renderEmptyColumn?.(col, isDragOver)}
               </div>
+
+              {renderColumnFooter?.(col)}
             </div>
           );
         })}

@@ -51,6 +51,7 @@ shared/    переиспользуемое: ui, lib, config, api
 | Клиенты | `entities/client/model/store.tsx` | `useClients()`, `useClient(id)` | `app/ui/AuthenticatedApp.tsx` |
 | Тарифы | `entities/plan/model/store.tsx` | `usePlans()` | `app/ui/AuthenticatedApp.tsx` |
 | Задачи | `entities/task/model/store.tsx` | `useTasks()` | `app/ui/AuthenticatedApp.tsx` |
+| История задачи | `entities/task-history/model/useTaskHistory.ts` | `useTaskHistory(id, revision)` | локально в `widgets/task-detail` |
 | Сотрудники | `entities/user/model/store.tsx` | `useUsers()` | `app/ui/AuthenticatedApp.tsx` |
 | Шаблон онбординга | `entities/onboarding-template/model/store.tsx` | `useOnboardingTemplate()` | `app/ui/AuthenticatedApp.tsx` |
 | Глобальные модалки | контракт и хук — `shared/lib/ui-actions.ts`, реализация — `app/model/ui-actions.tsx` | `useUiActions()` из `@/shared/lib` | `app/ui/AppLayout.tsx` |
@@ -82,9 +83,26 @@ shared/    переиспользуемое: ui, lib, config, api
 `shared/config`: она показывает один ноль вместо придуманной шкалы 0–4.
 
 Правила задач:
-- Создание, смена статуса (доска, меню карточки, «закрыть»), удаление,
-  комментарии и файлы сохраняются на сервере. Смена статуса и удаление
-  применяются сразу и откатываются при ошибке.
+- Создание, любые правки полей (заголовок, описание, статус, исполнитель, срок,
+  дата начала, метки, приоритет, тип), удаление, комментарии и файлы сохраняются
+  на сервере. Правки и удаление применяются сразу и откатываются при ошибке.
+- **Все правки полей — только через `updateTask(id, patch)` из `useTasks()`.**
+  Историю ведёт бэкенд на каждом PATCH (`GET /tasks/{id}/history`), поэтому
+  на клиенте ничего не логируется и фичи `features/change-*`, `edit-task-*` —
+  тонкие обёртки над `updateTask`. Новое поле — это новая строка в `TaskPatch`,
+  в `api/mapper.ts` и в бэкенде; логировать отдельно не нужно.
+- У задачи есть `kind` — вид работы на доске разработки (задача/баг, ромб/галочка)
+  и `type` — категория клиентского обращения (звонок, поддержка…). Это разные
+  поля, не смешивайте.
+- Ключ `SC-<number>` выдаёт бэкенд; на карточку и в поиск попадает как есть.
+- Карточка задачи — модалка по адресу `/tasks/:taskId` (`widgets/task-detail`),
+  доска — `widgets/task-board`. Группировка и фильтрация — чистые функции в
+  `features/group-tasks` и `features/filter-tasks`: новый режим группировки —
+  ветка в `groupTasks` плюс подпись в `GROUP_MODE_LABEL`, виджет не трогается.
+- Описание — лёгкая разметка своими силами (`shared/lib/markdown.ts`): абзацы,
+  списки, чек-листы `- [ ]`. Не подключайте markdown-библиотеку ради этого.
+- Родитель/подзадачи/связанные задачи, команда, Development, Automation, журнал
+  работ — этапы 2–3; заглушек-кнопок «ничего не делает» в карточке нет намеренно.
 - Файлы не приходят в теле задачи: `attachments` — это метаданные, содержимое
   качается `downloadFile(taskId, fileId)` и показывается как Blob. Обычный
   `<img src>` на адрес API не работает — запрос уходит без токена.

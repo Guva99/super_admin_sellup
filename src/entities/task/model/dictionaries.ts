@@ -1,4 +1,4 @@
-import type { TaskType, TaskStatus, TaskPriority } from "./types";
+import type { TaskType, TaskKind, TaskStatus, TaskPriority } from "./types";
 
 export const TASK_TYPE_LABEL: Record<TaskType, string> = {
   call: "Звонок",
@@ -27,6 +27,14 @@ export const TASK_TYPE_OPTION_LABEL: Record<TaskType, string> = {
   support: "💬 Поддержка",
   onboarding: "🚀 Онбординг",
 };
+
+export const TASK_KIND_LABEL: Record<TaskKind, string> = {
+  task: "Задача",
+  bug: "Баг",
+};
+
+/** Порядок видов работы в селектах. */
+export const TASK_KINDS: TaskKind[] = ["task", "bug"];
 
 /**
  * Одна подпись статуса на весь продукт.

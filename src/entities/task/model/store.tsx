@@ -1,16 +1,19 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { describeApiError, type Result } from "@/shared/api";
 import { taskApi } from "../api/taskApi";
-import type { NewTaskInput, Task, TaskComment, TaskStatus } from "./types";
+import type { NewTaskInput, Task, TaskAttachment, TaskComment, TaskPatch } from "./types";
 
 /**
  * Единственный владелец списка задач. Задачи и всё, что с ними связано
  * (комментарии, файлы, связь с этапом онбординга), хранятся в бэкенде.
  *
- * Смена статуса и удаление применяются сразу (интерфейс не ждёт сервера) и
+ * Изменения полей и удаление применяются сразу (интерфейс не ждёт сервера) и
  * откатываются при ошибке — текст ошибки попадает в `mutationError`, его
  * показывает каркас приложения. Создание задачи и комментарии возвращают
  * `Result`: их ошибки показывает форма, в которой пользователь находится.
+ *
+ * Историю изменений ведёт бэкенд на каждом PATCH — здесь ничего логировать
+ * не нужно, и фичи change-* обязаны ходить только через `updateTask`.
  */
 export interface TasksStore {
   tasks: Task[];
@@ -21,8 +24,15 @@ export interface TasksStore {
   /** Сообщить об ошибке сценария вне формы (например, «В задачи» из онбординга). */
   reportError: (message: string) => void;
   addTask: (input: NewTaskInput, files?: File[]) => Promise<Result<Task>>;
-  setStatus: (id: string, status: TaskStatus) => void;
+  /**
+   * Изменить поля задачи. `preview` — как показать изменение до ответа
+   * сервера там, где по патчу этого не понять (исполнитель: в патче id,
+   * в задаче — имя). Ответ сервера заменяет предпросмотр.
+   */
+  updateTask: (id: string, patch: TaskPatch, preview?: Partial<Task>) => void;
   deleteTask: (id: string) => void;
+  /** Приложить файлы к самой задаче (не к комментарию). */
+  addFiles: (taskId: string, files: File[]) => Promise<Result<TaskAttachment[]>>;
   addComment: (taskId: string, text: string, files: File[]) => Promise<Result<TaskComment>>;
   editComment: (taskId: string, commentId: string, text: string) => Promise<Result<TaskComment>>;
   deleteComment: (taskId: string, commentId: string) => void;
@@ -34,6 +44,14 @@ export interface TasksStore {
 }
 
 const TasksContext = createContext<TasksStore | null>(null);
+
+/** Поля патча, которые в задаче выглядят так же, — показываем сразу. */
+function previewOf(patch: TaskPatch): Partial<Task> {
+  const { assigneeId, ...same } = patch;
+  const preview: Partial<Task> = { ...same };
+  if (assigneeId === null) preview.assignee = null;
+  return preview;
+}
 
 export function TasksProvider({ children }: { children: ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -92,17 +110,17 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     return { ok: true as const, data: created };
   }, []);
 
-  const setStatus = useCallback(
-    (id: string, status: TaskStatus) => {
+  const updateTask = useCallback(
+    (id: string, patch: TaskPatch, preview: Partial<Task> = {}) => {
       const before = tasksRef.current.find((t) => t.id === id);
-      if (!before || before.status === status) return;
+      if (!before) return;
 
-      patchTask(id, { status });
-      taskApi.setStatus(id, status).then((result) => {
+      patchTask(id, { ...previewOf(patch), ...preview });
+      taskApi.update(id, patch).then((result) => {
         if (result.ok) replaceTask(result.data);
         else {
           replaceTask(before);
-          setMutationError(`Не удалось перенести «${before.title}»: ${describeApiError(result.error)}`);
+          setMutationError(`Не удалось сохранить «${before.title}»: ${describeApiError(result.error)}`);
         }
       });
     },
@@ -121,6 +139,15 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       setTasks((prev) => [...prev.slice(0, index), before, ...prev.slice(index)]);
       setMutationError(`Не удалось удалить «${before.title}»: ${describeApiError(result.error)}`);
     });
+  }, []);
+
+  const addFiles = useCallback(async (taskId: string, files: File[]) => {
+    const result = await taskApi.uploadFiles(taskId, files);
+    if (result.ok) {
+      const uploaded = result.data;
+      setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, attachments: [...t.attachments, ...uploaded] } : t)));
+    }
+    return result;
   }, []);
 
   const addComment = useCallback(async (taskId: string, text: string, files: File[]) => {
@@ -180,8 +207,9 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       dismissMutationError,
       reportError,
       addTask,
-      setStatus,
+      updateTask,
       deleteTask,
+      addFiles,
       addComment,
       editComment,
       deleteComment,
@@ -189,7 +217,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       tasksOfClient,
       highPriorityCount,
     }),
-    [tasks, isLoading, error, mutationError, dismissMutationError, reportError, addTask, setStatus, deleteTask, addComment, editComment, deleteComment, downloadFile, tasksOfClient, highPriorityCount],
+    [tasks, isLoading, error, mutationError, dismissMutationError, reportError, addTask, updateTask, deleteTask, addFiles, addComment, editComment, deleteComment, downloadFile, tasksOfClient, highPriorityCount],
   );
 
   return <TasksContext.Provider value={value}>{children}</TasksContext.Provider>;

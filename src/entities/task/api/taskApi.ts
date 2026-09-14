@@ -1,7 +1,7 @@
 import { apiFetch, ok, type Result } from "@/shared/api";
-import type { NewTaskInput, Task, TaskAttachment, TaskComment, TaskStatus } from "../model/types";
+import type { NewTaskInput, Task, TaskAttachment, TaskComment, TaskPatch } from "../model/types";
 import type { TaskCommentDto, TaskDto, TaskFileDto } from "./dto";
-import { toAttachment, toComment, toCreateTaskBody, toStatusDto, toTask } from "./mapper";
+import { toAttachment, toComment, toCreateTaskBody, toPatchBody, toTask } from "./mapper";
 
 const mapResult = <D, T>(result: Result<D>, map: (dto: D) => T): Result<T> =>
   result.ok ? ok(map(result.data)) : result;
@@ -21,8 +21,9 @@ export const taskApi = {
   create: async (input: NewTaskInput): Promise<Result<Task>> =>
     mapResult(await apiFetch<TaskDto>("/tasks", { method: "POST", body: toCreateTaskBody(input) }), toTask),
 
-  setStatus: async (id: string, status: TaskStatus): Promise<Result<Task>> =>
-    mapResult(await apiFetch<TaskDto>(`/tasks/${id}`, { method: "PATCH", body: { status: toStatusDto(status) } }), toTask),
+  /** Единственный способ изменить поля: бэкенд сам пишет каждое изменение в историю. */
+  update: async (id: string, patch: TaskPatch): Promise<Result<Task>> =>
+    mapResult(await apiFetch<TaskDto>(`/tasks/${id}`, { method: "PATCH", body: toPatchBody(patch) }), toTask),
 
   remove: (id: string): Promise<Result<void>> => apiFetch(`/tasks/${id}`, { method: "DELETE" }),
 

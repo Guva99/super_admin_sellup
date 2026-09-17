@@ -1,6 +1,6 @@
 import { AlertCircle, FileText, Paperclip, Send, X } from "lucide-react";
 import { ATTACHMENT_ACCEPT, LocalImage, isImageAttachment } from "@/entities/task";
-import { UserAvatar } from "@/shared/ui";
+import { MarkdownEditor, MarkdownHint, UserAvatar } from "@/shared/ui";
 import { COMMENT_PRESETS } from "../model/presets";
 import type { CommentComposerController } from "../model/useAddTaskComment";
 
@@ -11,23 +11,23 @@ interface CommentComposerProps {
 }
 
 export function CommentComposer({ controller, authorName }: CommentComposerProps) {
-  const { text, files, isSending, error, canSend, setText, insertPreset, attachFiles, removeFile, send } = controller;
+  const { text, files, isSending, error, canSend, setText, insertPreset, attachFiles, removeFile, uploadPaste, send } = controller;
   const expanded = text !== "" || files.length > 0;
 
   return (
     <div className="flex gap-2.5">
       <UserAvatar name={authorName} size="sm" className="mt-1" />
       <div className="flex-1 space-y-2 min-w-0">
-        <textarea
+        <MarkdownEditor
           value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Написать комментарий… (⌘↵ отправить)"
+          onChange={setText}
+          uploadPaste={uploadPaste}
+          onSubmit={send}
+          placeholder="Написать комментарий… (⌘↵ отправить, картинку можно вставить из буфера)"
           rows={expanded ? 3 : 2}
-          className="w-full text-xs text-slate-700 px-3 py-2 border border-slate-200 rounded-lg outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-50 resize-none placeholder:text-slate-300 transition-colors bg-slate-50 focus:bg-white"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) send();
-          }}
+          className="text-xs text-slate-700 px-3 py-2 bg-slate-50 focus:bg-white"
         />
+        {expanded && <MarkdownHint />}
 
         {/* Заготовки — как быстрые реакции в Jira */}
         <div className="flex flex-wrap gap-1">

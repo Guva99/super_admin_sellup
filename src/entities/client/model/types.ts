@@ -21,7 +21,9 @@ export interface OnboardingStep {
   description?: string;
   status: "done" | "in_progress" | "pending";
   assignee: string;
-  hoursSpent: number;
+  /** Когда взят в работу / закрыт (ставит бэкенд); «Потрачено» — разница, см. `onboardingTime.ts`. */
+  startedAt: string | null;
+  completedAt: string | null;
   dueDate: string;
 }
 

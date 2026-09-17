@@ -30,4 +30,6 @@ export interface OnboardingStepDto {
   title: string;
   description: string;
   status: "PENDING" | "IN_PROGRESS" | "DONE";
+  startedAt: string | null;
+  completedAt: string | null;
 }

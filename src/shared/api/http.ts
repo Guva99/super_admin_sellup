@@ -164,3 +164,57 @@ export async function apiFetch<T>(
   if (res.status === 401) expireSession();
   return toResult<T>(res, responseType);
 }
+
+export interface UploadRequest {
+  /** Доля загруженного, 0…1 — для полосы прогресса. */
+  onProgress?: (fraction: number) => void;
+}
+
+/**
+ * Загрузка файлов с прогрессом. `fetch` прогресса отправки не отдаёт, поэтому
+ * здесь XMLHttpRequest; правила те же, что у `apiFetch`: токен, один refresh
+ * на 401 и повтор, окончание сессии — на экран входа.
+ */
+export async function apiUpload<T>(path: string, form: FormData, { onProgress }: UploadRequest = {}): Promise<Result<T>> {
+  const send = () =>
+    new Promise<{ status: number; body: string } | null>((resolve) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", `${API_URL}${path}`);
+      const token = tokenStorage.get()?.accessToken;
+      if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) onProgress?.(e.loaded / e.total);
+      };
+      xhr.onload = () => resolve({ status: xhr.status, body: xhr.responseText });
+      xhr.onerror = () => resolve(null);
+      xhr.onabort = () => resolve(null);
+      xhr.send(form);
+    });
+
+  const toUploadResult = (res: { status: number; body: string }): Result<T> => {
+    if (res.status >= 200 && res.status < 300) return ok((res.body ? JSON.parse(res.body) : undefined) as T);
+    let message = `HTTP ${res.status}`;
+    try {
+      const parsed = JSON.parse(res.body) as { error?: string };
+      if (parsed.error) message = parsed.error;
+    } catch {
+      // тело не JSON
+    }
+    return err({ code: CODE_BY_STATUS[res.status] ?? "unknown", message, status: res.status });
+  };
+
+  let res = await send();
+  if (!res) return networkError();
+  if (res.status !== 401) return toUploadResult(res);
+
+  const outcome = await refreshTokens();
+  if (outcome === "unreachable") return networkError();
+  if (outcome === "expired") {
+    expireSession();
+    return toUploadResult(res);
+  }
+  res = await send();
+  if (!res) return networkError();
+  if (res.status === 401) expireSession();
+  return toUploadResult(res);
+}

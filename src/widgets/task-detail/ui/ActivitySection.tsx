@@ -46,13 +46,13 @@ export function ActivitySection({ task, history, currentUserName, formatHistoryV
         </div>
       )}
 
-      {tab === "comments" && <CommentList taskId={task.id} comments={task.comments} controller={editor} formatTime={formatTime} />}
+      {tab === "comments" && <CommentList task={task} comments={task.comments} controller={editor} formatTime={formatTime} />}
 
       {tab === "history" && <HistoryList history={history} formatValue={formatHistoryValue} formatTime={formatTime} />}
 
       {tab === "all" && (
         <div className="space-y-3">
-          {[...task.comments.map((c) => ({ at: c.createdAt, node: <CommentList taskId={task.id} comments={[c]} controller={editor} formatTime={formatTime} /> })),
+          {[...task.comments.map((c) => ({ at: c.createdAt, node: <CommentList task={task} comments={[c]} controller={editor} formatTime={formatTime} /> })),
             ...historyWithoutComments.map((e) => ({ at: e.at, node: <HistoryEvent event={e} formatValue={formatHistoryValue} formatTime={formatTime} /> }))]
             .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
             .map((item, i) => <div key={i}>{item.node}</div>)}

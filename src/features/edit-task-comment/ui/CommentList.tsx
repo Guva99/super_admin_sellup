@@ -1,18 +1,20 @@
-import { Check, Pencil, Trash2 } from "lucide-react";
-import { CommentAttachment, type TaskComment } from "@/entities/task";
-import { UserAvatar } from "@/shared/ui";
+import { AlertCircle, Check, Pencil, Trash2 } from "lucide-react";
+import { CommentAttachment, taskImageRenderer, type Task, type TaskComment } from "@/entities/task";
+import { Markdown, MarkdownEditor, UserAvatar } from "@/shared/ui";
 import type { EditCommentController } from "../model/useEditTaskComment";
 
 interface CommentListProps {
-  taskId: string;
+  task: Task;
+  /** Какие комментарии показать: все или один (в общей ленте активности). */
   comments: TaskComment[];
   controller: EditCommentController;
   formatTime: (iso: string) => string;
 }
 
-/** Лента комментариев; свои можно править на месте и удалять. */
-export function CommentList({ taskId, comments, controller, formatTime }: CommentListProps) {
-  const { editingId, draft, error, isOwn, start, cancel, setDraft, save, remove } = controller;
+/** Лента комментариев с разметкой; свои можно править на месте и удалять. */
+export function CommentList({ task, comments, controller, formatTime }: CommentListProps) {
+  const { editingId, draft, error, isOwn, start, cancel, setDraft, save, toggleChecklist, resizeImage, remove, uploadPaste, pasteError } = controller;
+  const renderImage = taskImageRenderer(task);
 
   if (comments.length === 0) return <p className="text-xs text-slate-400">Комментариев пока нет</p>;
 
@@ -39,21 +41,22 @@ export function CommentList({ taskId, comments, controller, formatTime }: Commen
             </div>
             {editingId === c.id ? (
               <div className="space-y-1.5">
-                <textarea
+                <MarkdownEditor
                   autoFocus
                   value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  rows={2}
-                  className="w-full text-xs text-slate-700 px-2.5 py-1.5 border border-brand-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-50 resize-none bg-white"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) save();
-                    if (e.key === "Escape") {
-                      e.stopPropagation();
-                      cancel();
-                    }
-                  }}
+                  onChange={setDraft}
+                  uploadPaste={uploadPaste}
+                  onSubmit={save}
+                  onCancel={cancel}
+                  rows={Math.max(2, draft.split("\n").length + 1)}
+                  className="text-xs text-slate-700 px-2.5 py-1.5 border-brand-300"
                 />
-                {error && <p className="text-[11px] text-red-600">{error}</p>}
+                {(error || pasteError) && (
+                  <p role="alert" className="flex items-center gap-1.5 text-[11px] text-red-600">
+                    <AlertCircle size={11} />
+                    {error ?? pasteError}
+                  </p>
+                )}
                 <div className="flex gap-1.5">
                   <button type="button" onClick={save} className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium bg-brand-500 text-white rounded-md hover:bg-brand-600">
                     <Check size={9} /> Сохранить
@@ -65,11 +68,20 @@ export function CommentList({ taskId, comments, controller, formatTime }: Commen
               </div>
             ) : (
               <div className="space-y-2">
-                {c.text && <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-wrap">{c.text}</p>}
+                {c.text && (
+                  <Markdown
+                    text={c.text}
+                    className="text-xs text-slate-600"
+                    renderImage={renderImage}
+                    // Галочки и размер картинки меняет только автор — текст-то его.
+                    onToggleChecklist={isOwn(c) ? (line) => toggleChecklist(c, line) : undefined}
+                    onResizeImage={isOwn(c) ? (line, width) => resizeImage(c, line, width) : undefined}
+                  />
+                )}
                 {c.attachments.length > 0 && (
                   <div className="space-y-1.5">
                     {c.attachments.map((file) => (
-                      <CommentAttachment key={file.id} taskId={taskId} file={file} />
+                      <CommentAttachment key={file.id} taskId={task.id} file={file} />
                     ))}
                   </div>
                 )}

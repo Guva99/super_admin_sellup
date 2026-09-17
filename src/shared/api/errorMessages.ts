@@ -45,6 +45,8 @@ const MESSAGES: Record<string, string> = {
   "amount must be a number": "Сумма должна быть числом",
   "paidAt must be a date in YYYY-MM-DD format": "Укажите дату платежа",
   "a receipt must be an image or a PDF": "Чек — картинка или PDF",
+  "file content does not match its extension": "Содержимое файла не совпадает с расширением",
+  "attachmentIds must be your own files that are not attached yet": "Вложения черновика устарели — прикрепите файлы заново",
 };
 
 const BY_CODE: Record<ApiError["code"], string> = {

@@ -39,4 +39,5 @@ export interface TaskFileDto {
   name: string;
   contentType: string;
   size: number;
+  isInline?: boolean;
 }

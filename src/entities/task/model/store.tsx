@@ -33,6 +33,10 @@ export interface TasksStore {
   deleteTask: (id: string) => void;
   /** Приложить файлы к самой задаче (не к комментарию). */
   addFiles: (taskId: string, files: File[]) => Promise<Result<TaskAttachment[]>>;
+  /** Файл уже загружен отдельным запросом (редактор, очередь) — просто показать его. */
+  addAttachment: (taskId: string, file: TaskAttachment) => void;
+  /** Файл удалён на сервере — убрать из задачи. */
+  removeAttachment: (taskId: string, fileId: string) => void;
   /**
    * Убрать из памяти задачи удалённого бизнеса — запроса не делает: на сервере
    * они скрылись вместе с ним.
@@ -159,6 +163,14 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     return result;
   }, []);
 
+  const addAttachment = useCallback((taskId: string, file: TaskAttachment) => {
+    setTasks((prev) => prev.map((t) => (t.id === taskId && !t.attachments.some((f) => f.id === file.id) ? { ...t, attachments: [...t.attachments, file] } : t)));
+  }, []);
+
+  const removeAttachment = useCallback((taskId: string, fileId: string) => {
+    setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, attachments: t.attachments.filter((f) => f.id !== fileId) } : t)));
+  }, []);
+
   const dropClientTasks = useCallback((clientId: string) => setTasks((prev) => prev.filter((t) => t.clientId !== clientId)), []);
 
   const addComment = useCallback(async (taskId: string, text: string, files: File[]) => {
@@ -226,6 +238,8 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       updateTask,
       deleteTask,
       addFiles,
+      addAttachment,
+      removeAttachment,
       dropClientTasks,
       addComment,
       editComment,
@@ -245,6 +259,8 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       updateTask,
       deleteTask,
       addFiles,
+      addAttachment,
+      removeAttachment,
       dropClientTasks,
       addComment,
       editComment,

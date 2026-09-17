@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { CheckCircle2, Circle, Clock, FileText, Plus, Rocket, Users, X } from "lucide-react";
-import { STEP_STATUS_CYCLE, type Client, type OnboardingStep } from "@/entities/client";
+import { STEP_STATUS_CYCLE, onboardingHoursSpent, stepHoursSpent, type Client, type OnboardingStep } from "@/entities/client";
 import type { Task } from "@/entities/task";
+import { formatDateTimeMoscow, formatHours } from "@/shared/lib";
 
 interface ClientOnboardingProps {
   client: Client;
@@ -20,7 +21,8 @@ export function ClientOnboarding({
 }: ClientOnboardingProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const totalHours = client.onboardingSteps.reduce((s, step) => s + step.hoursSpent, 0);
+  // Календарное время этапов (от взятия в работу до закрытия), не рабочие часы.
+  const totalHours = onboardingHoursSpent(client.onboardingSteps);
   const doneCount = client.onboardingSteps.filter((s) => s.status === "done").length;
 
   if (client.onboardingSteps.length === 0) {
@@ -47,8 +49,10 @@ export function ClientOnboarding({
           <div className="h-full bg-brand-500 rounded-full transition-all duration-700" style={{ width: `${(doneCount / Math.max(client.onboardingSteps.length, 1)) * 100}%` }} />
         </div>
         <div className="flex items-center justify-between mt-3 text-xs text-slate-500">
-          <span>Потрачено: <strong className="text-slate-700">{totalHours} ч</strong></span>
-          <span>{client.daysInStatus} дней в статусе</span>
+          <span title="Сумма календарного времени этапов: от взятия в работу до закрытия, у открытых — до сейчас (по Москве)">
+            Потрачено: <strong className="text-slate-700">{formatHours(totalHours)}</strong>
+          </span>
+          <span title="Календарных дней с последнего перемещения по воронке, по Москве">{client.daysInStatus} дней в статусе</span>
         </div>
       </div>
 
@@ -151,8 +155,13 @@ export function ClientOnboarding({
                   {/* Meta row */}
                   <div className="flex items-center gap-4 mt-2 text-xs text-slate-400">
                     {step.assignee && <span className="flex items-center gap-1"><Users size={10} />{step.assignee}</span>}
-                    {step.hoursSpent > 0 && (
-                      <span className="flex items-center gap-1"><Clock size={10} />{step.hoursSpent} ч</span>
+                    {step.startedAt && (
+                      <span
+                        className="flex items-center gap-1"
+                        title={`${step.completedAt ? "Заняло" : "В работе"}: с ${formatDateTimeMoscow(step.startedAt)}${step.completedAt ? ` до ${formatDateTimeMoscow(step.completedAt)}` : ""} (МСК)`}
+                      >
+                        <Clock size={10} />{formatHours(stepHoursSpent(step))}
+                      </span>
                     )}
                     {step.dueDate && (
                       <span className="flex items-center gap-1">

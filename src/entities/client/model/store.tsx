@@ -118,7 +118,11 @@ export function ClientsProvider({ children }: { children: ReactNode }) {
     if (title === undefined && description === undefined && status === undefined) return;
 
     saveOnboardingStep(clientId, stepId, { title, description, status }).then((result) => {
-      if (result.ok) return;
+      if (result.ok) {
+        // Метки времени (взят в работу / закрыт) ставит бэкенд — забираем их из ответа.
+        setClients((prev) => prev.map((c) => (c.id === clientId ? applyStepPatch(c, result.data) : c)));
+        return;
+      }
       const previous = before.onboardingSteps.find((step) => step.id === stepId);
       if (previous) {
         setClients((prev) =>

@@ -21,7 +21,14 @@ export {
   MAX_UPLOAD_BYTES,
   attachmentError,
   isImageAttachment,
+  attachmentRef,
+  attachmentKey,
+  findAttachment,
+  allAttachments,
+  pastedFile,
 } from "./model/files";
+
+export { usePastedFile, type PasteUploader } from "./model/usePastedFile";
 
 export {
   TASK_TYPE_LABEL,
@@ -37,12 +44,12 @@ export {
   TASK_COLUMNS,
 } from "./model/dictionaries";
 
-export { statusFromDto, kindFromDto, priorityFromDto } from "./api/mapper";
+export { statusFromDto, kindFromDto, priorityFromDto, typeFromDto } from "./api/mapper";
 
 export { TaskTypeIcon, TASK_TYPE_ICON } from "./ui/TaskTypeIcon";
 export { TaskKindIcon } from "./ui/TaskKindIcon";
 export { TaskKey } from "./ui/TaskKey";
 export { TaskCard } from "./ui/TaskCard";
-export { AttachmentImage, AttachmentPreview, CommentAttachment, LocalImage, useDownloadAttachment } from "./ui/attachments";
+export { AttachmentImage, AttachmentPreview, CommentAttachment, LocalImage, taskImageRenderer, useDownloadAttachment } from "./ui/attachments";
 
 export { TasksProvider, useTasks, type TasksStore } from "./model/store";

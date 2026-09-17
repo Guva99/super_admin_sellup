@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { ChevronDown, FileText, Image as ImageIcon } from "lucide-react";
 import { describeApiError } from "@/shared/api";
-import { formatBytes, saveBlob } from "@/shared/lib";
-import type { TaskAttachment } from "../model/types";
-import { isImageAttachment } from "../model/files";
+import { formatBytes, saveBlob, type MarkdownImage } from "@/shared/lib";
+import type { Task, TaskAttachment } from "../model/types";
+import { allAttachments, attachmentKey, findAttachment, isImageAttachment } from "../model/files";
 import { useTasks } from "../model/store";
 
 /**
@@ -29,7 +29,18 @@ export function AttachmentImage({ taskId, file, className }: { taskId: string; f
   }, [downloadFile, taskId, file.id]);
 
   if (!url) return <div className={`${className} bg-slate-100 animate-pulse`} />;
-  return <img src={url} alt={file.name} className={className} onClick={() => window.open(url, "_blank")} />;
+  return (
+    <img
+      src={url}
+      alt={file.name}
+      className={className}
+      onClick={(e) => {
+        // Открыть оригинал, но не начать правку описания вокруг.
+        e.stopPropagation();
+        window.open(url, "_blank");
+      }}
+    />
+  );
 }
 
 /** Скачивание файла — тем же запросом с токеном. */
@@ -46,22 +57,22 @@ export function useDownloadAttachment(taskId: string) {
 }
 
 /** Строка вложения задачи: раскрывается в превью картинки или кнопку скачивания. */
-export function AttachmentPreview({ taskId, file }: { taskId: string; file: TaskAttachment }) {
+export function AttachmentPreview({ taskId, file, trailing }: { taskId: string; file: TaskAttachment; trailing?: ReactNode }) {
   const [expanded, setExpanded] = useState(false);
   const { download } = useDownloadAttachment(taskId);
   const isImg = isImageAttachment(file.type);
 
   return (
     <div className="border border-slate-200 rounded-lg overflow-hidden">
-      <button
-        onClick={() => setExpanded((v) => !v)}
-        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-50 transition-colors text-left"
-      >
-        {isImg ? <ImageIcon size={12} className="text-brand-400 flex-shrink-0" /> : <FileText size={12} className="text-slate-400 flex-shrink-0" />}
-        <span className="text-[11px] text-slate-700 flex-1 truncate">{file.name}</span>
-        <span className="text-[10px] text-slate-400 flex-shrink-0">{formatBytes(file.size)}</span>
-        <ChevronDown size={10} className={`text-slate-300 flex-shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`} />
-      </button>
+      <div className="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 transition-colors">
+        <button onClick={() => setExpanded((v) => !v)} className="flex-1 min-w-0 flex items-center gap-2 text-left">
+          {isImg ? <ImageIcon size={12} className="text-brand-400 flex-shrink-0" /> : <FileText size={12} className="text-slate-400 flex-shrink-0" />}
+          <span className="text-[11px] text-slate-700 flex-1 truncate">{file.name}</span>
+          <span className="text-[10px] text-slate-400 flex-shrink-0">{formatBytes(file.size)}</span>
+          <ChevronDown size={10} className={`text-slate-300 flex-shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`} />
+        </button>
+        {trailing}
+      </div>
       {expanded && isImg && (
         <div className="border-t border-slate-100">
           <AttachmentImage taskId={taskId} file={file} className="w-full object-contain max-h-64 cursor-pointer" />
@@ -100,6 +111,21 @@ export function CommentAttachment({ taskId, file }: { taskId: string; file: Task
       <span className="text-[10px] text-slate-400 flex-shrink-0">{formatBytes(file.size)}</span>
     </button>
   );
+}
+
+/**
+ * Как показывать картинки разметки в описании и комментариях этой задачи:
+ * ссылка `attach:<ключ>` ищется среди её вложений. Незагруженная ещё картинка
+ * (черновик новой задачи) ссылки не найдёт — там своя отрисовка.
+ */
+export function taskImageRenderer(task: Task) {
+  const files = allAttachments(task);
+  return (image: MarkdownImage) => {
+    const key = attachmentKey(image.src);
+    const file = key ? findAttachment(files, key) : null;
+    if (!file || !isImageAttachment(file.type)) return null;
+    return <AttachmentImage taskId={task.id} file={file} className="rounded-lg border border-slate-200 w-full h-auto cursor-pointer hover:opacity-90 transition-opacity" />;
+  };
 }
 
 /** Предпросмотр ещё не отправленного файла: он есть только в браузере. */

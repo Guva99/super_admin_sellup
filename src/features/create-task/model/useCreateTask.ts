@@ -1,10 +1,21 @@
 import { useState } from "react";
-import { attachmentError, useTasks, TASK_COLUMNS, type NewTaskInput, type TaskKind, type TaskPriority, type TaskStatus, type TaskType } from "@/entities/task";
+import {
+  useTasks,
+  TASK_COLUMNS,
+  type NewTaskInput,
+  type TaskKind,
+  type TaskPerson,
+  type TaskPriority,
+  type TaskStatus,
+  type TaskType,
+} from "@/entities/task";
 import { useClients, normaliseTaskKeyInput, taskKeyError, type Client } from "@/entities/client";
 import { useSession } from "@/entities/session";
+import { useUsers } from "@/entities/user";
 import { describeApiError } from "@/shared/api";
 import type { CreateTaskPreset } from "@/shared/lib";
 
+/** Черновик повторяет поля задачи: форма новой и карточка сохранённой одинаковы. */
 export interface CreateTaskDraft {
   title: string;
   description: string;
@@ -12,44 +23,45 @@ export interface CreateTaskDraft {
   type: TaskType;
   kind: TaskKind;
   priority: TaskPriority;
-  dueDate: string;
-  /** id сотрудника; пусто — без исполнителя. */
-  assigneeId: string;
+  status: TaskStatus;
+  labels: string[];
+  dueDate: string | null;
+  startDate: string | null;
+  assignee: TaskPerson | null;
   /** Ключ выбранного бизнеса: подставляется из него, правится до первой задачи. */
   taskKey: string;
 }
 
-const emptyDraft = (assigneeId: string): CreateTaskDraft => ({
+const emptyDraft = (assignee: TaskPerson | null): CreateTaskDraft => ({
   title: "",
   description: "",
   clientId: "",
   type: "task",
   kind: "task",
   priority: "medium",
-  dueDate: "",
-  assigneeId,
+  status: "todo",
+  labels: [],
+  dueDate: null,
+  startDate: null,
+  assignee,
   taskKey: "",
 });
 
 export interface CreateTaskController {
   isOpen: boolean;
   draft: CreateTaskDraft;
-  attachments: File[];
   clientPreset: string | null;
   /** Выбранный бизнес — от него зависит ключ задачи. */
   selectedClient: Client | null;
   /** Ключ ещё можно задать: у бизнеса нет задач. Дальше меняет владелец в карточке. */
   canEditTaskKey: boolean;
-  /** Колонка, из которой нажали «Создать»; задача попадёт в неё. */
-  statusPreset: TaskStatus | null;
   isSubmitting: boolean;
   error: string | null;
   open: (preset?: CreateTaskPreset) => void;
   close: () => void;
   patch: (patch: Partial<CreateTaskDraft>) => void;
-  attachFiles: (files: FileList | null) => void;
-  removeAttachment: (index: number) => void;
-  submit: () => void;
+  /** Файлы уже загружены черновиками (в описание или списком) — задача заберёт их по id. */
+  submit: (attachmentIds: string[]) => void;
 }
 
 /** Статус из предустановки — строка из shared; принимаем только известную колонку. */
@@ -57,20 +69,27 @@ const knownStatus = (value: string | undefined): TaskStatus | null =>
   TASK_COLUMNS.find((column) => column.id === value)?.id ?? null;
 
 /**
- * Состояние и правила создания задачи. UI-компонент только отображает это.
- * Исполнитель по умолчанию — тот, кто создаёт задачу.
+ * Состояние и правила создания задачи. UI только отображает это — и рисует
+ * теми же кусками, что и карточка сохранённой задачи.
+ *
+ * Файлы к новой задаче грузятся сразу, ещё до её создания (черновики на
+ * сервере), поэтому картинка в описании ссылается на настоящий id; форма
+ * при отправке передаёт список id, и задача забирает их себе.
  */
 export function useCreateTask(): CreateTaskController {
   const { addTask, updateTask, tasksOfClient } = useTasks();
   const { clients, setTaskKey } = useClients();
   const { user } = useSession();
-  const currentUserId = user?.id ?? "";
+  const { users } = useUsers();
+  const me: TaskPerson | null = user ? { id: user.id, name: user.fullName } : null;
+  const personOf = (id: string): TaskPerson | null => {
+    const found = users.find((u) => u.id === id);
+    return found ? { id: found.id, name: found.fullName } : null;
+  };
 
   const [isOpen, setIsOpen] = useState(false);
-  const [draft, setDraft] = useState<CreateTaskDraft>(() => emptyDraft(currentUserId));
+  const [draft, setDraft] = useState<CreateTaskDraft>(() => emptyDraft(me));
   const [clientPreset, setClientPreset] = useState<string | null>(null);
-  const [statusPreset, setStatusPreset] = useState<TaskStatus | null>(null);
-  const [attachments, setAttachments] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,14 +97,14 @@ export function useCreateTask(): CreateTaskController {
 
   const open = (preset: CreateTaskPreset = {}) => {
     const client = preset.clientId ? clientById(preset.clientId) : null;
+    const assignee = preset.assigneeId ? personOf(preset.assigneeId) : me;
     setDraft({
-      ...emptyDraft(preset.assigneeId ?? currentUserId),
+      ...emptyDraft(assignee),
       clientId: preset.clientId ?? "",
       taskKey: client?.taskKey ?? "",
+      status: knownStatus(preset.status) ?? "todo",
     });
     setClientPreset(preset.clientId ?? null);
-    setStatusPreset(knownStatus(preset.status));
-    setAttachments([]);
     setError(null);
     setIsOpen(true);
   };
@@ -99,23 +118,10 @@ export function useCreateTask(): CreateTaskController {
       return { ...prev, taskKey, ...next };
     });
 
-  const attachFiles = (files: FileList | null) => {
-    if (!files) return;
-    const accepted: File[] = [];
-    for (const file of Array.from(files)) {
-      const problem = attachmentError(file);
-      if (problem) setError(problem);
-      else accepted.push(file);
-    }
-    if (accepted.length > 0) setAttachments((prev) => [...prev, ...accepted]);
-  };
-
-  const removeAttachment = (index: number) => setAttachments((prev) => prev.filter((_, i) => i !== index));
-
   const selectedClient = draft.clientId ? clientById(draft.clientId) : null;
   const canEditTaskKey = selectedClient !== null && tasksOfClient(selectedClient.id).length === 0;
 
-  const submit = async () => {
+  const submit = async (attachmentIds: string[]) => {
     if (!draft.title.trim() || isSubmitting) return;
     setIsSubmitting(true);
     setError(null);
@@ -127,8 +133,11 @@ export function useCreateTask(): CreateTaskController {
       type: draft.type,
       kind: draft.kind,
       priority: draft.priority,
-      dueDate: draft.dueDate || null,
-      assigneeId: draft.assigneeId || null,
+      labels: draft.labels,
+      dueDate: draft.dueDate,
+      startDate: draft.startDate,
+      assigneeId: draft.assignee?.id ?? null,
+      attachmentIds,
     };
     // Ключ бизнеса сохраняется до задачи: её ключ строится уже из нового.
     if (selectedClient && canEditTaskKey && draft.taskKey !== selectedClient.taskKey) {
@@ -146,35 +155,30 @@ export function useCreateTask(): CreateTaskController {
       }
     }
 
-    const result = await addTask(input, attachments);
+    const result = await addTask(input);
     setIsSubmitting(false);
     if (!result.ok) {
       setError(describeApiError(result.error));
       return;
     }
-    // Бэкенд создаёт задачу в первой колонке; «Создать» из другой колонки
-    // сразу переносит её туда — это отдельная строка в истории, так и задумано.
-    if (statusPreset && statusPreset !== "todo") updateTask(result.data.id, { status: statusPreset });
+    // Бэкенд создаёт задачу в первой колонке; выбранный в форме статус
+    // переносит её сразу — это отдельная строка в истории, так и задумано.
+    if (draft.status !== "todo") updateTask(result.data.id, { status: draft.status });
     setIsOpen(false);
-    setDraft(emptyDraft(currentUserId));
-    setAttachments([]);
+    setDraft(emptyDraft(me));
   };
 
   return {
     isOpen,
     draft,
-    attachments,
     clientPreset,
     selectedClient,
     canEditTaskKey,
-    statusPreset,
     isSubmitting,
     error,
     open,
     close,
     patch: (next: Partial<CreateTaskDraft>) => patch(next.taskKey !== undefined ? { ...next, taskKey: normaliseTaskKeyInput(next.taskKey) } : next),
-    attachFiles,
-    removeAttachment,
     submit,
   };
 }

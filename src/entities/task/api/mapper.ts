@@ -52,6 +52,7 @@ export const toAttachment = (dto: TaskFileDto): TaskAttachment => ({
   name: dto.name,
   size: dto.size,
   type: dto.contentType,
+  isInline: dto.isInline ?? false,
 });
 
 export const toComment = (dto: TaskCommentDto): TaskComment => ({
@@ -99,12 +100,14 @@ export const toCreateTaskBody = (input: NewTaskInput) => ({
   dueDate: input.dueDate,
   startDate: input.startDate ?? null,
   assigneeId: input.assigneeId,
+  attachmentIds: input.attachmentIds ?? [],
 });
 
 /** Только присланные поля; null → "" — так бэкенд понимает «очистить». */
 export const toPatchBody = (patch: TaskPatch) => ({
   title: patch.title,
   description: patch.description,
+  type: patch.type && reverse(TYPE, patch.type),
   kind: patch.kind && reverse(KIND, patch.kind),
   priority: patch.priority && reverse(PRIORITY, patch.priority),
   status: patch.status && reverse(STATUS, patch.status),
@@ -118,3 +121,4 @@ export const toPatchBody = (patch: TaskPatch) => ({
 export const statusFromDto = (value: string): TaskStatus | undefined => STATUS[value as TaskDto["status"]];
 export const kindFromDto = (value: string): TaskKind | undefined => KIND[value as TaskDto["kind"]];
 export const priorityFromDto = (value: string): TaskPriority | undefined => PRIORITY[value as TaskDto["priority"]];
+export const typeFromDto = (value: string): TaskType | undefined => TYPE[value as TaskDto["type"]];

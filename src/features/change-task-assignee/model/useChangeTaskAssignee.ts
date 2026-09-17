@@ -16,10 +16,5 @@ export function useChangeTaskAssignee() {
     updateTask(task.id, { assigneeId: user?.id ?? null }, { assignee: user ? { id: user.id, name: user.fullName } : null });
   };
 
-  const assignToMe = (task: Task) => {
-    const self = users.find((u) => u.id === me?.id);
-    if (self) assign(task, self);
-  };
-
-  return { users, me, assign, assignToMe };
+  return { users, me, assign };
 }

@@ -17,6 +17,8 @@ export interface TaskAttachment {
   name: string;
   size: number;
   type: string;
+  /** Упоминается ли файл в описании или комментарии — считает бэкенд. */
+  isInline: boolean;
 }
 
 export interface TaskComment {
@@ -78,6 +80,8 @@ export interface NewTaskInput {
   startDate?: string | null;
   assigneeId: string | null;
   onboardingStepId?: string;
+  /** Файлы, загруженные черновиками, пока форма была открыта. */
+  attachmentIds?: string[];
 }
 
 /**
@@ -87,6 +91,8 @@ export interface NewTaskInput {
 export interface TaskPatch {
   title?: string;
   description?: string;
+  /** Категория обращения клиента. */
+  type?: TaskType;
   kind?: TaskKind;
   priority?: TaskPriority;
   status?: TaskStatus;

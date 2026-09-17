@@ -42,5 +42,6 @@ export { HealthBar } from "./ui/HealthBar";
 export { StepBadge } from "./ui/StepBadge";
 export { ClientPipelineCard } from "./ui/ClientPipelineCard";
 
+export { stepHoursSpent, onboardingHoursSpent } from "./model/onboardingTime";
 export { MAX_TASK_KEY_LENGTH, INTERNAL_TASK_KEY, normaliseTaskKeyInput, taskKeyError } from "./model/taskKey";
 export { ClientsProvider, useClients, useClient, type ClientsStore } from "./model/store";

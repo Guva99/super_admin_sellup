@@ -1,5 +1,6 @@
 import type { Client, ClientStage, ClientStatus, NewClientInput, OnboardingStep } from "../model/types";
 import type { ClientDto, OnboardingStepDto } from "./dto";
+import { calendarDaysSince } from "@/shared/lib";
 
 /**
  * DTO бэкенда ↔ модель приложения. Единственное место, знающее про формат
@@ -36,8 +37,6 @@ const AVATAR_COLORS = [
   "#ec4899", "#0ea5e9", "#f97316", "#84cc16", "#14b8a6",
 ];
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-
 function colorFor(id: string): string {
   let hash = 0;
   for (const char of id) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
@@ -63,9 +62,10 @@ export function toOnboardingStep(dto: OnboardingStepDto): OnboardingStep {
     title: dto.title,
     description: dto.description || undefined,
     status: STEP_STATUS[dto.status],
-    // Ответственных, часов и сроков у этапов в бэкенде пока нет.
+    startedAt: dto.startedAt,
+    completedAt: dto.completedAt,
+    // Ответственных и сроков у этапов в бэкенде пока нет.
     assignee: "",
-    hoursSpent: 0,
     dueDate: "",
   };
 }
@@ -93,7 +93,8 @@ export function toClient(dto: ClientDto): Client {
     // В MRR клиент попадает только в «Запуск / Активен».
     mrr: status === "active" ? monthlyPrice : 0,
     connectedAt: dto.createdAt,
-    daysInStatus: Math.max(0, Math.floor((Date.now() - new Date(dto.stageChangedAt).getTime()) / DAY_MS)),
+    // Календарные дни по Москве: перенос в 23:50 и просмотр в 00:10 — уже «1 день».
+    daysInStatus: calendarDaysSince(dto.stageChangedAt),
     owner: {
       name: dto.ownerName,
       email: dto.ownerEmail,

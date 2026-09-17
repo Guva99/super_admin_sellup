@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { attachmentError, useTasks } from "@/entities/task";
+import { attachmentError, usePastedFile, useTasks } from "@/entities/task";
 import { describeApiError } from "@/shared/api";
+import type { PastedFile } from "@/shared/ui";
 import type { CommentPreset } from "./presets";
 
 export interface CommentComposerController {
@@ -14,12 +15,15 @@ export interface CommentComposerController {
   insertPreset: (preset: CommentPreset) => void;
   attachFiles: (files: FileList | null) => void;
   removeFile: (index: number) => void;
+  /** Картинка из буфера уходит во вложения задачи и встаёт прямо в текст. */
+  uploadPaste: (file: File) => PastedFile | null;
   send: () => void;
 }
 
 /** Поле нового комментария: текст, файлы, заготовки, отправка одним запросом. */
 export function useAddTaskComment(taskId: string): CommentComposerController {
   const { addComment } = useTasks();
+  const { uploadPaste, pasteError } = usePastedFile(taskId);
   const [text, setText] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [isSending, setIsSending] = useState(false);
@@ -62,5 +66,5 @@ export function useAddTaskComment(taskId: string): CommentComposerController {
     setFiles([]);
   };
 
-  return { text, files, isSending, error, canSend, setText, insertPreset, attachFiles, removeFile, send };
+  return { text, files, isSending, error: error ?? pasteError, canSend, setText, insertPreset, attachFiles, removeFile, uploadPaste, send };
 }

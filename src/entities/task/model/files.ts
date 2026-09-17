@@ -1,22 +1,16 @@
-/**
- * Правила вложений — те же, что проверяет бэкенд (service/tasks.go). Проверка
- * здесь нужна, чтобы сказать об ошибке сразу при выборе файла, а не после отправки.
- */
-export const MAX_FILE_BYTES = 10 * 1024 * 1024;
-/** Лимит одного запроса: все файлы комментария уходят вместе. */
-export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+import type { TaskAttachment } from "./types";
+import { isImageType } from "@/shared/lib";
 
-const ALLOWED_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".heic", ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".txt"];
+export { MAX_FILE_BYTES, MAX_UPLOAD_BYTES, ATTACHMENT_ACCEPT, attachmentError, attachmentRef, attachmentKey, pastedFile } from "@/shared/lib";
 
-/** Для атрибута accept у <input type="file">. */
-export const ATTACHMENT_ACCEPT = ALLOWED_EXTENSIONS.join(",");
+export const isImageAttachment = isImageType;
 
-/** Текст ошибки для пользователя или null, если файл можно прикрепить. */
-export function attachmentError(file: File): string | null {
-  const name = file.name.toLowerCase();
-  if (!ALLOWED_EXTENSIONS.some((ext) => name.endsWith(ext))) return `«${file.name}»: такой тип файла прикрепить нельзя`;
-  if (file.size > MAX_FILE_BYTES) return `«${file.name}» больше 10 МБ`;
-  return null;
+export function findAttachment(attachments: TaskAttachment[], key: string): TaskAttachment | null {
+  return attachments.find((file) => file.id === key) ?? attachments.find((file) => file.name === key) ?? null;
 }
 
-export const isImageAttachment = (type: string): boolean => type.startsWith("image/");
+/** Вложения задачи и всех её комментариев — картинка в тексте может быть любой из них. */
+export function allAttachments(task: { attachments: TaskAttachment[]; comments: { attachments: TaskAttachment[] }[] }): TaskAttachment[] {
+  return [...task.attachments, ...task.comments.flatMap((comment) => comment.attachments)];
+}
+

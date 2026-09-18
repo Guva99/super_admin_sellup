@@ -6,12 +6,12 @@ const inputClass =
   "w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-50 transition-colors placeholder:text-slate-300";
 
 export function PlanFormModal({ controller }: { controller: PlanFormController }) {
-  const { isOpen, editing, draft, isSubmitting, error, close, patch, submit } = controller;
+  const { isOpen, editing, draft, isDirty, restored, isSubmitting, error, close, patch, submit } = controller;
 
   if (!isOpen) return null;
 
   return (
-    <ModalOverlay onClose={close}>
+    <ModalOverlay onClose={close} unsaved={isDirty}>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -70,6 +70,7 @@ export function PlanFormModal({ controller }: { controller: PlanFormController }
 
           {draft.isCustom && <p className="text-xs text-slate-400">Базовая цена подставится при подключении бизнеса — там её можно изменить под клиента.</p>}
 
+          {restored && <p className="text-[11px] text-amber-600">Восстановлен незаконченный черновик тарифа.</p>}
           {error && (
             <div role="alert" className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-xs text-red-600">
               <AlertCircle size={13} className="flex-shrink-0" />

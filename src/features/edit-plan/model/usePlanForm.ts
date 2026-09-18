@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useDraft } from "@/shared/lib";
 import { usePlans, type Plan, type PlanInput } from "@/entities/plan";
 import { describeApiError } from "@/shared/api";
 
@@ -12,6 +13,9 @@ export interface PlanDraft {
 
 export interface PlanFormController {
   isOpen: boolean;
+  /** Форма изменена, но не сохранена. */
+  isDirty: boolean;
+  restored: boolean;
   /** Редактируемый тариф; null — создаётся новый. */
   editing: Plan | null;
   draft: PlanDraft;
@@ -64,6 +68,19 @@ export function usePlanForm(): PlanFormController {
     setIsOpen(true);
   };
 
+  // Черновик отдельно у каждого тарифа и отдельно у нового.
+  const draftKey = isOpen ? `plan:${editing?.id ?? "new"}` : null;
+  const saved: PlanDraft = editing
+    ? { name: editing.name, description: editing.description, price: String(editing.price), setupPrice: String(editing.setupPrice), isCustom: editing.isCustom }
+    : emptyDraft();
+  const isDirty = JSON.stringify(draft) !== JSON.stringify(saved);
+  const { restored, clear: forgetDraft } = useDraft<PlanDraft>({
+    key: draftKey,
+    value: draft,
+    restore: setDraft,
+    isEmpty: (value) => JSON.stringify(value) === JSON.stringify(saved),
+  });
+
   const close = () => {
     if (!isSubmitting) setIsOpen(false);
   };
@@ -95,12 +112,17 @@ export function usePlanForm(): PlanFormController {
     const result = editing ? await updatePlan(editing.id, input) : await createPlan(input);
     setIsSubmitting(false);
 
-    if (result.ok) setIsOpen(false);
+    if (result.ok) {
+      forgetDraft();
+      setIsOpen(false);
+    }
     else setError(describeApiError(result.error));
   };
 
   return {
     isOpen,
+    isDirty,
+    restored,
     editing,
     draft,
     isSubmitting,

@@ -32,9 +32,11 @@ const KIND: Record<TaskDto["kind"], TaskKind> = {
 };
 
 const PRIORITY: Record<TaskDto["priority"], TaskPriority> = {
+  HIGHEST: "highest",
   HIGH: "high",
   MEDIUM: "medium",
   LOW: "low",
+  LOWEST: "lowest",
 };
 
 const STATUS: Record<TaskDto["status"], TaskStatus> = {
@@ -74,6 +76,7 @@ export const toTask = (dto: TaskDto): Task => ({
   clientId: dto.clientId,
   type: TYPE[dto.type],
   kind: KIND[dto.kind],
+  parentId: dto.parentId,
   priority: PRIORITY[dto.priority],
   status: STATUS[dto.status],
   labels: dto.labels,
@@ -92,6 +95,7 @@ export const toCreateTaskBody = (input: NewTaskInput) => ({
   title: input.title,
   description: input.description,
   clientId: input.clientId,
+  parentId: input.parentId ?? null,
   onboardingStepId: input.onboardingStepId ?? null,
   type: reverse(TYPE, input.type),
   kind: reverse(KIND, input.kind),

@@ -7,6 +7,7 @@ import { ActivitySection } from "./ActivitySection";
 import { AttachmentsSection } from "./AttachmentsSection";
 import { DescriptionSection } from "./DescriptionSection";
 import { DetailsSidebar } from "./DetailsSidebar";
+import { SubtasksSection } from "./SubtasksSection";
 import { MetaFooter } from "./MetaFooter";
 import { TaskBreadcrumb } from "./TaskBreadcrumb";
 import { TaskDialogFrame } from "./TaskDialogFrame";
@@ -22,11 +23,15 @@ interface TaskDetailProps {
  * раскладка у новой задачи (`TaskCreateDialog`).
  */
 export function TaskDetail({ taskId, onClose }: TaskDetailProps) {
-  const { task, client, history, currentUserName, formatHistoryValue, formatTime, deleteTask } = useTaskDetail(taskId);
+  const { task, client, parent, subtaskCount, history, currentUserName, formatHistoryValue, formatTime, deleteTask } =
+    useTaskDetail(taskId);
   const navigate = useNavigate();
 
   const remove = () => {
-    if (!task || !window.confirm(`Удалить задачу ${task.key} «${task.title}»?`)) return;
+    if (!task) return;
+    // Подзадачи уходят вместе с родителем (каскад в базе) — предупреждаем.
+    const tail = subtaskCount > 0 ? ` Вместе с ней удалятся подзадачи: ${subtaskCount}.` : "";
+    if (!window.confirm(`Удалить задачу ${task.key} «${task.title}»?${tail}`)) return;
     deleteTask();
     onClose();
   };
@@ -52,6 +57,8 @@ export function TaskDetail({ taskId, onClose }: TaskDetailProps) {
           task={task}
           parentLabel={client?.name ?? "Задачи"}
           onParentClick={client ? () => navigate(`/clients/${client.id}/tasks`) : undefined}
+          parentTask={parent}
+          onParentTaskClick={parent ? () => navigate(`/tasks/${parent.id}`) : undefined}
         />
       }
       actions={
@@ -68,6 +75,8 @@ export function TaskDetail({ taskId, onClose }: TaskDetailProps) {
     >
       <TaskTitle task={task} />
       <DescriptionSection task={task} />
+      {/* У подзадачи своих подзадач быть не может — секцию не показываем. */}
+      {!task.parentId && <SubtasksSection task={task} onOpenTask={(id) => navigate(`/tasks/${id}`)} />}
       <AttachmentsSection task={task} />
       <ActivitySection
         task={task}

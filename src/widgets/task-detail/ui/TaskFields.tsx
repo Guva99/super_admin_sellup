@@ -2,9 +2,11 @@ import type { ReactNode } from "react";
 import {
   TASK_KIND_LABEL,
   TASK_KINDS,
+  TASK_PRIORITIES,
   TASK_PRIORITY_LABEL,
   TASK_TYPE_OPTION_LABEL,
   TaskKindIcon,
+  TaskPriorityIcon,
   type TaskKind,
   type TaskPerson,
   type TaskPriority,
@@ -51,7 +53,6 @@ interface TaskFieldsProps {
   children?: ReactNode;
 }
 
-const PRIORITIES = Object.keys(TASK_PRIORITY_LABEL) as TaskPriority[];
 const TYPES = Object.keys(TASK_TYPE_OPTION_LABEL) as TaskType[];
 const SELECT_CLASS =
   "text-xs font-medium text-slate-800 bg-transparent -mx-1.5 px-1.5 py-1 rounded-md hover:bg-slate-100 outline-none cursor-pointer max-w-full";
@@ -82,11 +83,14 @@ export function TaskFields({ value, on, overdue = false, children }: TaskFieldsP
             <LabelsField value={value.labels} onChange={on.labels} />
           </TaskFieldRow>
           <TaskFieldRow label="Приоритет">
-            <select aria-label="Приоритет" value={value.priority} onChange={(e) => on.priority(e.target.value as TaskPriority)} className={SELECT_CLASS}>
-              {PRIORITIES.map((p) => (
-                <option key={p} value={p}>{TASK_PRIORITY_LABEL[p]}</option>
-              ))}
-            </select>
+            <div className="flex items-center gap-1.5 -mx-1.5">
+              <TaskPriorityIcon priority={value.priority} className="ml-1.5" />
+              <select aria-label="Приоритет" value={value.priority} onChange={(e) => on.priority(e.target.value as TaskPriority)} className={`${SELECT_CLASS} mx-0`}>
+                {TASK_PRIORITIES.map((p) => (
+                  <option key={p} value={p}>{TASK_PRIORITY_LABEL[p]}</option>
+                ))}
+              </select>
+            </div>
           </TaskFieldRow>
           <TaskFieldRow label="Тип">
             <div className="flex items-center gap-1.5 -mx-1.5">

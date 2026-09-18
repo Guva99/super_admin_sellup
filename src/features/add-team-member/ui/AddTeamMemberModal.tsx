@@ -4,14 +4,14 @@ import { ModalOverlay } from "@/shared/ui";
 import type { AddTeamMemberController } from "../model/useAddTeamMember";
 
 export function AddTeamMemberModal({ controller }: { controller: AddTeamMemberController }) {
-  const { isOpen, draft, roles, isSubmitting, error, close, patch, submit } = controller;
+  const { isOpen, draft, isDirty, roles, isSubmitting, error, close, patch, submit } = controller;
 
   if (!isOpen) return null;
 
   const canSubmit = draft.email.trim() !== "" && draft.fullName.trim() !== "" && draft.password.length >= 8;
 
   return (
-    <ModalOverlay onClose={close}>
+    <ModalOverlay onClose={close} unsaved={isDirty}>
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
           <h2 className="text-sm font-semibold text-slate-900">Добавить сотрудника</h2>

@@ -1,6 +1,6 @@
 import { AlertCircle, Check, Pencil, Trash2 } from "lucide-react";
 import { CommentAttachment, taskImageRenderer, type Task, type TaskComment } from "@/entities/task";
-import { Markdown, MarkdownEditor, UserAvatar } from "@/shared/ui";
+import { Markdown, MarkdownEditor, UserAvatar, useUnsavedGuard } from "@/shared/ui";
 import type { EditCommentController } from "../model/useEditTaskComment";
 
 interface CommentListProps {
@@ -15,6 +15,8 @@ interface CommentListProps {
 export function CommentList({ task, comments, controller, formatTime }: CommentListProps) {
   const { editingId, draft, error, isOwn, start, cancel, setDraft, save, toggleChecklist, resizeImage, remove, uploadPaste, pasteError } = controller;
   const renderImage = taskImageRenderer(task);
+  const editedComment = comments.find((c) => c.id === editingId);
+  useUnsavedGuard("comment-edit", Boolean(editedComment) && draft.trim() !== (editedComment?.text ?? "").trim());
 
   if (comments.length === 0) return <p className="text-xs text-slate-400">Комментариев пока нет</p>;
 

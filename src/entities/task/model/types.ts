@@ -2,7 +2,8 @@
 export type TaskType = "call" | "task" | "update" | "integration" | "support" | "onboarding";
 /** Вид работы на доске разработки. Точка расширения: story, epic. */
 export type TaskKind = "task" | "bug";
-export type TaskPriority = "high" | "medium" | "low";
+/** Пять уровней критичности, как в Jira: от «критичного» до «минимального». */
+export type TaskPriority = "highest" | "high" | "medium" | "low" | "lowest";
 export type TaskStatus = "todo" | "in_progress" | "review" | "done";
 
 /** Сотрудник в роли исполнителя или автора задачи. */
@@ -48,6 +49,8 @@ export interface Task {
   title: string;
   description?: string;
   clientId: string | null;
+  /** Задача, подзадачей которой эта является; null — обычная задача. */
+  parentId: string | null;
   type: TaskType;
   kind: TaskKind;
   priority: TaskPriority;
@@ -72,6 +75,8 @@ export interface NewTaskInput {
   title: string;
   description: string;
   clientId: string | null;
+  /** Создаём подзадачу этой задачи — бизнес возьмётся у родителя. */
+  parentId?: string | null;
   type: TaskType;
   kind: TaskKind;
   priority: TaskPriority;

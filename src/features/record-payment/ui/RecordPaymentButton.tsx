@@ -7,6 +7,7 @@ import { ModalOverlay } from "@/shared/ui";
 import { useRecordPayment } from "../model/useRecordPayment";
 
 interface RecordPaymentButtonProps {
+  clientId: string;
   onAdd: (input: NewPaymentInput) => Promise<Result<Payment>>;
 }
 
@@ -16,8 +17,8 @@ const INPUT_CLASS = "w-full px-3 py-2 text-sm border border-slate-200 rounded-lg
  * «Внести платёж» на вкладке биллинга: сумма, дата, за что и чек. Кнопки нет
  * ни у кого, кроме владельца и администратора.
  */
-export function RecordPaymentButton({ onAdd }: RecordPaymentButtonProps) {
-  const { canRecord, isOpen, draft, receipt, isSubmitting, error, open, close, patch, attachReceipt, submit } = useRecordPayment(onAdd);
+export function RecordPaymentButton({ clientId, onAdd }: RecordPaymentButtonProps) {
+  const { canRecord, isOpen, draft, isDirty, restored, receipt, isSubmitting, error, open, close, patch, attachReceipt, submit } = useRecordPayment(clientId, onAdd);
 
   if (!canRecord) return null;
 
@@ -29,7 +30,7 @@ export function RecordPaymentButton({ onAdd }: RecordPaymentButtonProps) {
       </button>
 
       {isOpen && (
-        <ModalOverlay onClose={close}>
+        <ModalOverlay onClose={close} unsaved={isDirty}>
           <div className="w-[440px] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
               <h2 className="text-sm font-semibold text-slate-900">Новый платёж</h2>
@@ -92,6 +93,7 @@ export function RecordPaymentButton({ onAdd }: RecordPaymentButtonProps) {
                 )}
               </div>
 
+              {restored && <p className="text-[11px] text-amber-600">Восстановлен незаконченный платёж.</p>}
               {error && (
                 <div role="alert" className="flex items-start gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-xs text-red-600">
                   <AlertCircle size={13} className="flex-shrink-0 mt-px" />

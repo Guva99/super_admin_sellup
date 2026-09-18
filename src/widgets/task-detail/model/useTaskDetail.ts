@@ -16,6 +16,10 @@ import { formatRelativeTime } from "@/shared/lib";
 export interface TaskDetailData {
   task: Task | undefined;
   client: Client | null;
+  /** Родитель подзадачи — для хлебных крошек; у обычной задачи null. */
+  parent: Task | null;
+  /** Сколько подзадач уйдёт вместе с задачей при удалении. */
+  subtaskCount: number;
   history: TaskHistoryState;
   /** Имя вошедшего — автор новых комментариев. */
   currentUserName: string;
@@ -51,7 +55,7 @@ const formatHistoryValue: HistoryValueFormatter = (field, value) => {
 
 /** Всё, что нужно карточке, — через хуки сущностей; сама она в API не ходит. */
 export function useTaskDetail(taskId: string): TaskDetailData {
-  const { tasks, deleteTask } = useTasks();
+  const { tasks, subtasksOf, deleteTask } = useTasks();
   const { clients } = useClients();
   const { user } = useSession();
   const task = tasks.find((t) => t.id === taskId);
@@ -63,6 +67,8 @@ export function useTaskDetail(taskId: string): TaskDetailData {
   return {
     task,
     client: task?.clientId ? clients.find((c) => c.id === task.clientId) ?? null : null,
+    parent: task?.parentId ? tasks.find((t) => t.id === task.parentId) ?? null : null,
+    subtaskCount: task ? subtasksOf(task.id).length : 0,
     history,
     currentUserName: user?.fullName ?? "",
     formatHistoryValue,

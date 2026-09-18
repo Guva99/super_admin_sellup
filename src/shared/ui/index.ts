@@ -1,4 +1,4 @@
-export { ModalOverlay } from "./ModalOverlay";
+export { ModalOverlay, useUnsavedGuard, useModalClose } from "./ModalOverlay";
 export { KanbanBoard, type KanbanColumn, type KanbanCardHandlers } from "./KanbanBoard";
 export { Collapsible } from "./Collapsible";
 export { Dropdown, DropdownItem } from "./Dropdown";

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { attachmentError, usePastedFile, useTasks } from "@/entities/task";
 import { describeApiError } from "@/shared/api";
+import { useDraft } from "@/shared/lib";
 import type { PastedFile } from "@/shared/ui";
 import type { CommentPreset } from "./presets";
 
@@ -18,6 +19,10 @@ export interface CommentComposerController {
   /** Картинка из буфера уходит во вложения задачи и встаёт прямо в текст. */
   uploadPaste: (file: File) => PastedFile | null;
   send: () => void;
+  /** Комментарий набран, но не отправлен: окно предупредит перед закрытием. */
+  isDirty: boolean;
+  /** Текст подставлен из черновика прошлого раза. */
+  restored: boolean;
 }
 
 /** Поле нового комментария: текст, файлы, заготовки, отправка одним запросом. */
@@ -50,6 +55,14 @@ export function useAddTaskComment(taskId: string): CommentComposerController {
 
   const removeFile = (index: number) => setFiles((prev) => prev.filter((_, i) => i !== index));
 
+  // Недописанный комментарий тоже жалко: держим его черновиком у задачи.
+  const { restored, clear: forgetDraft } = useDraft<string>({
+    key: `task-comment:${taskId}`,
+    value: text,
+    restore: setText,
+    isEmpty: (value) => value.trim() === "",
+  });
+
   const canSend = (text.trim() !== "" || files.length > 0) && !isSending;
 
   const send = async () => {
@@ -62,9 +75,24 @@ export function useAddTaskComment(taskId: string): CommentComposerController {
       setError(describeApiError(result.error));
       return;
     }
+    forgetDraft();
     setText("");
     setFiles([]);
   };
 
-  return { text, files, isSending, error: error ?? pasteError, canSend, setText, insertPreset, attachFiles, removeFile, uploadPaste, send };
+  return {
+    text,
+    files,
+    isSending,
+    error: error ?? pasteError,
+    canSend,
+    isDirty: text.trim() !== "" || files.length > 0,
+    restored,
+    setText,
+    insertPreset,
+    attachFiles,
+    removeFile,
+    uploadPaste,
+    send,
+  };
 }

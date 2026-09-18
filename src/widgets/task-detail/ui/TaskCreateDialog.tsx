@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { AlertCircle, Paperclip } from "lucide-react";
+import { AlertCircle, Paperclip, RotateCcw } from "lucide-react";
 import type { Client } from "@/entities/client";
 import { INTERNAL_TASK_KEY, MAX_TASK_KEY_LENGTH } from "@/entities/client";
 import { TaskKey, TaskKindIcon } from "@/entities/task";
@@ -28,7 +28,7 @@ const SELECT_CLASS =
  * Файлы грузятся сразу, черновиками; задача заберёт их при создании.
  */
 export function TaskCreateDialog({ controller, clients }: TaskCreateDialogProps) {
-  const { isOpen, draft, clientPreset, selectedClient, canEditTaskKey, isSubmitting, error, close, patch, submit } = controller;
+  const { isOpen, draft, restored, discardDraft, isDirty, clientPreset, selectedClient, canEditTaskKey, isSubmitting, error, close, patch, submit } = controller;
   const { user } = useSession();
   const queue = useUploadQueue(null);
   const { uploader, resolver, lightbox, closeLightbox } = useEditorBindings(queue);
@@ -54,6 +54,7 @@ export function TaskCreateDialog({ controller, clients }: TaskCreateDialogProps)
   return (
     <TaskDialogFrame
       onClose={close}
+      unsaved={isDirty}
       breadcrumb={
         <nav className="flex items-center gap-1.5 text-xs text-slate-500">
           <span>{selectedClient?.name ?? "Задачи"}</span>
@@ -157,6 +158,16 @@ export function TaskCreateDialog({ controller, clients }: TaskCreateDialogProps)
         placeholder="Что нужно сделать?"
         className="w-full text-xl font-semibold text-slate-900 leading-snug px-1.5 py-0.5 -mx-1.5 bg-white border border-transparent hover:border-slate-200 focus:border-brand-300 rounded-md outline-none focus:ring-2 focus:ring-brand-50 placeholder:text-slate-300"
       />
+
+      {restored && (
+        <p className="flex items-center gap-1.5 -mb-2 text-[11px] text-amber-600">
+          <RotateCcw size={11} />
+          Восстановлен черновик прошлой задачи.
+          <button type="button" onClick={discardDraft} className="underline hover:no-underline">
+            Начать заново
+          </button>
+        </p>
+      )}
 
       <section>
         <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Описание</h2>

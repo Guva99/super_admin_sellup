@@ -1,6 +1,8 @@
+import { useEffect } from "react";
 import { RouterProvider } from "react-router-dom";
 
 import { SessionProvider } from "@/entities/session";
+import { purgeOldDrafts } from "@/shared/lib";
 
 import { router } from "./routes";
 
@@ -13,6 +15,11 @@ import { router } from "./routes";
  * или операции.
  */
 export default function App() {
+  // Черновики форм копятся в браузере; недельной давности уже никому не нужны.
+  useEffect(() => {
+    purgeOldDrafts();
+  }, []);
+
   return (
     <SessionProvider>
       <RouterProvider router={router} />

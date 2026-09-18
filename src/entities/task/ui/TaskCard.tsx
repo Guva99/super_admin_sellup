@@ -5,7 +5,8 @@ import type { KanbanCardHandlers } from "@/shared/ui";
 import { UserAvatar } from "@/shared/ui";
 import type { Task, TaskStatus, TaskCardClient } from "../model/types";
 import { isTaskOverdue } from "../model/types";
-import { TASK_PRIORITY_DOT, TASK_PRIORITY_LABEL, TASK_STATUS_LABEL } from "../model/dictionaries";
+import { TASK_STATUS_LABEL } from "../model/dictionaries";
+import { TaskPriorityIcon } from "./TaskPriorityIcon";
 import { TaskKindIcon } from "./TaskKindIcon";
 import { TaskKey } from "./TaskKey";
 
@@ -98,7 +99,7 @@ export function TaskCard({
         <div className="flex items-center gap-2 mt-2.5">
           <TaskKindIcon kind={task.kind} size={13} />
           <TaskKey value={task.key} />
-          <span className={`w-1.5 h-1.5 rounded-full ${TASK_PRIORITY_DOT[task.priority]}`} title={`Приоритет: ${TASK_PRIORITY_LABEL[task.priority]}`} />
+          <TaskPriorityIcon priority={task.priority} size={12} />
           {task.dueDate && (
             <span className={`flex items-center gap-1 text-[10px] font-medium ${isOverdue ? "text-red-500" : "text-slate-400"}`}>
               {isOverdue ? <AlertTriangle size={9} /> : <Clock size={9} />}

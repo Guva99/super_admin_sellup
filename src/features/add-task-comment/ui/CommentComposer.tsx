@@ -1,6 +1,6 @@
-import { AlertCircle, FileText, Paperclip, Send, X } from "lucide-react";
+import { AlertCircle, FileText, Paperclip, RotateCcw, Send, X } from "lucide-react";
 import { ATTACHMENT_ACCEPT, LocalImage, isImageAttachment } from "@/entities/task";
-import { MarkdownEditor, MarkdownHint, UserAvatar } from "@/shared/ui";
+import { MarkdownEditor, MarkdownHint, UserAvatar, useUnsavedGuard } from "@/shared/ui";
 import { COMMENT_PRESETS } from "../model/presets";
 import type { CommentComposerController } from "../model/useAddTaskComment";
 
@@ -11,8 +11,9 @@ interface CommentComposerProps {
 }
 
 export function CommentComposer({ controller, authorName }: CommentComposerProps) {
-  const { text, files, isSending, error, canSend, setText, insertPreset, attachFiles, removeFile, uploadPaste, send } = controller;
+  const { text, files, isSending, error, canSend, isDirty, restored, setText, insertPreset, attachFiles, removeFile, uploadPaste, send } = controller;
   const expanded = text !== "" || files.length > 0;
+  useUnsavedGuard("comment", isDirty);
 
   return (
     <div className="flex gap-2.5">
@@ -28,6 +29,12 @@ export function CommentComposer({ controller, authorName }: CommentComposerProps
           className="text-xs text-slate-700 px-3 py-2 bg-slate-50 focus:bg-white"
         />
         {expanded && <MarkdownHint />}
+        {restored && (
+          <p className="flex items-center gap-1.5 text-[11px] text-amber-600">
+            <RotateCcw size={11} />
+            Восстановлен неотправленный комментарий.
+          </p>
+        )}
 
         {/* Заготовки — как быстрые реакции в Jira */}
         <div className="flex flex-wrap gap-1">

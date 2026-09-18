@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { X } from "lucide-react";
-import { ModalOverlay } from "@/shared/ui";
+import { ModalOverlay, useModalClose } from "@/shared/ui";
 
 interface TaskDialogFrameProps {
   /** Хлебные крошки слева в шапке. */
@@ -8,6 +8,8 @@ interface TaskDialogFrameProps {
   /** Кнопки шапки перед крестиком (удаление задачи). */
   actions?: ReactNode;
   onClose: () => void;
+  /** Форма заполнена, но не сохранена — закрытие спросит подтверждение. */
+  unsaved?: boolean;
   /** Левая колонка: заголовок, описание, вложения, активность. */
   children: ReactNode;
   /** Правая колонка: поля задачи. */
@@ -21,15 +23,27 @@ interface TaskDialogFrameProps {
  * кнопок не должны различаться — иначе одна и та же задача выглядит по-разному
  * до и после сохранения.
  */
-export function TaskDialogFrame({ breadcrumb, actions, onClose, children, aside, footer }: TaskDialogFrameProps) {
+export function TaskDialogFrame({ breadcrumb, actions, onClose, unsaved = false, children, aside, footer }: TaskDialogFrameProps) {
   return (
-    <ModalOverlay onClose={onClose}>
+    <ModalOverlay onClose={onClose} unsaved={unsaved}>
+      <DialogBody breadcrumb={breadcrumb} actions={actions} aside={aside} footer={footer}>
+        {children}
+      </DialogBody>
+    </ModalOverlay>
+  );
+}
+
+/** Внутри ModalOverlay: только отсюда виден его контроль закрытия. */
+function DialogBody({ breadcrumb, actions, children, aside, footer }: Omit<TaskDialogFrameProps, "onClose" | "unsaved">) {
+  const close = useModalClose(() => {});
+  return (
+    <>
       <div className="w-[960px] max-w-[calc(100vw-48px)] max-h-[calc(100vh-96px)] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden">
         <div className="flex items-center gap-3 px-6 py-3 border-b border-slate-100 flex-shrink-0">
           {breadcrumb}
           <span className="flex-1" />
           {actions}
-          <button type="button" onClick={onClose} aria-label="Закрыть" className="p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100">
+          <button type="button" onClick={close} aria-label="Закрыть" className="p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100">
             <X size={16} />
           </button>
         </div>
@@ -41,6 +55,6 @@ export function TaskDialogFrame({ breadcrumb, actions, onClose, children, aside,
 
         {footer && <div className="flex items-center justify-end gap-2 px-6 py-3.5 border-t border-slate-100 bg-slate-50/50 flex-shrink-0">{footer}</div>}
       </div>
-    </ModalOverlay>
+    </>
   );
 }

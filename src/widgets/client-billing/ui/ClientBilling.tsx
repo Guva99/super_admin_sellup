@@ -29,7 +29,7 @@ export function ClientBilling({ client }: { client: Client }) {
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100">
           <h3 className="text-sm font-semibold text-slate-900">История платежей</h3>
-          <RecordPaymentButton onAdd={payments.add} />
+          <RecordPaymentButton clientId={client.id} onAdd={payments.add} />
         </div>
 
         {payments.error && (

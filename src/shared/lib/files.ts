@@ -30,6 +30,17 @@ export const isImageType = (type: string): boolean => type.startsWith("image/");
 export const attachmentRef = (id: string): string => `attach:${id}`;
 export const attachmentKey = (src: string): string | null => (src.startsWith("attach:") ? src.slice("attach:".length) : null);
 
+const ATTACHMENT_IN_TEXT = /attach:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/g;
+
+/**
+ * Какие вложения упоминает текст. Нужно при создании задачи: картинки могли
+ * приехать из восстановленного черновика, и их файлы тоже надо забрать себе —
+ * иначе они останутся ничьими и пропадут вместе с уборкой черновиков.
+ */
+export function attachmentIdsInText(text: string): string[] {
+  return [...new Set(Array.from(text.matchAll(ATTACHMENT_IN_TEXT), (m) => m[1]))];
+}
+
 /**
  * Скриншот из буфера всегда приходит как «image.png» — даём своё имя, чтобы
  * в списке вложений их можно было различить.

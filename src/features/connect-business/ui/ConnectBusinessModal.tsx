@@ -8,14 +8,14 @@ const NICHES: ClientNiche[] = ["retail", "services"];
 
 export function ConnectBusinessModal({ controller }: { controller: ConnectBusinessController }) {
   const {
-    isOpen, draft, plans, selectedPlan, stagesExpanded, isSubmitting, error,
+    isOpen, draft, isDirty, restored, plans, selectedPlan, stagesExpanded, isSubmitting, error,
     close, patch, toggleStages, addStage, removeStage, updateStage, submit,
   } = controller;
 
   if (!isOpen || !draft) return null;
 
   return (
-    <ModalOverlay onClose={close}>
+    <ModalOverlay onClose={close} unsaved={isDirty}>
       <div className="w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 flex-shrink-0">
           <div>
@@ -185,6 +185,7 @@ export function ConnectBusinessModal({ controller }: { controller: ConnectBusine
           </div>
         </div>
 
+        {restored && <p className="mx-6 mb-1 text-[11px] text-amber-600 flex-shrink-0">Восстановлен незаконченный черновик бизнеса.</p>}
         {error && (
           <div role="alert" className="mx-6 mb-1 flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-xs text-red-600 flex-shrink-0">
             <AlertCircle size={13} className="flex-shrink-0" />

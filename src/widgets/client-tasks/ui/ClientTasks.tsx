@@ -5,7 +5,7 @@ import {
   TaskKey,
   TaskKindIcon,
   TaskTypeIcon,
-  TASK_PRIORITY_DOT,
+  TaskPriorityIcon,
   TASK_STATUS_CLASS,
   TASK_STATUS_LABEL,
   TASK_TYPE_CLASS,
@@ -38,7 +38,7 @@ export function ClientTasks({ tasks, onAddTask, onOpenTask, onStatusChange, onDe
         }`}
       >
         {/* Priority dot */}
-        <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${TASK_PRIORITY_DOT[task.priority]}`} />
+        <TaskPriorityIcon priority={task.priority} className="mt-0.5" />
         <div className="flex-1 min-w-0">
           <p className={`flex items-center gap-1.5 text-sm font-medium ${task.status === "done" ? "line-through text-slate-400" : "text-slate-800"}`}>
             <TaskKindIcon kind={task.kind} size={13} />

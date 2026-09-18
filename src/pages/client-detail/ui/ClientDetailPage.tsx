@@ -1,7 +1,7 @@
 import { ArrowLeft, ExternalLink, Mail, Phone, Plus } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ClientAvatar, CLIENT_NICHE_LABEL, StatusBadge, useClient } from "@/entities/client";
-import { useTasks } from "@/entities/task";
+import { TaskPriorityIcon, useTasks } from "@/entities/task";
 import { DeleteClientButton } from "@/features/delete-client";
 import { ClientTaskKey } from "@/features/edit-client-task-key";
 import { useOnboardingActions } from "@/features/manage-onboarding";
@@ -45,7 +45,8 @@ export default function ClientDetailPage() {
 
   if (!client) return <div className="p-8 text-slate-400">Клиент не найден</div>;
 
-  const clientTasks = tasks.filter((t) => t.clientId === clientId);
+  // Подзадачи живут внутри своих задач, в списке бизнеса им места нет.
+  const clientTasks = tasks.filter((t) => t.clientId === clientId && t.parentId === null);
   const openTasks = clientTasks.filter((t) => t.status !== "done");
 
   return (
@@ -131,9 +132,7 @@ export default function ClientDetailPage() {
               <div className="mt-2 space-y-1.5">
                 {openTasks.slice(0, 3).map((t) => (
                   <div key={t.id} className="flex items-center gap-1.5 text-xs text-slate-500">
-                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                      t.priority === "high" ? "bg-red-400" : t.priority === "medium" ? "bg-amber-400" : "bg-slate-300"
-                    }`} />
+                    <TaskPriorityIcon priority={t.priority} size={12} />
                     <span className="truncate">{t.title}</span>
                   </div>
                 ))}

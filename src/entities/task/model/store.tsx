@@ -48,6 +48,10 @@ export interface TasksStore {
   downloadFile: (taskId: string, fileId: string) => Promise<Result<Blob>>;
   /** Задачи одного клиента. */
   tasksOfClient: (clientId: string) => Task[];
+  /** Подзадачи задачи — в порядке создания. */
+  subtasksOf: (taskId: string) => Task[];
+  /** Всё, кроме подзадач: доска показывает только их. */
+  topLevelTasks: Task[];
   /** Счётчик для бейджа в меню: незакрытые задачи высокого приоритета. */
   highPriorityCount: number;
 }
@@ -219,8 +223,17 @@ export function TasksProvider({ children }: { children: ReactNode }) {
 
   const tasksOfClient = useCallback((clientId: string) => tasks.filter((task) => task.clientId === clientId), [tasks]);
 
+  const subtasksOf = useCallback(
+    (taskId: string) => tasks.filter((task) => task.parentId === taskId).sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
+    [tasks],
+  );
+
+  // Доска показывает только задачи верхнего уровня — подзадачи видны внутри
+  // родителя, иначе колонки забиваются мелкими пунктами.
+  const topLevelTasks = useMemo(() => tasks.filter((task) => task.parentId === null), [tasks]);
+
   const highPriorityCount = useMemo(
-    () => tasks.filter((task) => task.status !== "done" && task.priority === "high").length,
+    () => tasks.filter((task) => task.status !== "done" && (task.priority === "high" || task.priority === "highest")).length,
     [tasks],
   );
 
@@ -246,6 +259,8 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       deleteComment,
       downloadFile,
       tasksOfClient,
+      subtasksOf,
+      topLevelTasks,
       highPriorityCount,
     }),
     [
@@ -267,6 +282,8 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       deleteComment,
       downloadFile,
       tasksOfClient,
+      subtasksOf,
+      topLevelTasks,
       highPriorityCount,
     ],
   );

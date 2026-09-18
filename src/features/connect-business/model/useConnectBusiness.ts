@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useDraft } from "@/shared/lib";
 import type { Client, ClientNiche, NewClientInput } from "@/entities/client";
 import type { Plan } from "@/entities/plan";
 import type { TemplateStage } from "@/entities/onboarding-template";
@@ -26,6 +27,9 @@ export interface ConnectBusinessDraft {
 export interface ConnectBusinessController {
   isOpen: boolean;
   draft: ConnectBusinessDraft | null;
+  /** Форма заполнена, но бизнес не подключён. */
+  isDirty: boolean;
+  restored: boolean;
   /** Тарифы, доступные для выбора. */
   plans: Plan[];
   /** Выбранный тариф; у тарифа с isCustom цена вводится вручную. */
@@ -102,6 +106,15 @@ export function useConnectBusiness(
       return { ...prev, customPrice, ...next };
     });
 
+  // Форма длинная (владелец, ниша, этапы) — терять её обиднее всего.
+  const isDirty = Boolean(draft && (draft.name.trim() !== "" || draft.ownerName.trim() !== "" || draft.ownerEmail.trim() !== "" || draft.ownerPhone.trim() !== ""));
+  const { restored, clear: forgetDraft } = useDraft<ConnectBusinessDraft | null>({
+    key: isOpen ? "connect-business" : null,
+    value: draft,
+    restore: (saved) => setDraft(saved),
+    isEmpty: (value) => !value || (value.name.trim() === "" && value.ownerName.trim() === "" && value.ownerEmail.trim() === ""),
+  });
+
   const toggleStages = () => setStagesExpanded((v) => !v);
 
   const addStage = () =>
@@ -150,6 +163,7 @@ export function useConnectBusiness(
       setError(describeApiError(result.error));
       return;
     }
+    forgetDraft();
     setIsOpen(false);
     setDraft(null);
     onCreated(result.data);
@@ -158,6 +172,8 @@ export function useConnectBusiness(
   return {
     isOpen,
     draft,
+    isDirty,
+    restored,
     plans,
     selectedPlan,
     stagesExpanded,

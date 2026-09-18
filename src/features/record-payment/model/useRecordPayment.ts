@@ -3,6 +3,7 @@ import { receiptError, type NewPaymentInput, type Payment } from "@/entities/pay
 import { useSession } from "@/entities/session";
 import { canRecordPayments } from "@/entities/user";
 import { describeApiError, type Result } from "@/shared/api";
+import { useDraft } from "@/shared/lib";
 
 /** Поля формы как их вводят: сумма — строкой, чтобы не мешать печатать «1 500,50». */
 export interface PaymentDraft {
@@ -16,6 +17,9 @@ export interface RecordPaymentController {
   canRecord: boolean;
   isOpen: boolean;
   draft: PaymentDraft;
+  /** Форма набрана, но не сохранена — окно предупредит перед закрытием. */
+  isDirty: boolean;
+  restored: boolean;
   receipt: File | null;
   isSubmitting: boolean;
   error: string | null;
@@ -50,13 +54,21 @@ const emptyDraft = (): PaymentDraft => ({
  * Ручное внесение платежа с чеком. Сохраняет через `add` из `usePayments` —
  * список на вкладке обновляется там же, перечитывать ничего не нужно.
  */
-export function useRecordPayment(add: (input: NewPaymentInput) => Promise<Result<Payment>>): RecordPaymentController {
+export function useRecordPayment(clientId: string, add: (input: NewPaymentInput) => Promise<Result<Payment>>): RecordPaymentController {
   const { user } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [draft, setDraft] = useState<PaymentDraft>(emptyDraft);
   const [receipt, setReceipt] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isDirty = draft.amount.trim() !== "" || draft.description.trim() !== "" || receipt !== null;
+  const { restored, clear: forgetDraft } = useDraft<PaymentDraft>({
+    key: isOpen ? `payment:${clientId}` : null,
+    value: draft,
+    restore: setDraft,
+    isEmpty: (value) => value.amount.trim() === "" && value.description.trim() === "",
+  });
 
   const submit = async () => {
     if (isSubmitting) return;
@@ -82,6 +94,7 @@ export function useRecordPayment(add: (input: NewPaymentInput) => Promise<Result
       setError(describeApiError(result.error));
       return;
     }
+    forgetDraft();
     setDraft(emptyDraft());
     setReceipt(null);
     setIsOpen(false);
@@ -91,6 +104,8 @@ export function useRecordPayment(add: (input: NewPaymentInput) => Promise<Result
     canRecord: canRecordPayments(user?.roleKey),
     isOpen,
     draft,
+    isDirty,
+    restored,
     receipt,
     isSubmitting,
     error,

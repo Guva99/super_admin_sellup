@@ -40,7 +40,8 @@ export {
   TASK_STATUS_CLASS,
   TASK_PRIORITY_LABEL,
   TASK_PRIORITY_OPTION_LABEL,
-  TASK_PRIORITY_DOT,
+  TASK_PRIORITIES,
+  TASK_PRIORITY_COLOR,
   TASK_COLUMNS,
 } from "./model/dictionaries";
 
@@ -48,6 +49,7 @@ export { statusFromDto, kindFromDto, priorityFromDto, typeFromDto } from "./api/
 
 export { TaskTypeIcon, TASK_TYPE_ICON } from "./ui/TaskTypeIcon";
 export { TaskKindIcon } from "./ui/TaskKindIcon";
+export { TaskPriorityIcon } from "./ui/TaskPriorityIcon";
 export { TaskKey } from "./ui/TaskKey";
 export { TaskCard } from "./ui/TaskCard";
 export { AttachmentImage, AttachmentPreview, CommentAttachment, LocalImage, taskImageRenderer, useDownloadAttachment } from "./ui/attachments";

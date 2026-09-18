@@ -4,12 +4,13 @@ export interface TaskDto {
   number: number;
   key: string;
   clientId: string | null;
+  parentId: string | null;
   onboardingStepId: string | null;
   title: string;
   description: string;
   type: "CALL" | "TASK" | "UPDATE" | "INTEGRATION" | "SUPPORT" | "ONBOARDING";
   kind: "TASK" | "BUG";
-  priority: "HIGH" | "MEDIUM" | "LOW";
+  priority: "HIGHEST" | "HIGH" | "MEDIUM" | "LOW" | "LOWEST";
   status: "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE";
   labels: string[];
   dueDate: string | null;

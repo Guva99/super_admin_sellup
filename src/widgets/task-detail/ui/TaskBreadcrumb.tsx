@@ -7,10 +7,14 @@ interface TaskBreadcrumbProps {
   /** Название бизнеса, к которому относится задача; без него — «Задачи». */
   parentLabel: string;
   onParentClick?: () => void;
+  /** Родитель подзадачи — вторым звеном, как в Jira. */
+  parentTask?: Task | null;
+  onParentTaskClick?: () => void;
 }
 
-/** «Бизнес / SC-4»: клик по ключу копирует ссылку на карточку. */
-export function TaskBreadcrumb({ task, parentLabel, onParentClick }: TaskBreadcrumbProps) {
+/** «Бизнес / SC-4»: клик по ключу копирует ссылку на карточку. У подзадачи между
+ * ними встаёт родитель — «Бизнес / SC-4 / SC-5». */
+export function TaskBreadcrumb({ task, parentLabel, onParentClick, parentTask, onParentTaskClick }: TaskBreadcrumbProps) {
   const [copied, setCopied] = useState(false);
 
   const copyLink = async () => {
@@ -33,6 +37,20 @@ export function TaskBreadcrumb({ task, parentLabel, onParentClick }: TaskBreadcr
         <span>{parentLabel}</span>
       )}
       <span className="text-slate-300">/</span>
+      {parentTask && (
+        <>
+          <button
+            type="button"
+            onClick={onParentTaskClick}
+            title={parentTask.title}
+            className="flex items-center gap-1 hover:text-brand-600 hover:underline"
+          >
+            <TaskKindIcon kind={parentTask.kind} size={12} />
+            <TaskKey value={parentTask.key} />
+          </button>
+          <span className="text-slate-300">/</span>
+        </>
+      )}
       <button type="button" onClick={copyLink} title="Скопировать ссылку" className="flex items-center gap-1 px-1 py-0.5 rounded hover:bg-slate-100">
         <TaskKindIcon kind={task.kind} size={13} />
         <TaskKey value={task.key} className="text-slate-700" />

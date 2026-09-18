@@ -13,7 +13,7 @@ import { useClients, normaliseTaskKeyInput, taskKeyError, type Client } from "@/
 import { useSession } from "@/entities/session";
 import { useUsers } from "@/entities/user";
 import { describeApiError } from "@/shared/api";
-import type { CreateTaskPreset } from "@/shared/lib";
+import { attachmentIdsInText, useDraft, type CreateTaskPreset } from "@/shared/lib";
 
 /** Черновик повторяет поля задачи: форма новой и карточка сохранённой одинаковы. */
 export interface CreateTaskDraft {
@@ -50,6 +50,12 @@ const emptyDraft = (assignee: TaskPerson | null): CreateTaskDraft => ({
 export interface CreateTaskController {
   isOpen: boolean;
   draft: CreateTaskDraft;
+  /** Форма открылась с восстановленным черновиком — показываем пометку. */
+  restored: boolean;
+  /** Забыть черновик и начать с чистой формы. */
+  discardDraft: () => void;
+  /** В форме есть что терять — окно спросит перед закрытием. */
+  isDirty: boolean;
   clientPreset: string | null;
   /** Выбранный бизнес — от него зависит ключ задачи. */
   selectedClient: Client | null;
@@ -118,6 +124,16 @@ export function useCreateTask(): CreateTaskController {
       return { ...prev, taskKey, ...next };
     });
 
+  // Черновик новой задачи переживает и закрытие окна, и перезагрузку:
+  // поля лежат в браузере, а вставленные картинки уже на сервере.
+  const isDirty = draft.title.trim() !== "" || draft.description.trim() !== "" || draft.labels.length > 0;
+  const { restored, clear: forgetDraft } = useDraft<CreateTaskDraft>({
+    key: isOpen ? "new-task" : null,
+    value: draft,
+    restore: (saved) => setDraft(saved),
+    isEmpty: (value) => value.title.trim() === "" && value.description.trim() === "" && value.labels.length === 0,
+  });
+
   const selectedClient = draft.clientId ? clientById(draft.clientId) : null;
   const canEditTaskKey = selectedClient !== null && tasksOfClient(selectedClient.id).length === 0;
 
@@ -126,6 +142,9 @@ export function useCreateTask(): CreateTaskController {
     setIsSubmitting(true);
     setError(null);
 
+    // Картинки из восстановленного черновика уже лежат на сервере — их id
+    // есть только в тексте, поэтому забираем и оттуда.
+    const attachments = [...new Set([...attachmentIds, ...attachmentIdsInText(draft.description)])];
     const input: NewTaskInput = {
       title: draft.title.trim(),
       description: draft.description.trim(),
@@ -137,7 +156,7 @@ export function useCreateTask(): CreateTaskController {
       dueDate: draft.dueDate,
       startDate: draft.startDate,
       assigneeId: draft.assignee?.id ?? null,
-      attachmentIds,
+      attachmentIds: attachments,
     };
     // Ключ бизнеса сохраняется до задачи: её ключ строится уже из нового.
     if (selectedClient && canEditTaskKey && draft.taskKey !== selectedClient.taskKey) {
@@ -164,6 +183,7 @@ export function useCreateTask(): CreateTaskController {
     // Бэкенд создаёт задачу в первой колонке; выбранный в форме статус
     // переносит её сразу — это отдельная строка в истории, так и задумано.
     if (draft.status !== "todo") updateTask(result.data.id, { status: draft.status });
+    forgetDraft();
     setIsOpen(false);
     setDraft(emptyDraft(me));
   };
@@ -171,6 +191,12 @@ export function useCreateTask(): CreateTaskController {
   return {
     isOpen,
     draft,
+    restored,
+    isDirty,
+    discardDraft: () => {
+      forgetDraft();
+      setDraft(emptyDraft(me));
+    },
     clientPreset,
     selectedClient,
     canEditTaskKey,

@@ -55,21 +55,31 @@ export const TASK_STATUS_CLASS: Record<TaskStatus, string> = {
 };
 
 export const TASK_PRIORITY_LABEL: Record<TaskPriority, string> = {
+  highest: "Критичный",
   high: "Высокий",
   medium: "Средний",
   low: "Низкий",
+  lowest: "Минимальный",
 };
+
+/** Порядок от самого срочного к самому спокойному — им же заполняются списки выбора. */
+export const TASK_PRIORITIES: TaskPriority[] = ["highest", "high", "medium", "low", "lowest"];
 
 export const TASK_PRIORITY_OPTION_LABEL: Record<TaskPriority, string> = {
-  high: "🔴 Высокий",
-  medium: "🟡 Средний",
-  low: "⚪ Низкий",
+  highest: "⇈ Критичный",
+  high: "↑ Высокий",
+  medium: "= Средний",
+  low: "↓ Низкий",
+  lowest: "⇊ Минимальный",
 };
 
-export const TASK_PRIORITY_DOT: Record<TaskPriority, string> = {
-  high: "bg-red-500",
-  medium: "bg-amber-400",
-  low: "bg-slate-300",
+/** Цвет стрелки: красная вверх — срочно, синяя вниз — подождёт. */
+export const TASK_PRIORITY_COLOR: Record<TaskPriority, string> = {
+  highest: "text-red-600",
+  high: "text-red-500",
+  medium: "text-amber-500",
+  low: "text-sky-500",
+  lowest: "text-sky-600",
 };
 
 /** Колонки доски задач, слева направо. */

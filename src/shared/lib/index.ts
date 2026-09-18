@@ -1,4 +1,5 @@
 export { formatMoney, formatAmount, formatBytes, formatDate, formatCalendarDate, formatRelativeTime, saveBlob } from "./format";
+export { useDraft, purgeOldDrafts, type DraftState } from "./drafts";
 export { MOSCOW_TIME_ZONE, HOUR_MS, calendarDaysSince, formatDateTimeMoscow, formatHours } from "./time";
 export {
   parseMarkdown,
@@ -11,5 +12,5 @@ export {
   type MarkdownImage,
   type ChecklistItem,
 } from "./markdown";
-export { MAX_FILE_BYTES, MAX_UPLOAD_BYTES, ATTACHMENT_ACCEPT, attachmentError, isImageType, attachmentRef, attachmentKey, pastedFile } from "./files";
+export { MAX_FILE_BYTES, MAX_UPLOAD_BYTES, ATTACHMENT_ACCEPT, attachmentError, isImageType, attachmentRef, attachmentKey, attachmentIdsInText, pastedFile } from "./files";
 export { UiActionsContext, useUiActions, type UiActions, type CreateTaskPreset } from "./ui-actions";

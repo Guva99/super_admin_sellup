@@ -11,6 +11,8 @@ export interface TeamMemberDraft {
 
 export interface AddTeamMemberController {
   isOpen: boolean;
+  /** Форма заполнена, но не отправлена. */
+  isDirty: boolean;
   draft: TeamMemberDraft;
   roles: Role[];
   isSubmitting: boolean;
@@ -64,5 +66,16 @@ export function useAddTeamMember(): AddTeamMemberController {
     setIsOpen(false);
   };
 
-  return { isOpen, draft, roles, isSubmitting, error, open, close, patch, submit };
+  return {
+    isOpen,
+    draft,
+    isDirty: draft.email.trim() !== "" || draft.fullName.trim() !== "" || draft.password !== "",
+    roles,
+    isSubmitting,
+    error,
+    open,
+    close,
+    patch,
+    submit,
+  };
 }

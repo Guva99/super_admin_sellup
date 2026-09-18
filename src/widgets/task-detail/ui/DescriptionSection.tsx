@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil, RotateCcw } from "lucide-react";
 import { useTasks, type Task } from "@/entities/task";
 import { UploadList, useUploadQueue } from "@/features/attachment-upload";
 import { RichTextEditor, useRichTextEditor } from "@/features/rich-text-editor";
-import { checklistProgress } from "@/shared/lib";
-import { Lightbox } from "@/shared/ui";
+import { checklistProgress, useDraft } from "@/shared/lib";
+import { Lightbox, useUnsavedGuard } from "@/shared/ui";
 import { toTaskAttachment, useEditorBindings } from "../model/useEditorBindings";
 
 /**
@@ -20,6 +20,16 @@ export function DescriptionSection({ task }: { task: Task }) {
   const [draft, setDraft] = useState(task.description ?? "");
   const saved = task.description ?? "";
   const progress = checklistProgress(saved);
+  // Правка не сохранена — окно не закроется молча, а сам текст переживёт
+  // и перезагрузку: он лежит черновиком в браузере.
+  const dirty = editing && draft.trim() !== saved.trim();
+  useUnsavedGuard(`description:${task.id}`, dirty);
+  const { restored, clear: forgetDraft } = useDraft<string>({
+    key: editing ? `task-description:${task.id}` : null,
+    value: draft,
+    restore: setDraft,
+    isEmpty: (value) => value.trim() === saved.trim(),
+  });
 
   const { editor, insertFiles } = useRichTextEditor({
     value: editing ? draft : saved,
@@ -39,9 +49,11 @@ export function DescriptionSection({ task }: { task: Task }) {
   const save = () => {
     const next = draft.trim();
     if (next !== saved) updateTask(task.id, { description: next });
+    forgetDraft();
     setEditing(false);
   };
   const cancel = () => {
+    forgetDraft();
     setEditing(false);
     setDraft(saved);
   };
@@ -67,6 +79,15 @@ export function DescriptionSection({ task }: { task: Task }) {
         <div className="space-y-1.5">
           <RichTextEditor editor={editor} insertFiles={insertFiles} className="border border-brand-300 rounded-lg ring-2 ring-brand-50 bg-white" />
           <UploadList queue={queue} />
+          {restored && (
+            <p className="flex items-center gap-1.5 text-[11px] text-amber-600">
+              <RotateCcw size={11} />
+              Восстановлен черновик прошлой правки.
+              <button type="button" onClick={() => { forgetDraft(); setDraft(saved); }} className="underline hover:no-underline">
+                Вернуть сохранённое
+              </button>
+            </p>
+          )}
           <div className="flex items-center gap-2">
             <button
               type="button"

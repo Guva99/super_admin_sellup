@@ -20,7 +20,8 @@ export interface TaskBoardController {
  * чистые функции из features, поэтому новый режим не трогает виджет.
  */
 export function useTaskBoard(): TaskBoardController {
-  const { tasks } = useTasks();
+  // Подзадачи на доске не показываем — они видны внутри родителя.
+  const { topLevelTasks: tasks } = useTasks();
   const filters = useBoardFilters();
   const [groupMode, setGroupMode] = useState<GroupMode>("assignee");
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());

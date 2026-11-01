@@ -191,6 +191,102 @@ export interface CleanupResult {
   aggregateCutoff?: string;
   rawEventsDeleted: number;
   aggregateRowsDeleted: number;
+  replayRetentionDays: number;
+  replayCutoff: string;
+  replayChunksDeleted: number;
+}
+
+/* --- визиты и их запись --- */
+
+export type VisitSort = "started_at" | "duration" | "page_views" | "clicks";
+
+/** «opened» — открыл форму заявки, «submitted» — отправил заявку. */
+export type VisitLeadFilter = "" | "opened" | "submitted";
+
+/** Пустое поле не фильтрует. */
+export interface VisitFilter {
+  device: string;
+  source: string;
+  lead: VisitLeadFilter;
+  visitorId: string;
+  /** Только визиты с записью для плеера. */
+  recorded: boolean;
+}
+
+/** Визит — события одного захода, свёрнутые в строку. Время — ISO, в UTC. */
+export interface Visit {
+  sessionId: string;
+  visitorId: string;
+  startedAt: string;
+  endedAt: string;
+  durationSec: number;
+  pageViews: number;
+  clicks: number;
+  entryPage: string;
+  exitPage: string;
+  source: string;
+  referrer: string;
+  utmSource: string;
+  utmMedium: string;
+  utmCampaign: string;
+  deviceType: string;
+  browser: string;
+  os: string;
+  viewportWidth: number;
+  viewportHeight: number;
+  formOpened: boolean;
+  leadSubmitted: boolean;
+  hasReplay: boolean;
+  /** Какой по счёту это визит посетителя (1 — первый из хранящихся) и сколько их всего. */
+  visitNumber: number;
+  visitorSessions: number;
+}
+
+export interface Visits {
+  items: Visit[];
+  total: number;
+  page: number;
+  limit: number;
+  siteUrl: string;
+  /** Сколько дней хранятся записи для плеера. */
+  replayRetentionDays: number;
+}
+
+export interface VisitEvent {
+  type: "session_start" | "page_view" | "click" | "scroll" | "lead_form_open" | "lead_submit";
+  occurredAt: string;
+  pagePath: string;
+  clickX?: number;
+  clickY?: number;
+  clickPinned?: boolean;
+  scrollY?: number;
+  scrollDepthPercent?: number;
+}
+
+/**
+ * Кадр записи — [t, вид, a, b]: t — мс от начала просмотра страницы. Виды —
+ * REPLAY_KIND в виджете плеера (их же пишет счётчик сайта, siteReplayBuffer.ts).
+ */
+export type ReplayFrame = [t: number, kind: number, a: number, b: number];
+
+/** Запись одного просмотра страницы. */
+export interface ReplayPage {
+  pageViewId: string;
+  pagePath: string;
+  startedAt: string;
+  viewportWidth: number;
+  viewportHeight: number;
+  frames: ReplayFrame[];
+}
+
+export interface VisitDetail {
+  session: Visit;
+  events: VisitEvent[];
+  /** Пусто — визит не записан: до включения записи или запись старше срока хранения. */
+  pages: ReplayPage[];
+  /** Запись длиннее одного ответа — её конец отрезан. */
+  truncated: boolean;
+  siteUrl: string;
 }
 
 export interface ListQuery<TSort extends string> {

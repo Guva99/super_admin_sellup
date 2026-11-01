@@ -54,7 +54,7 @@ shared/    переиспользуемое: ui, lib, config, api
 | История задачи | `entities/task-history/model/useTaskHistory.ts` | `useTaskHistory(id, revision)` | локально в `widgets/task-detail` |
 | Платежи бизнеса | `entities/payment/model/usePayments.ts` | `usePayments(clientId)` | локально в `widgets/client-billing` |
 | История бизнеса | `entities/client-history/model/useClientHistory.ts` | `useClientHistory(clientId)` | локально в `widgets/client-history` |
-| Посещаемость сайта | `entities/site-analytics/model/useTrafficData.ts` | `useTrafficAggregation(period)`, `useTrafficOverview(…)` и соседи | локально в `pages/traffic` и `widgets/traffic-*` |
+| Посещаемость сайта | `entities/site-analytics/model/useTrafficData.ts` | `useTrafficAggregation(period)`, `useTrafficOverview(…)`, `useVisits(…)`, `useVisit(id)` и соседи | локально в `pages/traffic` и `widgets/traffic-*` |
 | Сотрудники | `entities/user/model/store.tsx` | `useUsers()` | `app/ui/AuthenticatedApp.tsx` |
 | Шаблон онбординга | `entities/onboarding-template/model/store.tsx` | `useOnboardingTemplate()` | `app/ui/AuthenticatedApp.tsx` |
 | Глобальные модалки | контракт и хук — `shared/lib/ui-actions.ts`, реализация — `app/model/ui-actions.tsx` | `useUiActions()` из `@/shared/lib` | `app/ui/AppLayout.tsx` |
@@ -227,8 +227,8 @@ shared/    переиспользуемое: ui, lib, config, api
 - Данные — собственный счётчик лендинга `sellup_web` (`shared/lib/siteAnalytics.ts`), он
   пишет события только после согласия на cookie. Раздел и меню — только владельцу и
   администратору (`canViewSiteTraffic`), бэкенд остальным отвечает 403.
-- Вкладка — в пути (`/traffic/pages`), период, страница и устройство карты — в запросе
-  (`?from=&to=&path=&device=`). Даты — календарные дни **по Москве**, как на бэкенде
+- Вкладка — в пути (`/traffic/pages`), период, страница и устройство карты, открытый
+  визит и посетитель — в запросе (`?from=&to=&path=&device=&visit=&visitor=`). Даты — календарные дни **по Москве**, как на бэкенде
   (`entities/site-analytics/model/period.ts`).
 - Отчёты читают дневные сводки. Период до 31 дня `useTrafficAggregation` пересчитывает
   сам при открытии (вместе с прошлым периодом — для сравнения), длинный — только
@@ -237,12 +237,20 @@ shared/    переиспользуемое: ui, lib, config, api
 - Карта кликов (`widgets/traffic-heatmap`) читает сырые события. Сайт показан во фрейме
   размером с окно посетителя (медиана), а не во всю высоту: сцены лендинга считаются от
   высоты окна. Колесо над картой прокручивает сайт через `postMessage` — протокол в
-  `model/useSiteFrame.ts` и `sellup_web/src/shared/lib/heatmapBridge.ts`, менять оба.
+  `entities/site-analytics/model/useSiteFrame.ts` и
+  `sellup_web/src/shared/lib/heatmapBridge.ts`, менять оба.
   Сайт слушает только адреса из своего `VITE_CONSOLE_ORIGINS` и пускает во фрейм только
   консоль (nginx, `frame-ancestors`). Клики по прилипшему к экрану (`pinned`: шапка,
   сцены) видны, когда карта прокручена туда же, где был посетитель.
 - Вместо воронки товаров — воронка заявок (`widgets/traffic-leads`): зашёл → открыл
   форму → отправил.
+- «Визиты» (`widgets/traffic-visits`) — визиты из сырых событий (90 дней) и плеер
+  записи. Счётчик пишет кадры `[t, вид, a, b]` (мышь, прокрутка, клик, окно, окно
+  заявки, вкладка — `REPLAY_KIND` в `model/replay.ts`, на сайте `siteReplayBuffer.ts`);
+  записи хранятся 30 дней. Плеер — тот же фрейм и мост, что у карты: окно — как у
+  посетителя, переходы и окно заявки — командами моста, курсор и клики — слоем поверх.
+  Ввод в поля не пишется и не показывается. Посетитель анонимен: `visitorLabel` даёт
+  короткую метку из идентификатора браузера, с заявками визиты не связаны.
 
 **Несохранённый текст не теряется.** Два механизма, они дополняют друг друга:
 - **Окно не закрывается молча.** `ModalOverlay` спрашивает перед закрытием (клик мимо,

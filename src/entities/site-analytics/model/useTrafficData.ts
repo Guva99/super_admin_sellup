@@ -15,6 +15,10 @@ import type {
   TrafficPages,
   TrafficPeriod,
   TrafficPoint,
+  VisitDetail,
+  VisitFilter,
+  Visits,
+  VisitSort,
 } from "./types";
 
 /**
@@ -173,4 +177,14 @@ export function useLeadFunnel(period: TrafficPeriod, list: ListQuery<LeadSort>, 
 export function useHeatmap(period: TrafficPeriod, pagePath: string, device: HeatmapDevice) {
   const key = pagePath && periodError(period) === null ? `${periodKey(period)}:${pagePath}:${device}` : null;
   return useLoad<Heatmap>(key, () => siteAnalyticsApi.heatmap(period, pagePath, device));
+}
+
+/** Визиты читают сырые события — пересчёта сводок не ждут. */
+export function useVisits(period: TrafficPeriod, filter: VisitFilter, list: ListQuery<VisitSort>) {
+  const key = periodError(period) === null ? `${periodKey(period)}:${JSON.stringify(filter)}:${JSON.stringify(list)}` : null;
+  return useLoad<Visits>(key, () => siteAnalyticsApi.visits(period, filter, list));
+}
+
+export function useVisit(sessionId: string) {
+  return useLoad<VisitDetail>(sessionId || null, () => siteAnalyticsApi.visit(sessionId));
 }

@@ -21,6 +21,15 @@ export type {
   HeatmapDevice,
   ScrollDepthBucket,
   CleanupResult,
+  Visit,
+  Visits,
+  VisitSort,
+  VisitFilter,
+  VisitLeadFilter,
+  VisitEvent,
+  VisitDetail,
+  ReplayFrame,
+  ReplayPage,
 } from "./model/types";
 export {
   MAX_PERIOD_DAYS,
@@ -46,6 +55,8 @@ export {
   formatPointLabel,
   formatPeriod,
   hostOf,
+  formatClock,
+  visitorLabel,
 } from "./model/format";
 export {
   useTrafficAggregation,
@@ -54,9 +65,12 @@ export {
   useTrafficPages,
   useLeadFunnel,
   useHeatmap,
+  useVisits,
+  useVisit,
   type TrafficAggregation,
   type AggregationGate,
   type LoadState,
 } from "./model/useTrafficData";
+export { useSiteFrame, originOf, type SiteFrameState } from "./model/useSiteFrame";
 export { siteAnalyticsApi } from "./api/siteAnalyticsApi";
 export { SortHeader, Pager } from "./ui/tableParts";

@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { AlertTriangle, Loader2 } from "lucide-react";
-import type { HeatmapClick, HeatmapDevice } from "@/entities/site-analytics";
+import { originOf, useSiteFrame, type HeatmapClick, type HeatmapDevice } from "@/entities/site-analytics";
+import { useElementWidth } from "@/shared/lib";
 import { drawHeat } from "../model/heat";
 import { frameSize, pagePoints, pinnedPoints } from "../model/layout";
-import { useSiteFrame } from "../model/useSiteFrame";
 
 /** Холст слоя страницы — не выше этого: браузеры не рисуют канвас длиннее ~32 тыс. пикселей. */
 const MAX_CANVAS_PX = 30000;
@@ -11,28 +11,6 @@ const PAGE_RESOLUTION = 0.4;
 const MINIMAP_WIDTH = 64;
 /** Выше этого карта не растёт: окно телефона в полный рост не влезло бы в экран. */
 const MAX_VIEW_HEIGHT = 720;
-
-function originOf(url: string): string | null {
-  try {
-    return new URL(url).origin;
-  } catch {
-    return null;
-  }
-}
-
-function useElementWidth<T extends HTMLElement>() {
-  const ref = useRef<T>(null);
-  const [width, setWidth] = useState(0);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    setWidth(el.clientWidth);
-    const observer = new ResizeObserver(([entry]) => setWidth(Math.round(entry.contentRect.width)));
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-  return { ref, width };
-}
 
 interface HeatmapViewerProps {
   clicks: HeatmapClick[];

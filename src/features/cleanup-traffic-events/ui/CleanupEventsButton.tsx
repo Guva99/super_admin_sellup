@@ -12,6 +12,7 @@ export function CleanupEventsButton({ controller }: { controller: CleanupEventsC
       {result && (
         <span className="text-xs text-ink-400">
           Удалено событий: {formatCount(result.rawEventsDeleted)}
+          {result.replayChunksDeleted > 0 && `, кусков записей визитов: ${formatCount(result.replayChunksDeleted)}`}
           {result.aggregateRowsDeleted > 0 && `, строк сводок: ${formatCount(result.aggregateRowsDeleted)}`}
         </span>
       )}
@@ -31,7 +32,10 @@ export function CleanupEventsButton({ controller }: { controller: CleanupEventsC
               <h2 className="text-sm font-semibold text-ink-900">Удалить старые события?</h2>
             </div>
             <div className="p-5 space-y-2 text-xs text-ink-600 leading-relaxed">
-              <p>Сырые события старше 90 дней — клики, просмотры, прокрутка — будут удалены. Карта кликов за этот срок опустеет.</p>
+              <p>
+                Сырые события старше 90 дней — клики, просмотры, прокрутка — будут удалены, а с ними записи визитов старше 30 дней. Карта кликов и список
+                визитов за эти сроки опустеют.
+              </p>
               <p className="text-ink-400">
                 Сводки по дням останутся: визиты, источники и страницы за старые периоды видны по-прежнему. Сервер и так удаляет их каждую ночь.
               </p>

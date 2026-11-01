@@ -15,3 +15,4 @@ export {
 export { MAX_FILE_BYTES, MAX_UPLOAD_BYTES, ATTACHMENT_ACCEPT, attachmentError, isImageType, attachmentRef, attachmentKey, attachmentIdsInText, pastedFile } from "./files";
 export { UiActionsContext, useUiActions, type UiActions, type CreateTaskPreset } from "./ui-actions";
 export { useTheme, setTheme, type Theme } from "./theme";
+export { useElementWidth } from "./useElementWidth";

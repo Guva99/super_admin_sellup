@@ -18,10 +18,10 @@ export function HistoryEvent({ event, formatValue = (_, value) => value, formatT
     <div className="flex gap-2.5">
       <UserAvatar name={event.actorName} size="sm" className="mt-0.5" />
       <div className="flex-1 min-w-0 text-xs leading-relaxed">
-        <span className="font-semibold text-slate-700">{event.actorName}</span>
-        <span className="text-slate-500"> · </span>
+        <span className="font-semibold text-ink-700">{event.actorName}</span>
+        <span className="text-ink-500"> · </span>
         <Description event={event} formatValue={formatValue} />
-        <span className="text-slate-400"> · {formatTime(event.at)}</span>
+        <span className="text-ink-400"> · {formatTime(event.at)}</span>
       </div>
     </div>
   );
@@ -30,26 +30,26 @@ export function HistoryEvent({ event, formatValue = (_, value) => value, formatT
 function Description({ event, formatValue }: { event: TaskHistoryEvent; formatValue: HistoryValueFormatter }) {
   switch (event.type) {
     case "created":
-      return <span className="text-slate-600">задача создана</span>;
+      return <span className="text-ink-600">задача создана</span>;
     case "comment":
-      return <span className="text-slate-600">добавлен комментарий</span>;
+      return <span className="text-ink-600">добавлен комментарий</span>;
     case "field_changed": {
       const field = event.field;
-      if (!field) return <span className="text-slate-600">изменение</span>;
+      if (!field) return <span className="text-ink-600">изменение</span>;
       if (field === "attachments") {
         return (
-          <span className="text-slate-600">
-            приложены файлы: <span className="text-slate-800">{event.newValue}</span>
+          <span className="text-ink-600">
+            приложены файлы: <span className="text-ink-800">{event.newValue}</span>
           </span>
         );
       }
-      if (field === "description") return <span className="text-slate-600">изменено описание</span>;
+      if (field === "description") return <span className="text-ink-600">изменено описание</span>;
       const from = formatValue(field, event.oldValue);
       const to = formatValue(field, event.newValue);
       return (
-        <span className="text-slate-600">
-          {TASK_HISTORY_FIELD_LABEL[field]}: <span className="text-slate-400 line-through">{from || EMPTY}</span>{" "}
-          <span className="text-slate-400">→</span> <span className="text-slate-800 font-medium">{to || EMPTY}</span>
+        <span className="text-ink-600">
+          {TASK_HISTORY_FIELD_LABEL[field]}: <span className="text-ink-400 line-through">{from || EMPTY}</span>{" "}
+          <span className="text-ink-400">→</span> <span className="text-ink-800 font-medium">{to || EMPTY}</span>
         </span>
       );
     }

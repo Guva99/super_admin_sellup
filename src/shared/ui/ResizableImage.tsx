@@ -67,7 +67,7 @@ export function ResizableImage({ width, onResize, onReset, children }: Resizable
             e.stopPropagation();
             onReset?.();
           }}
-          className="absolute -right-1 -bottom-1 w-3.5 h-3.5 rounded-sm bg-white border-2 border-brand-500 cursor-nwse-resize opacity-0 group-hover/image:opacity-100 transition-opacity"
+          className="absolute -right-1 -bottom-1 w-3.5 h-3.5 rounded-sm bg-surface border-2 border-brand-500 cursor-nwse-resize opacity-0 group-hover/image:opacity-100 transition-opacity"
         />
       )}
       {dragWidth !== null && (

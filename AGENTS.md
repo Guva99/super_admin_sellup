@@ -326,8 +326,27 @@ pnpm build       # прогоняет typecheck и собирает
 - React 19, react-router-dom 7
 - Tailwind CSS v4 через `@tailwindcss/vite`; токены темы (цвет бренда,
   шрифты) — в `src/index.css`, блок `@theme`. Отдельного tailwind.config нет.
-  Палитра графиков дублируется hex-ами в `shared/config/chart.ts`, потому что
+  Акценты графиков дублируются hex-ами в `shared/config/chart.ts`, потому что
   recharts не понимает Tailwind-классы — меняя цвет, поправьте оба места.
+  Нейтральные цвета графиков (сетка, оси) берите из `useChartColors()` — они
+  зависят от темы.
+
+## Светлая и тёмная тема
+
+- Тема — атрибут `data-theme` на `<html>`. Ставит его скрипт в `index.html`
+  до загрузки приложения (выбор из `localStorage["sellup.theme"]`, без выбора —
+  как в системе), меняет переключатель в сайдбаре (`features/toggle-theme` →
+  `shared/lib/theme.ts`).
+- **Для фона, текста и рамок интерфейса — только `ink-*` и `surface`**
+  (`bg-surface`, `text-ink-900`, `border-ink-200`), а не `slate-*`/`white`: в
+  светлой теме это те же цвета, в тёмной они перевёрнуты. Голые `slate`/`white`
+  — фиксированные цвета для того, что не меняется с темой: тёмные оверлеи
+  (`bg-slate-900/30`), белый текст на цветных кнопках.
+- `dark:`-варианты не используются: тёмные значения задаёт блок
+  `[data-theme="dark"]` в `src/index.css`. Там же приглушены светлые ступени
+  цветов (`bg-red-50`, `bg-brand-50` и т. п.) — новая подложка статуса на них
+  сама будет правильной в обеих темах.
+- CSS вне Tailwind (как `editor.css`) — через `var(--color-ink-…)`, не hex.
 - recharts — графики, lucide-react — иконки
 - Tiptap 3 (`@tiptap/react`, StarterKit, task-list, table, image) + `tiptap-markdown` —
   редактор описания задачи; markdown ⇄ документ, HTML на входе выключен

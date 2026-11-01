@@ -105,15 +105,15 @@ export function ModalOverlay({ children, onClose, unsaved: ownerUnsaved = false 
 
         {asking && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-900/30" onClick={(e) => e.stopPropagation()}>
-            <div className="w-[380px] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+            <div className="w-[380px] bg-surface rounded-2xl shadow-2xl border border-ink-200 overflow-hidden">
               <div className="flex items-start gap-3 p-5">
                 <AlertTriangle size={18} className="text-amber-500 flex-shrink-0 mt-0.5" />
-                <div className="text-xs text-slate-600 leading-relaxed">
-                  <p className="text-sm font-semibold text-slate-900 mb-1">Закрыть без сохранения?</p>
+                <div className="text-xs text-ink-600 leading-relaxed">
+                  <p className="text-sm font-semibold text-ink-900 mb-1">Закрыть без сохранения?</p>
                   <p>Набранное не сохранено. Оно останется черновиком и подставится, когда вы вернётесь.</p>
                 </div>
               </div>
-              <div className="flex justify-end gap-2 px-5 py-3.5 border-t border-slate-100 bg-slate-50/50">
+              <div className="flex justify-end gap-2 px-5 py-3.5 border-t border-ink-100 bg-ink-50/50">
                 <button
                   type="button"
                   autoFocus
@@ -128,7 +128,7 @@ export function ModalOverlay({ children, onClose, unsaved: ownerUnsaved = false 
                     setAsking(false);
                     onClose();
                   }}
-                  className="px-3 py-2 text-xs font-medium text-slate-500 hover:text-slate-800"
+                  className="px-3 py-2 text-xs font-medium text-ink-500 hover:text-ink-800"
                 >
                   Закрыть
                 </button>

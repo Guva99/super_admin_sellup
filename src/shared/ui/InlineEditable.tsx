@@ -61,7 +61,7 @@ export function InlineEditable({
 
   if (!editing) {
     return (
-      <div onClick={() => setEditing(true)} className="cursor-text rounded-md -mx-1.5 px-1.5 py-0.5 hover:bg-slate-100 transition-colors">
+      <div onClick={() => setEditing(true)} className="cursor-text rounded-md -mx-1.5 px-1.5 py-0.5 hover:bg-ink-100 transition-colors">
         {children}
       </div>
     );
@@ -86,7 +86,7 @@ export function InlineEditable({
         commit();
       }
     },
-    className: `w-full bg-white border border-brand-300 rounded-md outline-none focus:ring-2 focus:ring-brand-50 ${inputClassName}`,
+    className: `w-full bg-surface border border-brand-300 rounded-md outline-none focus:ring-2 focus:ring-brand-50 ${inputClassName}`,
   };
 
   return multiline ? <textarea {...common} rows={Math.max(4, draft.split("\n").length + 1)} /> : <input type="text" {...common} />;

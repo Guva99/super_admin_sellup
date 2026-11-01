@@ -28,7 +28,7 @@ export function ClientOnboarding({
   if (client.onboardingSteps.length === 0) {
     return (
       <div className="max-w-[800px]">
-        <div className="bg-white border border-dashed border-slate-200 rounded-xl p-12 flex flex-col items-center gap-2 text-slate-300">
+        <div className="bg-surface border border-dashed border-ink-200 rounded-xl p-12 flex flex-col items-center gap-2 text-ink-300">
           <Rocket size={28} />
           <p className="text-sm font-medium">Этапы онбординга не заданы</p>
           <p className="text-xs text-center max-w-xs">Этапы задаются при подключении бизнеса через кнопку «Подключить бизнес»</p>
@@ -40,17 +40,17 @@ export function ClientOnboarding({
   return (
     <div className="space-y-4 max-w-[800px]">
       {/* Progress bar */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5">
+      <div className="bg-surface border border-ink-200 rounded-xl p-5">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-slate-900">Прогресс</h3>
-          <div className="text-xs text-slate-500 font-mono">{doneCount}/{client.onboardingSteps.length} этапов</div>
+          <h3 className="text-sm font-semibold text-ink-900">Прогресс</h3>
+          <div className="text-xs text-ink-500 font-mono">{doneCount}/{client.onboardingSteps.length} этапов</div>
         </div>
-        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+        <div className="h-2 bg-ink-100 rounded-full overflow-hidden">
           <div className="h-full bg-brand-500 rounded-full transition-all duration-700" style={{ width: `${(doneCount / Math.max(client.onboardingSteps.length, 1)) * 100}%` }} />
         </div>
-        <div className="flex items-center justify-between mt-3 text-xs text-slate-500">
+        <div className="flex items-center justify-between mt-3 text-xs text-ink-500">
           <span title="Сумма календарного времени этапов: от взятия в работу до закрытия, у открытых — до сейчас (по Москве)">
-            Потрачено: <strong className="text-slate-700">{formatHours(totalHours)}</strong>
+            Потрачено: <strong className="text-ink-700">{formatHours(totalHours)}</strong>
           </span>
           <span title="Календарных дней с последнего перемещения по воронке, по Москве">{client.daysInStatus} дней в статусе</span>
         </div>
@@ -63,7 +63,7 @@ export function ClientOnboarding({
           const linkedTask = tasks.find((t) => t.onboardingStepId === step.id) ?? null;
           const statusBg = step.status === "done" ? "border-emerald-200 bg-emerald-50/20" :
                            step.status === "in_progress" ? "border-brand-200 bg-brand-50/20" :
-                           "border-slate-200 bg-white";
+                           "border-ink-200 bg-surface";
           return (
             <div key={step.id} className={`border rounded-xl transition-all ${statusBg}`}>
               <div className="flex items-start gap-3 p-4">
@@ -80,7 +80,7 @@ export function ClientOnboarding({
                       <div className="w-2 h-2 rounded-full bg-brand-500" />
                     </div>
                   ) : (
-                    <Circle size={18} className="text-slate-300" />
+                    <Circle size={18} className="text-ink-300" />
                   )}
                 </button>
 
@@ -95,19 +95,19 @@ export function ClientOnboarding({
                           defaultValue={step.title}
                           onBlur={(e) => { onUpdateStep(step.id, { title: e.target.value }); setEditingId(null); }}
                           onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); if (e.key === "Escape") setEditingId(null); }}
-                          className="text-sm font-medium text-slate-900 w-full border-b border-brand-300 outline-none bg-transparent pb-0.5"
+                          className="text-sm font-medium text-ink-900 w-full border-b border-brand-300 outline-none bg-transparent pb-0.5"
                         />
                       ) : (
                         <div className="flex items-center gap-1.5">
-                          <span className="text-slate-300 font-mono text-xs">{i + 1}.</span>
-                          <span className={`text-sm font-medium ${step.status === "done" ? "line-through text-slate-400" : "text-slate-900"}`}>
+                          <span className="text-ink-300 font-mono text-xs">{i + 1}.</span>
+                          <span className={`text-sm font-medium ${step.status === "done" ? "line-through text-ink-400" : "text-ink-900"}`}>
                             {step.title}
                           </span>
                         </div>
                       )}
                       {/* Description */}
                       {step.description && !isEditing && (
-                        <p className="text-xs text-slate-500 mt-0.5 ml-4">{step.description}</p>
+                        <p className="text-xs text-ink-500 mt-0.5 ml-4">{step.description}</p>
                       )}
                     </div>
 
@@ -134,7 +134,7 @@ export function ClientOnboarding({
                         className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors ${
                           step.status === "done" ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200" :
                           step.status === "in_progress" ? "bg-brand-100 text-brand-600 hover:bg-brand-200" :
-                          "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                          "bg-ink-100 text-ink-500 hover:bg-ink-200"
                         }`}
                         title="Нажмите для смены статуса"
                       >
@@ -144,7 +144,7 @@ export function ClientOnboarding({
                       {/* Edit */}
                       <button
                         onClick={() => setEditingId(isEditing ? null : step.id)}
-                        className="text-slate-300 hover:text-brand-500 transition-colors"
+                        className="text-ink-300 hover:text-brand-500 transition-colors"
                         title="Редактировать"
                       >
                         <FileText size={13} />
@@ -153,7 +153,7 @@ export function ClientOnboarding({
                   </div>
 
                   {/* Meta row */}
-                  <div className="flex items-center gap-4 mt-2 text-xs text-slate-400">
+                  <div className="flex items-center gap-4 mt-2 text-xs text-ink-400">
                     {step.assignee && <span className="flex items-center gap-1"><Users size={10} />{step.assignee}</span>}
                     {step.startedAt && (
                       <span
@@ -191,7 +191,7 @@ export function ClientOnboarding({
       </div>
 
       {/* Legend */}
-      <p className="text-[11px] text-slate-400 flex items-center gap-1">
+      <p className="text-[11px] text-ink-400 flex items-center gap-1">
         <span className="text-brand-400">←</span>
         Нажмите на иконку статуса или кнопку «Ожидает / В работе / Готово» для смены этапа
       </p>

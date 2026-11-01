@@ -15,7 +15,7 @@ export function UploadList({ queue, showDone = false }: UploadListProps) {
   return (
     <ul className="space-y-1.5">
       {rows.map((item) => (
-        <li key={item.id} className="relative overflow-hidden flex items-center gap-2 border border-slate-200 rounded-lg px-3 py-2">
+        <li key={item.id} className="relative overflow-hidden flex items-center gap-2 border border-ink-200 rounded-lg px-3 py-2">
           {item.status === "uploading" && (
             <span className="absolute left-0 bottom-0 h-0.5 bg-brand-400 transition-[width]" style={{ width: `${Math.round(item.progress * 100)}%` }} />
           )}
@@ -26,13 +26,13 @@ export function UploadList({ queue, showDone = false }: UploadListProps) {
           ) : isImageType(item.file.type) ? (
             <ImageIcon size={12} className="text-brand-400 flex-shrink-0" />
           ) : (
-            <FileText size={12} className="text-slate-400 flex-shrink-0" />
+            <FileText size={12} className="text-ink-400 flex-shrink-0" />
           )}
-          <span className="text-[11px] text-slate-700 flex-1 truncate">{item.attachment?.name ?? item.file.name}</span>
+          <span className="text-[11px] text-ink-700 flex-1 truncate">{item.attachment?.name ?? item.file.name}</span>
           {item.status === "error" ? (
             <span className="text-[10px] text-red-600 truncate max-w-[220px]" title={item.error ?? ""}>{item.error}</span>
           ) : (
-            <span className="text-[10px] text-slate-400 flex-shrink-0">{formatBytes(item.file.size)}</span>
+            <span className="text-[10px] text-ink-400 flex-shrink-0">{formatBytes(item.file.size)}</span>
           )}
           {item.status === "error" && (
             <button type="button" onClick={() => queue.retry(item.id)} className="flex items-center gap-1 text-[10px] text-brand-500 hover:underline flex-shrink-0">
@@ -41,7 +41,7 @@ export function UploadList({ queue, showDone = false }: UploadListProps) {
             </button>
           )}
           {item.status !== "uploading" && (
-            <button type="button" onClick={() => queue.dismiss(item.id)} aria-label={`Убрать ${item.file.name}`} className="text-slate-300 hover:text-red-400 flex-shrink-0">
+            <button type="button" onClick={() => queue.dismiss(item.id)} aria-label={`Убрать ${item.file.name}`} className="text-ink-300 hover:text-red-400 flex-shrink-0">
               <X size={11} />
             </button>
           )}

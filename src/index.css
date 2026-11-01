@@ -16,6 +16,105 @@
   --color-brand-700: #c03e14;
   --color-brand-800: #983217;
   --color-brand-900: #7a2c17;
+
+  /*
+   * Нейтральные цвета интерфейса, которые меняются с темой: surface — фон
+   * карточек и панелей, ink — фоны, рамки и текст. В светлой теме это ровно
+   * white и slate из Tailwind, тёмные значения — в блоке [data-theme="dark"].
+   * Голые slate и white остаются фиксированными цветами для того, что не должно
+   * меняться с темой: тёмные подложки оверлеев, белый текст на цветных кнопках.
+   */
+  --color-surface: #fff;
+  --color-ink-50: oklch(98.4% 0.003 247.858);
+  --color-ink-100: oklch(96.8% 0.007 247.896);
+  --color-ink-200: oklch(92.9% 0.013 255.508);
+  --color-ink-300: oklch(86.9% 0.022 252.894);
+  --color-ink-400: oklch(70.4% 0.04 256.788);
+  --color-ink-500: oklch(55.4% 0.046 257.417);
+  --color-ink-600: oklch(44.6% 0.043 257.281);
+  --color-ink-700: oklch(37.2% 0.044 257.287);
+  --color-ink-800: oklch(27.9% 0.041 260.031);
+  --color-ink-900: oklch(20.8% 0.042 265.755);
+  --color-ink-950: oklch(12.9% 0.042 264.695);
+}
+
+/*
+ * Тёмная тема. Атрибут ставит скрипт в index.html ещё до загрузки приложения
+ * (иначе страница мигает белым), дальше — переключатель в сайдбаре.
+ *
+ * Нейтральная шкала перевёрнута: ink-900 — самый светлый текст, ink-50 — фон
+ * страницы. Светлые ступени цветов (50–200: подложки статусов, бейджей,
+ * выделений) становятся приглушёнными тонами поверх тёмного фона, а тёмные
+ * текстовые (600–900) — светлее, чтобы оставаться читаемыми.
+ */
+:root {
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-surface: #151b27;
+  --color-ink-50: #0f141d;
+  --color-ink-100: #1d2432;
+  --color-ink-200: #283142;
+  --color-ink-300: #3a4455;
+  --color-ink-400: #6b778b;
+  --color-ink-500: #8a95a8;
+  --color-ink-600: #a4aebf;
+  --color-ink-700: #bcc5d3;
+  --color-ink-800: #d3dae5;
+  --color-ink-900: #e6ebf2;
+  --color-ink-950: #f3f6fa;
+
+  --color-brand-50: color-mix(in oklab, #fd622c 12%, #151b27);
+  --color-brand-100: color-mix(in oklab, #fd622c 20%, #151b27);
+  --color-brand-200: color-mix(in oklab, #fd622c 32%, #151b27);
+
+  --color-red-50: color-mix(in oklab, oklch(63.7% 0.237 25.331) 12%, #151b27);
+  --color-red-100: color-mix(in oklab, oklch(63.7% 0.237 25.331) 20%, #151b27);
+  --color-red-200: color-mix(in oklab, oklch(63.7% 0.237 25.331) 32%, #151b27);
+  --color-red-600: oklch(70.4% 0.191 22.216);
+  --color-red-700: oklch(80.8% 0.114 19.571);
+
+  --color-emerald-50: color-mix(in oklab, oklch(69.6% 0.17 162.48) 12%, #151b27);
+  --color-emerald-100: color-mix(in oklab, oklch(69.6% 0.17 162.48) 20%, #151b27);
+  --color-emerald-200: color-mix(in oklab, oklch(69.6% 0.17 162.48) 32%, #151b27);
+  --color-emerald-700: oklch(84.5% 0.143 164.978);
+
+  --color-amber-50: color-mix(in oklab, oklch(76.9% 0.188 70.08) 12%, #151b27);
+  --color-amber-100: color-mix(in oklab, oklch(76.9% 0.188 70.08) 20%, #151b27);
+  --color-amber-200: color-mix(in oklab, oklch(76.9% 0.188 70.08) 32%, #151b27);
+  --color-amber-700: oklch(87.9% 0.169 91.605);
+
+  --color-violet-50: color-mix(in oklab, oklch(60.6% 0.25 292.717) 14%, #151b27);
+  --color-violet-100: color-mix(in oklab, oklch(60.6% 0.25 292.717) 22%, #151b27);
+  --color-violet-200: color-mix(in oklab, oklch(60.6% 0.25 292.717) 34%, #151b27);
+  --color-violet-600: oklch(70.2% 0.183 293.541);
+  --color-violet-700: oklch(81.1% 0.111 293.571);
+
+  --color-blue-50: color-mix(in oklab, oklch(62.3% 0.214 259.815) 14%, #151b27);
+  --color-blue-100: color-mix(in oklab, oklch(62.3% 0.214 259.815) 22%, #151b27);
+  --color-blue-200: color-mix(in oklab, oklch(62.3% 0.214 259.815) 34%, #151b27);
+  --color-blue-600: oklch(70.7% 0.165 254.624);
+  --color-blue-700: oklch(80.9% 0.105 251.813);
+
+  --color-orange-50: color-mix(in oklab, oklch(70.5% 0.213 47.604) 12%, #151b27);
+  --color-orange-100: color-mix(in oklab, oklch(70.5% 0.213 47.604) 20%, #151b27);
+  --color-orange-200: color-mix(in oklab, oklch(70.5% 0.213 47.604) 32%, #151b27);
+
+  --color-indigo-50: color-mix(in oklab, oklch(58.5% 0.233 277.117) 14%, #151b27);
+  --color-indigo-100: color-mix(in oklab, oklch(58.5% 0.233 277.117) 22%, #151b27);
+  --color-indigo-200: color-mix(in oklab, oklch(58.5% 0.233 277.117) 34%, #151b27);
+  --color-indigo-900: oklch(87% 0.065 274.039);
+
+  --color-sky-600: oklch(74.6% 0.16 232.661);
+}
+
+/* Ставится на мгновение смены темы (shared/lib/theme.ts), чтобы всё перекрасилось разом. */
+.theme-switching,
+.theme-switching * {
+  transition: none !important;
 }
 
 html,
@@ -28,8 +127,8 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: var(--color-ink-50);
+  color: var(--color-ink-900);
 }
 
 ::-webkit-scrollbar {
@@ -42,12 +141,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--color-ink-300);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--color-ink-400);
 }
 
 .font-mono {

@@ -12,54 +12,54 @@ export function AddTeamMemberModal({ controller }: { controller: AddTeamMemberCo
 
   return (
     <ModalOverlay onClose={close} unsaved={isDirty}>
-      <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-          <h2 className="text-sm font-semibold text-slate-900">Добавить сотрудника</h2>
-          <button onClick={close} className="text-slate-400 hover:text-slate-600"><X size={16} /></button>
+      <div className="w-full max-w-sm bg-surface rounded-2xl shadow-2xl border border-ink-200 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-ink-100">
+          <h2 className="text-sm font-semibold text-ink-900">Добавить сотрудника</h2>
+          <button onClick={close} className="text-ink-400 hover:text-ink-600"><X size={16} /></button>
         </div>
 
         <div className="p-5 space-y-4">
           <div>
-            <label className="text-xs font-medium text-slate-600 block mb-1.5">Имя *</label>
+            <label className="text-xs font-medium text-ink-600 block mb-1.5">Имя *</label>
             <input
               autoFocus
               type="text"
               value={draft.fullName}
               onChange={(e) => patch({ fullName: e.target.value })}
               placeholder="Иван Петров"
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-50 transition-colors placeholder:text-slate-300"
+              className="w-full px-3 py-2 text-sm border border-ink-200 rounded-lg outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-50 transition-colors placeholder:text-ink-300"
             />
           </div>
 
           <div>
-            <label className="text-xs font-medium text-slate-600 block mb-1.5">Email *</label>
+            <label className="text-xs font-medium text-ink-600 block mb-1.5">Email *</label>
             <input
               type="email"
               value={draft.email}
               onChange={(e) => patch({ email: e.target.value })}
               placeholder="ivan@sellup.ru"
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-50 transition-colors placeholder:text-slate-300"
+              className="w-full px-3 py-2 text-sm border border-ink-200 rounded-lg outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-50 transition-colors placeholder:text-ink-300"
             />
           </div>
 
           <div>
-            <label className="text-xs font-medium text-slate-600 block mb-1.5">Пароль для входа *</label>
+            <label className="text-xs font-medium text-ink-600 block mb-1.5">Пароль для входа *</label>
             <input
               type="text"
               value={draft.password}
               onChange={(e) => patch({ password: e.target.value })}
               placeholder="Не короче 8 символов"
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-50 transition-colors placeholder:text-slate-300"
+              className="w-full px-3 py-2 text-sm border border-ink-200 rounded-lg outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-50 transition-colors placeholder:text-ink-300"
             />
-            <p className="text-[11px] text-slate-400 mt-1">Передайте пароль сотруднику — с ним он войдёт в консоль.</p>
+            <p className="text-[11px] text-ink-400 mt-1">Передайте пароль сотруднику — с ним он войдёт в консоль.</p>
           </div>
 
           <div>
-            <label className="text-xs font-medium text-slate-600 block mb-1.5">Роль</label>
+            <label className="text-xs font-medium text-ink-600 block mb-1.5">Роль</label>
             <select
               value={draft.roleId}
               onChange={(e) => patch({ roleId: e.target.value })}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-brand-400 bg-white text-slate-700 cursor-pointer"
+              className="w-full px-3 py-2 text-sm border border-ink-200 rounded-lg outline-none focus:border-brand-400 bg-surface text-ink-700 cursor-pointer"
             >
               {roles.map((role) => (
                 <option key={role.id} value={role.id}>{ROLE_LABEL[role.key] ?? role.name}</option>
@@ -75,12 +75,12 @@ export function AddTeamMemberModal({ controller }: { controller: AddTeamMemberCo
           )}
         </div>
 
-        <div className="px-5 pb-5 flex gap-2 justify-end border-t border-slate-100 pt-4">
-          <button onClick={close} className="px-4 py-2 text-xs text-slate-500 hover:text-slate-700 rounded-lg hover:bg-slate-50 transition-colors">Отмена</button>
+        <div className="px-5 pb-5 flex gap-2 justify-end border-t border-ink-100 pt-4">
+          <button onClick={close} className="px-4 py-2 text-xs text-ink-500 hover:text-ink-700 rounded-lg hover:bg-ink-50 transition-colors">Отмена</button>
           <button
             onClick={submit}
             disabled={!canSubmit || isSubmitting}
-            className="px-5 py-2 text-xs font-medium bg-brand-500 hover:bg-brand-600 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-lg transition-colors"
+            className="px-5 py-2 text-xs font-medium bg-brand-500 hover:bg-brand-600 disabled:bg-ink-200 disabled:text-ink-400 text-white rounded-lg transition-colors"
           >
             {isSubmitting ? "Добавляем…" : "Добавить"}
           </button>

@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 
 import { useSession } from "@/entities/session";
 import { useTasks } from "@/entities/task";
+import { ThemeToggle, useThemeToggle } from "@/features/toggle-theme";
 import { useUiActions } from "@/shared/lib";
 import { navRoutes } from "../routes";
 
@@ -23,20 +24,21 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
   const { highPriorityCount } = useTasks();
   const { openConnectBusiness, openCreateTask } = useUiActions();
   const { user, logout } = useSession();
+  const themeToggle = useThemeToggle();
 
   const navLinkClass = (isActive: boolean) =>
     `w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm transition-colors ${
       collapsed ? "justify-center" : ""
-    } ${isActive ? "bg-brand-50 text-brand-600 font-medium" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"}`;
+    } ${isActive ? "bg-brand-50 text-brand-600 font-medium" : "text-ink-600 hover:bg-ink-50 hover:text-ink-900"}`;
 
   return (
     <aside
-      className={`flex flex-col bg-white border-r border-slate-200 transition-all duration-200 ease-in-out flex-shrink-0 ${
+      className={`flex flex-col bg-surface border-r border-ink-200 transition-all duration-200 ease-in-out flex-shrink-0 ${
         collapsed ? "w-14" : "w-[220px]"
       }`}
     >
       <div
-        className={`flex items-center gap-2.5 px-3.5 border-b border-slate-200 flex-shrink-0 ${
+        className={`flex items-center gap-2.5 px-3.5 border-b border-ink-200 flex-shrink-0 ${
           collapsed ? "justify-center py-3.5" : "py-3.5"
         }`}
         style={{ height: 49 }}
@@ -44,7 +46,7 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
         <div className="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center flex-shrink-0">
           <CircleDot size={14} className="text-white" />
         </div>
-        {!collapsed && <span className="text-sm font-semibold text-slate-900 truncate">SellUp Console</span>}
+        {!collapsed && <span className="text-sm font-semibold text-ink-900 truncate">SellUp Console</span>}
       </div>
 
       {!collapsed && (
@@ -58,7 +60,7 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
           </button>
           <button
             onClick={() => openCreateTask()}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-600 text-xs font-medium transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-ink-200 hover:border-ink-300 hover:bg-ink-50 text-ink-600 text-xs font-medium transition-colors"
           >
             <Plus size={13} />
             Добавить задачу
@@ -76,7 +78,7 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
           </button>
           <button
             onClick={() => openCreateTask()}
-            className="w-full flex items-center justify-center p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 transition-colors"
+            className="w-full flex items-center justify-center p-2 rounded-lg border border-ink-200 hover:bg-ink-50 text-ink-500 transition-colors"
             title="Добавить задачу"
           >
             <Plus size={14} />
@@ -115,7 +117,7 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
         </ul>
       </nav>
 
-      <div className="border-t border-slate-200 py-2 px-2 space-y-0.5">
+      <div className="border-t border-ink-200 py-2 px-2 space-y-0.5">
         {navRoutes("bottom").map((route) => {
           const Icon = route.handle.icon!;
           return (
@@ -136,8 +138,8 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
           </div>
           {!collapsed && (
             <>
-              <span className="text-xs text-slate-600 flex-1 truncate">{user?.fullName}</span>
-              <button onClick={logout} title="Выйти" aria-label="Выйти" className="text-slate-400 hover:text-slate-700 flex-shrink-0">
+              <span className="text-xs text-ink-600 flex-1 truncate">{user?.fullName}</span>
+              <button onClick={logout} title="Выйти" aria-label="Выйти" className="text-ink-400 hover:text-ink-700 flex-shrink-0">
                 <LogOut size={13} />
               </button>
             </>
@@ -145,12 +147,15 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
         </div>
       </div>
 
-      <button
-        onClick={onToggleCollapsed}
-        className="border-t border-slate-200 flex items-center justify-center py-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors"
-      >
-        <ChevronLeft size={14} className={`transition-transform duration-200 ${collapsed ? "rotate-180" : ""}`} />
-      </button>
+      <div className="border-t border-ink-200 flex">
+        <ThemeToggle controller={themeToggle} className="flex-1" />
+        <button
+          onClick={onToggleCollapsed}
+          className="flex-1 border-l border-ink-200 flex items-center justify-center py-2 text-ink-400 hover:text-ink-600 hover:bg-ink-50 transition-colors"
+        >
+          <ChevronLeft size={14} className={`transition-transform duration-200 ${collapsed ? "rotate-180" : ""}`} />
+        </button>
+      </div>
     </aside>
   );
 }

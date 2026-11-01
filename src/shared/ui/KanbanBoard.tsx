@@ -81,7 +81,7 @@ export function KanbanBoard<TItem, TId extends string>({
             <div
               key={col.id}
               className={`flex flex-col flex-shrink-0 rounded-xl transition-colors ${columnClassName} ${
-                isDragOver ? "bg-brand-50/60" : "bg-slate-100/60"
+                isDragOver ? "bg-brand-50/60" : "bg-ink-100/60"
               }`}
               onDragOver={(e) => {
                 e.preventDefault();

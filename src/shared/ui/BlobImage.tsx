@@ -33,6 +33,6 @@ export function BlobImage({ load, alt, className }: BlobImageProps) {
     };
   }, [load]);
 
-  if (!url) return <div className={`${className} bg-slate-100 animate-pulse`} />;
+  if (!url) return <div className={`${className} bg-ink-100 animate-pulse`} />;
   return <img src={url} alt={alt} className={className} onClick={() => window.open(url, "_blank")} />;
 }

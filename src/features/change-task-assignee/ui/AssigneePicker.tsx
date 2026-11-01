@@ -27,22 +27,22 @@ export function AssigneePicker({ value, onChange }: AssigneePickerProps) {
       <Dropdown
         panelClassName="w-64"
         trigger={() => (
-          <button type="button" className="flex items-center gap-2 px-1.5 py-1 -mx-1.5 rounded-md hover:bg-slate-100 transition-colors text-left">
+          <button type="button" className="flex items-center gap-2 px-1.5 py-1 -mx-1.5 rounded-md hover:bg-ink-100 transition-colors text-left">
             <UserAvatar name={value?.name ?? ""} size="sm" />
-            <span className={`text-xs ${value ? "text-slate-800 font-medium" : "text-slate-400"}`}>{value?.name ?? "Не назначен"}</span>
+            <span className={`text-xs ${value ? "text-ink-800 font-medium" : "text-ink-400"}`}>{value?.name ?? "Не назначен"}</span>
           </button>
         )}
       >
         {(close) => (
           <div>
-            <div className="p-2 border-b border-slate-100">
+            <div className="p-2 border-b border-ink-100">
               <input
                 autoFocus
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Найти сотрудника…"
-                className="w-full px-2.5 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:border-brand-400"
+                className="w-full px-2.5 py-1.5 text-xs border border-ink-200 rounded-md outline-none focus:border-brand-400"
               />
             </div>
             <div className="max-h-56 overflow-y-auto py-1">
@@ -53,7 +53,7 @@ export function AssigneePicker({ value, onChange }: AssigneePickerProps) {
                   close();
                 }}
               >
-                <UserX size={14} className="text-slate-400" />
+                <UserX size={14} className="text-ink-400" />
                 Не назначен
               </DropdownItem>
               {matched.map((user) => (
@@ -70,7 +70,7 @@ export function AssigneePicker({ value, onChange }: AssigneePickerProps) {
                   {value?.id === user.id && <Check size={12} />}
                 </DropdownItem>
               ))}
-              {matched.length === 0 && <p className="px-3 py-2 text-xs text-slate-400">Никого не найдено</p>}
+              {matched.length === 0 && <p className="px-3 py-2 text-xs text-ink-400">Никого не найдено</p>}
             </div>
           </div>
         )}

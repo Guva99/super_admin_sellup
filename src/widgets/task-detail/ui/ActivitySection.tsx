@@ -36,7 +36,7 @@ export function ActivitySection({ task, history, currentUserName, formatHistoryV
   return (
     <section>
       <div className="flex items-center gap-3 mb-3">
-        <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Активность</h2>
+        <h2 className="text-xs font-semibold text-ink-500 uppercase tracking-wider">Активность</h2>
         <Tabs tabs={tabs} active={tab} onChange={setTab} />
       </div>
 
@@ -57,7 +57,7 @@ export function ActivitySection({ task, history, currentUserName, formatHistoryV
             .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
             .map((item, i) => <div key={i}>{item.node}</div>)}
           {task.comments.length === 0 && historyWithoutComments.length === 0 && !history.isLoading && (
-            <p className="text-xs text-slate-400">Пока ничего не происходило</p>
+            <p className="text-xs text-ink-400">Пока ничего не происходило</p>
           )}
         </div>
       )}
@@ -66,9 +66,9 @@ export function ActivitySection({ task, history, currentUserName, formatHistoryV
 }
 
 function HistoryList({ history, formatValue, formatTime }: { history: TaskHistoryState; formatValue: HistoryValueFormatter; formatTime: (iso: string) => string }) {
-  if (history.isLoading) return <p className="text-xs text-slate-400">Загрузка истории…</p>;
+  if (history.isLoading) return <p className="text-xs text-ink-400">Загрузка истории…</p>;
   if (history.error) return <p className="text-xs text-red-600">Не удалось загрузить историю: {history.error}</p>;
-  if (history.events.length === 0) return <p className="text-xs text-slate-400">Истории пока нет</p>;
+  if (history.events.length === 0) return <p className="text-xs text-ink-400">Истории пока нет</p>;
   return (
     <div className="space-y-2.5">
       {[...history.events].reverse().map((event) => (

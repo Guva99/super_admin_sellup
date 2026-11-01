@@ -22,18 +22,18 @@ export default function LoginPage() {
   if (status === "authenticated") return <Navigate to={returnTo} replace />;
 
   return (
-    <div className="min-h-full flex items-center justify-center bg-slate-50 px-4">
+    <div className="min-h-full flex items-center justify-center bg-ink-50 px-4">
       <div className="w-full max-w-[360px]">
         <div className="flex items-center gap-2.5 mb-8 justify-center">
           <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
             <CircleDot size={16} className="text-white" />
           </div>
-          <span className="text-base font-semibold text-slate-900">SellUp Console</span>
+          <span className="text-base font-semibold text-ink-900">SellUp Console</span>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <h1 className="text-sm font-semibold text-slate-900">Вход в консоль</h1>
-          <p className="text-xs text-slate-500 mt-1 mb-5">
+        <div className="bg-surface rounded-2xl border border-ink-200 p-6">
+          <h1 className="text-sm font-semibold text-ink-900">Вход в консоль</h1>
+          <p className="text-xs text-ink-500 mt-1 mb-5">
             {sessionExpired ? "Сессия закончилась — войдите снова, чтобы продолжить." : "Войдите, чтобы продолжить."}
           </p>
           <LoginForm controller={controller} />

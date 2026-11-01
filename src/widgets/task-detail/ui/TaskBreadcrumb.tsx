@@ -28,7 +28,7 @@ export function TaskBreadcrumb({ task, parentLabel, onParentClick, parentTask, o
   };
 
   return (
-    <nav className="flex items-center gap-1.5 text-xs text-slate-500">
+    <nav className="flex items-center gap-1.5 text-xs text-ink-500">
       {onParentClick ? (
         <button type="button" onClick={onParentClick} className="hover:text-brand-600 hover:underline">
           {parentLabel}
@@ -36,7 +36,7 @@ export function TaskBreadcrumb({ task, parentLabel, onParentClick, parentTask, o
       ) : (
         <span>{parentLabel}</span>
       )}
-      <span className="text-slate-300">/</span>
+      <span className="text-ink-300">/</span>
       {parentTask && (
         <>
           <button
@@ -48,13 +48,13 @@ export function TaskBreadcrumb({ task, parentLabel, onParentClick, parentTask, o
             <TaskKindIcon kind={parentTask.kind} size={12} />
             <TaskKey value={parentTask.key} />
           </button>
-          <span className="text-slate-300">/</span>
+          <span className="text-ink-300">/</span>
         </>
       )}
-      <button type="button" onClick={copyLink} title="Скопировать ссылку" className="flex items-center gap-1 px-1 py-0.5 rounded hover:bg-slate-100">
+      <button type="button" onClick={copyLink} title="Скопировать ссылку" className="flex items-center gap-1 px-1 py-0.5 rounded hover:bg-ink-100">
         <TaskKindIcon kind={task.kind} size={13} />
-        <TaskKey value={task.key} className="text-slate-700" />
-        {copied ? <Check size={11} className="text-emerald-500" /> : <Link2 size={11} className="text-slate-300" />}
+        <TaskKey value={task.key} className="text-ink-700" />
+        {copied ? <Check size={11} className="text-emerald-500" /> : <Link2 size={11} className="text-ink-300" />}
       </button>
     </nav>
   );

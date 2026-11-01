@@ -24,12 +24,12 @@ export function ClientPipelineBoard({ clients, onMoveStage, onOpenClient }: Clie
         <div className="flex items-center justify-between px-3.5 py-3 flex-shrink-0">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-slate-700">{col.label}</span>
-              <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-white text-slate-500 rounded-full border border-slate-200">
+              <span className="text-xs font-semibold text-ink-700">{col.label}</span>
+              <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-surface text-ink-500 rounded-full border border-ink-200">
                 {count}
               </span>
             </div>
-            <p className="text-[10px] text-slate-400 mt-0.5">{col.description}</p>
+            <p className="text-[10px] text-ink-400 mt-0.5">{col.description}</p>
           </div>
           <div className={`w-2 h-2 rounded-full ${CLIENT_STAGE_ACCENT[col.id]}`} />
         </div>
@@ -37,7 +37,7 @@ export function ClientPipelineBoard({ clients, onMoveStage, onOpenClient }: Clie
       renderEmptyColumn={(_col, isDragOver) => (
         <div
           className={`h-16 rounded-lg border-2 border-dashed flex items-center justify-center text-[11px] transition-colors ${
-            isDragOver ? "border-brand-300 text-brand-400 bg-brand-50" : "border-slate-200 text-slate-300"
+            isDragOver ? "border-brand-300 text-brand-400 bg-brand-50" : "border-ink-200 text-ink-300"
           }`}
         >
           Перетащите сюда

@@ -9,7 +9,7 @@ export const CLIENT_STATUS_LABEL: Record<ClientStatus, string> = {
 };
 
 export const CLIENT_STATUS_CLASS: Record<ClientStatus, string> = {
-  lead: "bg-slate-100 text-slate-600",
+  lead: "bg-ink-100 text-ink-600",
   onboarding: "bg-blue-50 text-blue-700",
   active: "bg-emerald-50 text-emerald-700",
   paused: "bg-amber-50 text-amber-700",
@@ -32,7 +32,7 @@ export const CLIENT_STAGE_LABEL: Record<ClientStage, string> = {
 };
 
 export const CLIENT_STAGE_ACCENT: Record<ClientStage, string> = {
-  lead: "bg-slate-300",
+  lead: "bg-ink-300",
   demo: "bg-blue-400",
   contract: "bg-violet-400",
   onboarding: "bg-brand-400",

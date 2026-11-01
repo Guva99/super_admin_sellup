@@ -36,17 +36,17 @@ export function DateField({ value, onChange, placeholder, alert = false }: DateF
         aria-label={placeholder}
         className={
           value
-            ? `px-1.5 py-1 rounded-md text-xs font-medium bg-transparent hover:bg-slate-100 outline-none focus:bg-white focus:ring-2 focus:ring-brand-100 cursor-pointer ${alert ? "text-red-600" : "text-slate-800"}`
+            ? `px-1.5 py-1 rounded-md text-xs font-medium bg-transparent hover:bg-ink-100 outline-none focus:bg-surface focus:ring-2 focus:ring-brand-100 cursor-pointer ${alert ? "text-red-600" : "text-ink-800"}`
             : "absolute left-0 top-0 w-px h-px opacity-0 pointer-events-none"
         }
       />
       {!value && (
-        <button type="button" onClick={openPicker} className="px-1.5 py-1 rounded-md text-xs text-slate-400 hover:bg-slate-100 hover:text-slate-600">
+        <button type="button" onClick={openPicker} className="px-1.5 py-1 rounded-md text-xs text-ink-400 hover:bg-ink-100 hover:text-ink-600">
           {placeholder}
         </button>
       )}
       {value && (
-        <button type="button" onClick={() => onChange("")} title="Убрать дату" className="p-0.5 text-slate-300 hover:text-slate-500">
+        <button type="button" onClick={() => onChange("")} title="Убрать дату" className="p-0.5 text-ink-300 hover:text-ink-500">
           <X size={11} />
         </button>
       )}

@@ -54,18 +54,18 @@ export function DetailsSidebar({ task, client, onOpenClient }: DetailsSidebarPro
     >
       {client && (
         <TaskFieldRow label="Бизнес">
-          <button type="button" onClick={() => onOpenClient(client.id)} className="flex items-center gap-1.5 text-xs text-slate-800 hover:text-brand-600 group">
+          <button type="button" onClick={() => onOpenClient(client.id)} className="flex items-center gap-1.5 text-xs text-ink-800 hover:text-brand-600 group">
             <span className="w-4 h-4 rounded flex items-center justify-center text-white text-[9px] font-bold" style={{ backgroundColor: client.color }}>
               {client.initials[0]}
             </span>
             <span className="truncate">{client.name}</span>
-            <ExternalLink size={10} className="text-slate-300 group-hover:text-brand-400" />
+            <ExternalLink size={10} className="text-ink-300 group-hover:text-brand-400" />
           </button>
         </TaskFieldRow>
       )}
       <TaskFieldRow label="Ключ задач">
         <span
-          className="text-xs font-mono font-medium text-slate-800 px-1.5 -mx-1.5"
+          className="text-xs font-mono font-medium text-ink-800 px-1.5 -mx-1.5"
           title={client ? "Ключ задаётся у бизнеса: в его карточке меняет владелец" : "Задачи без бизнеса нумеруются как SC-1, SC-2"}
         >
           {task.key.slice(0, task.key.lastIndexOf("-"))}
@@ -74,7 +74,7 @@ export function DetailsSidebar({ task, client, onOpenClient }: DetailsSidebarPro
       <TaskFieldRow label="Автор">
         <div className="flex items-center gap-2">
           <UserAvatar name={task.reporter.name} size="sm" />
-          <span className="text-xs text-slate-800">{task.reporter.name}</span>
+          <span className="text-xs text-ink-800">{task.reporter.name}</span>
         </div>
       </TaskFieldRow>
     </TaskFields>

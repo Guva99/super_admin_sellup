@@ -44,22 +44,22 @@ export function TaskCard({
     <div
       {...handlers}
       onClick={onClick}
-      className={`relative bg-white border rounded-lg cursor-pointer select-none transition-all group ${
-        isOverdue ? "border-red-200" : "border-slate-200"
-      } ${isDragging ? "opacity-40 scale-95 shadow-lg" : "hover:shadow-md hover:border-slate-300"} ${isDone ? "opacity-60" : ""} ${
+      className={`relative bg-surface border rounded-lg cursor-pointer select-none transition-all group ${
+        isOverdue ? "border-red-200" : "border-ink-200"
+      } ${isDragging ? "opacity-40 scale-95 shadow-lg" : "hover:shadow-md hover:border-ink-300"} ${isDone ? "opacity-60" : ""} ${
         isSelected ? "ring-2 ring-brand-400 ring-offset-1" : ""
       }`}
     >
       <div className="p-3">
         {/* Заголовок + меню */}
         <div className="flex items-start gap-2">
-          <p className={`text-xs font-medium text-slate-800 leading-snug flex-1 ${isDone ? "line-through text-slate-400" : ""}`}>
+          <p className={`text-xs font-medium text-ink-800 leading-snug flex-1 ${isDone ? "line-through text-ink-400" : ""}`}>
             {task.title}
           </p>
           <button
             onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }}
             aria-label="Действия"
-            className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-slate-500 transition-all flex-shrink-0 text-lg leading-none -mt-1"
+            className="opacity-0 group-hover:opacity-100 text-ink-300 hover:text-ink-500 transition-all flex-shrink-0 text-lg leading-none -mt-1"
           >
             ···
           </button>
@@ -75,7 +75,7 @@ export function TaskCard({
               </span>
             )}
             {task.labels.map((label) => (
-              <span key={label} className="px-1.5 py-0.5 rounded bg-slate-100 text-[10px] text-slate-600 font-medium">
+              <span key={label} className="px-1.5 py-0.5 rounded bg-ink-100 text-[10px] text-ink-600 font-medium">
                 {label}
               </span>
             ))}
@@ -88,8 +88,8 @@ export function TaskCard({
                 <span className="w-3.5 h-3.5 rounded flex items-center justify-center text-white text-[8px] font-bold" style={{ backgroundColor: client.color }}>
                   {client.initials[0]}
                 </span>
-                <span className="text-[10px] text-slate-500 group-hover/chip:text-brand-500 truncate max-w-[120px]">{client.name}</span>
-                <ExternalLink size={8} className="text-slate-300 opacity-0 group-hover/chip:opacity-100" />
+                <span className="text-[10px] text-ink-500 group-hover/chip:text-brand-500 truncate max-w-[120px]">{client.name}</span>
+                <ExternalLink size={8} className="text-ink-300 opacity-0 group-hover/chip:opacity-100" />
               </button>
             )}
           </div>
@@ -101,20 +101,20 @@ export function TaskCard({
           <TaskKey value={task.key} />
           <TaskPriorityIcon priority={task.priority} size={12} />
           {task.dueDate && (
-            <span className={`flex items-center gap-1 text-[10px] font-medium ${isOverdue ? "text-red-500" : "text-slate-400"}`}>
+            <span className={`flex items-center gap-1 text-[10px] font-medium ${isOverdue ? "text-red-500" : "text-ink-400"}`}>
               {isOverdue ? <AlertTriangle size={9} /> : <Clock size={9} />}
               {formatDate(task.dueDate)}
             </span>
           )}
           <span className="flex-1" />
           {task.attachments.length > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px] text-slate-400" title="Вложения">
+            <span className="flex items-center gap-0.5 text-[10px] text-ink-400" title="Вложения">
               <Paperclip size={9} />
               {task.attachments.length}
             </span>
           )}
           {task.comments.length > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px] text-slate-400" title="Комментарии">
+            <span className="flex items-center gap-0.5 text-[10px] text-ink-400" title="Комментарии">
               <MessageSquare size={9} />
               {task.comments.length}
             </span>
@@ -126,15 +126,15 @@ export function TaskCard({
       {/* Контекстное меню */}
       {menuOpen && (
         <div
-          className="absolute right-2 top-7 z-20 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden min-w-[160px]"
+          className="absolute right-2 top-7 z-20 bg-surface border border-ink-200 rounded-lg shadow-lg overflow-hidden min-w-[160px]"
           onClick={(e) => e.stopPropagation()}
         >
           {(Object.keys(TASK_STATUS_LABEL) as TaskStatus[]).filter((s) => s !== task.status).map((s) => (
-            <button key={s} onClick={() => { onStatusChange(task.id, s); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-xs text-slate-600 hover:bg-slate-50 transition-colors">
+            <button key={s} onClick={() => { onStatusChange(task.id, s); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-xs text-ink-600 hover:bg-ink-50 transition-colors">
               → {TASK_STATUS_LABEL[s]}
             </button>
           ))}
-          <div className="border-t border-slate-100" />
+          <div className="border-t border-ink-100" />
           <button onClick={() => { onDelete(task.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-xs text-red-500 hover:bg-red-50 flex items-center gap-1.5 transition-colors">
             <Trash2 size={11} />
             Удалить

@@ -26,7 +26,7 @@ export function CommentComposer({ controller, authorName }: CommentComposerProps
           onSubmit={send}
           placeholder="Написать комментарий… (⌘↵ отправить, картинку можно вставить из буфера)"
           rows={expanded ? 3 : 2}
-          className="text-xs text-slate-700 px-3 py-2 bg-slate-50 focus:bg-white"
+          className="text-xs text-ink-700 px-3 py-2 bg-ink-50 focus:bg-surface"
         />
         {expanded && <MarkdownHint />}
         {restored && (
@@ -43,7 +43,7 @@ export function CommentComposer({ controller, authorName }: CommentComposerProps
               key={preset.text}
               type="button"
               onClick={() => insertPreset(preset)}
-              className="px-2 py-0.5 rounded-full border border-slate-200 bg-white text-[11px] text-slate-600 hover:border-brand-300 hover:text-brand-600 transition-colors"
+              className="px-2 py-0.5 rounded-full border border-ink-200 bg-surface text-[11px] text-ink-600 hover:border-brand-300 hover:text-brand-600 transition-colors"
             >
               {preset.emoji} {preset.text}
             </button>
@@ -55,7 +55,7 @@ export function CommentComposer({ controller, authorName }: CommentComposerProps
             {files.map((file, i) =>
               isImageAttachment(file.type) ? (
                 <div key={i} className="relative inline-block">
-                  <LocalImage file={file} className="rounded-lg border border-slate-200 max-h-28 object-cover" />
+                  <LocalImage file={file} className="rounded-lg border border-ink-200 max-h-28 object-cover" />
                   <button
                     type="button"
                     onClick={() => removeFile(i)}
@@ -65,10 +65,10 @@ export function CommentComposer({ controller, authorName }: CommentComposerProps
                   </button>
                 </div>
               ) : (
-                <div key={i} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50">
-                  <FileText size={11} className="text-slate-400 flex-shrink-0" />
-                  <span className="text-[11px] text-slate-600 truncate flex-1">{file.name}</span>
-                  <button type="button" onClick={() => removeFile(i)} className="text-slate-300 hover:text-red-400 flex-shrink-0">
+                <div key={i} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-ink-200 bg-ink-50">
+                  <FileText size={11} className="text-ink-400 flex-shrink-0" />
+                  <span className="text-[11px] text-ink-600 truncate flex-1">{file.name}</span>
+                  <button type="button" onClick={() => removeFile(i)} className="text-ink-300 hover:text-red-400 flex-shrink-0">
                     <X size={10} />
                   </button>
                 </div>
@@ -85,7 +85,7 @@ export function CommentComposer({ controller, authorName }: CommentComposerProps
         )}
 
         <div className="flex items-center gap-2">
-          <label className="flex items-center gap-1.5 px-2 py-1 text-[11px] text-slate-400 hover:text-brand-500 hover:bg-brand-50 rounded-md cursor-pointer transition-colors border border-transparent hover:border-brand-200">
+          <label className="flex items-center gap-1.5 px-2 py-1 text-[11px] text-ink-400 hover:text-brand-500 hover:bg-brand-50 rounded-md cursor-pointer transition-colors border border-transparent hover:border-brand-200">
             <Paperclip size={11} />
             Прикрепить
             <input
@@ -105,7 +105,7 @@ export function CommentComposer({ controller, authorName }: CommentComposerProps
               type="button"
               onClick={send}
               disabled={!canSend}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-brand-500 hover:bg-brand-600 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-brand-500 hover:bg-brand-600 disabled:bg-ink-200 disabled:text-ink-400 text-white rounded-lg transition-colors"
             >
               <Send size={10} />
               {isSending ? "Отправка…" : "Отправить"}

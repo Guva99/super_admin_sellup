@@ -19,7 +19,7 @@ interface TaskCreateDialogProps {
 }
 
 const SELECT_CLASS =
-  "text-xs font-medium text-slate-800 bg-transparent -mx-1.5 px-1.5 py-1 rounded-md hover:bg-slate-100 outline-none cursor-pointer max-w-full";
+  "text-xs font-medium text-ink-800 bg-transparent -mx-1.5 px-1.5 py-1 rounded-md hover:bg-ink-100 outline-none cursor-pointer max-w-full";
 
 /**
  * Новая задача — в том же окне, что и сохранённая: те же поля на тех же
@@ -56,14 +56,14 @@ export function TaskCreateDialog({ controller, clients }: TaskCreateDialogProps)
       onClose={close}
       unsaved={isDirty}
       breadcrumb={
-        <nav className="flex items-center gap-1.5 text-xs text-slate-500">
+        <nav className="flex items-center gap-1.5 text-xs text-ink-500">
           <span>{selectedClient?.name ?? "Задачи"}</span>
-          <span className="text-slate-300">/</span>
+          <span className="text-ink-300">/</span>
           <span className="flex items-center gap-1 px-1 py-0.5">
             <TaskKindIcon kind={draft.kind} size={13} />
-            <TaskKey value={`${selectedClient ? draft.taskKey || selectedClient.taskKey : INTERNAL_TASK_KEY}-…`} className="text-slate-700" />
+            <TaskKey value={`${selectedClient ? draft.taskKey || selectedClient.taskKey : INTERNAL_TASK_KEY}-…`} className="text-ink-700" />
           </span>
-          <span className="text-slate-400">Новая задача</span>
+          <span className="text-ink-400">Новая задача</span>
         </nav>
       }
       aside={
@@ -112,13 +112,13 @@ export function TaskCreateDialog({ controller, clients }: TaskCreateDialogProps)
                     : "У бизнеса уже есть задачи — ключ меняет владелец в карточке бизнеса"
                   : "Задачи без бизнеса нумеруются как SC-1, SC-2"
               }
-              className="w-full -mx-1.5 px-1.5 py-1 text-xs font-mono font-medium uppercase text-slate-800 bg-transparent rounded-md hover:bg-slate-100 outline-none focus:bg-white focus:ring-2 focus:ring-brand-100 disabled:text-slate-400 disabled:hover:bg-transparent placeholder:text-slate-300 placeholder:font-sans"
+              className="w-full -mx-1.5 px-1.5 py-1 text-xs font-mono font-medium uppercase text-ink-800 bg-transparent rounded-md hover:bg-ink-100 outline-none focus:bg-surface focus:ring-2 focus:ring-brand-100 disabled:text-ink-400 disabled:hover:bg-transparent placeholder:text-ink-300 placeholder:font-sans"
             />
           </TaskFieldRow>
           <TaskFieldRow label="Автор">
             <div className="flex items-center gap-2">
               <UserAvatar name={user?.fullName ?? ""} size="sm" />
-              <span className="text-xs text-slate-800">{user?.fullName ?? "—"}</span>
+              <span className="text-xs text-ink-800">{user?.fullName ?? "—"}</span>
             </div>
           </TaskFieldRow>
         </TaskFields>
@@ -131,7 +131,7 @@ export function TaskCreateDialog({ controller, clients }: TaskCreateDialogProps)
               {error}
             </p>
           )}
-          <button type="button" onClick={close} className="px-4 py-2 text-xs text-slate-500 hover:text-slate-700 rounded-lg hover:bg-slate-100">
+          <button type="button" onClick={close} className="px-4 py-2 text-xs text-ink-500 hover:text-ink-700 rounded-lg hover:bg-ink-100">
             Отмена
           </button>
           <button
@@ -139,7 +139,7 @@ export function TaskCreateDialog({ controller, clients }: TaskCreateDialogProps)
             onClick={create}
             disabled={!draft.title.trim() || isSubmitting || queue.isUploading}
             title={queue.isUploading ? "Дождитесь загрузки файлов" : undefined}
-            className="px-5 py-2 text-xs font-medium bg-brand-500 hover:bg-brand-600 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-lg transition-colors"
+            className="px-5 py-2 text-xs font-medium bg-brand-500 hover:bg-brand-600 disabled:bg-ink-200 disabled:text-ink-400 text-white rounded-lg transition-colors"
           >
             {isSubmitting ? "Создаём…" : queue.isUploading ? "Загрузка файлов…" : "Создать"}
           </button>
@@ -156,7 +156,7 @@ export function TaskCreateDialog({ controller, clients }: TaskCreateDialogProps)
           if (e.key === "Enter") create();
         }}
         placeholder="Что нужно сделать?"
-        className="w-full text-xl font-semibold text-slate-900 leading-snug px-1.5 py-0.5 -mx-1.5 bg-white border border-transparent hover:border-slate-200 focus:border-brand-300 rounded-md outline-none focus:ring-2 focus:ring-brand-50 placeholder:text-slate-300"
+        className="w-full text-xl font-semibold text-ink-900 leading-snug px-1.5 py-0.5 -mx-1.5 bg-surface border border-transparent hover:border-ink-200 focus:border-brand-300 rounded-md outline-none focus:ring-2 focus:ring-brand-50 placeholder:text-ink-300"
       />
 
       {restored && (
@@ -170,17 +170,17 @@ export function TaskCreateDialog({ controller, clients }: TaskCreateDialogProps)
       )}
 
       <section>
-        <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Описание</h2>
-        <RichTextEditor editor={editor} insertFiles={insertFiles} className="border border-slate-200 rounded-lg bg-white focus-within:border-brand-300 focus-within:ring-2 focus-within:ring-brand-50" />
-        <p className="mt-1.5 text-[11px] text-slate-400">⌘V — вставить скриншот, файлы можно перетащить в текст.</p>
+        <h2 className="text-xs font-semibold text-ink-500 uppercase tracking-wider mb-2">Описание</h2>
+        <RichTextEditor editor={editor} insertFiles={insertFiles} className="border border-ink-200 rounded-lg bg-surface focus-within:border-brand-300 focus-within:ring-2 focus-within:ring-brand-50" />
+        <p className="mt-1.5 text-[11px] text-ink-400">⌘V — вставить скриншот, файлы можно перетащить в текст.</p>
       </section>
 
       <section>
         <div className="flex items-center gap-2 mb-2">
-          <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-            Вложения {queue.uploaded.length > 0 && <span className="text-slate-400">({queue.uploaded.length})</span>}
+          <h2 className="text-xs font-semibold text-ink-500 uppercase tracking-wider">
+            Вложения {queue.uploaded.length > 0 && <span className="text-ink-400">({queue.uploaded.length})</span>}
           </h2>
-          <label className="ml-auto flex items-center gap-1 text-[11px] text-slate-400 hover:text-brand-500 cursor-pointer">
+          <label className="ml-auto flex items-center gap-1 text-[11px] text-ink-400 hover:text-brand-500 cursor-pointer">
             <Paperclip size={11} />
             Прикрепить
             <input
@@ -197,7 +197,7 @@ export function TaskCreateDialog({ controller, clients }: TaskCreateDialogProps)
           </label>
         </div>
         {queue.items.length === 0 ? (
-          <p className="text-xs text-slate-400">Файлов нет — их можно выбрать или вставить в описание из буфера</p>
+          <p className="text-xs text-ink-400">Файлов нет — их можно выбрать или вставить в описание из буфера</p>
         ) : (
           <UploadList queue={queue} showDone />
         )}

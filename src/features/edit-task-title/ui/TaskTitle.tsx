@@ -6,8 +6,8 @@ import { useEditTaskTitle } from "../model/useEditTaskTitle";
 export function TaskTitle({ task }: { task: Task }) {
   const { save } = useEditTaskTitle();
   return (
-    <InlineEditable value={task.title} onSave={(title) => save(task, title)} required inputClassName="text-xl font-semibold text-slate-900 px-1.5 py-0.5">
-      <h1 className={`text-xl font-semibold leading-snug ${task.status === "done" ? "text-slate-400 line-through" : "text-slate-900"}`}>{task.title}</h1>
+    <InlineEditable value={task.title} onSave={(title) => save(task, title)} required inputClassName="text-xl font-semibold text-ink-900 px-1.5 py-0.5">
+      <h1 className={`text-xl font-semibold leading-snug ${task.status === "done" ? "text-ink-400 line-through" : "text-ink-900"}`}>{task.title}</h1>
     </InlineEditable>
   );
 }

@@ -20,8 +20,8 @@ export function ClientHistory({ client, onOpenTask }: ClientHistoryProps) {
   return (
     <div className="max-w-[760px]">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-slate-900">История</h3>
-        {events.length > 0 && <span className="text-xs text-slate-400">{events.length} событий</span>}
+        <h3 className="text-sm font-semibold text-ink-900">История</h3>
+        {events.length > 0 && <span className="text-xs text-ink-400">{events.length} событий</span>}
       </div>
 
       {error && (
@@ -30,18 +30,18 @@ export function ClientHistory({ client, onOpenTask }: ClientHistoryProps) {
           {error}
         </div>
       )}
-      {isLoading && <p className="py-8 text-center text-sm text-slate-400">Загружаем историю…</p>}
+      {isLoading && <p className="py-8 text-center text-sm text-ink-400">Загружаем историю…</p>}
       {!isLoading && !error && events.length === 0 && (
-        <div className="bg-white border border-dashed border-slate-200 rounded-xl p-12 text-center">
-          <p className="text-sm text-slate-400">Истории пока нет</p>
+        <div className="bg-surface border border-dashed border-ink-200 rounded-xl p-12 text-center">
+          <p className="text-sm text-ink-400">Истории пока нет</p>
         </div>
       )}
 
       {days.length > 0 && (
-        <div className="bg-white border border-slate-200 rounded-xl px-5 py-4 space-y-5">
+        <div className="bg-surface border border-ink-200 rounded-xl px-5 py-4 space-y-5">
           {days.map((day) => (
             <section key={day.label}>
-              <h4 className="text-[10px] font-medium uppercase tracking-wide text-slate-400 mb-3">{day.label}</h4>
+              <h4 className="text-[10px] font-medium uppercase tracking-wide text-ink-400 mb-3">{day.label}</h4>
               <div className="space-y-3">
                 {day.events.map((event) => (
                   <ClientHistoryEventRow key={event.id} event={event} format={clientHistoryFormatters} formatTime={formatRelativeTime} onOpenTask={onOpenTask} />

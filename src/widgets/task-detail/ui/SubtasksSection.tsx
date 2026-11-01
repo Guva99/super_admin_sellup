@@ -61,10 +61,10 @@ export function SubtasksSection({ task, onOpenTask }: SubtasksSectionProps) {
   return (
     <section>
       <div className="flex items-center gap-2 mb-2">
-        <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-          Подзадачи {subtasks.length > 0 && <span className="text-slate-400">({subtasks.length})</span>}
+        <h2 className="text-xs font-semibold text-ink-500 uppercase tracking-wider">
+          Подзадачи {subtasks.length > 0 && <span className="text-ink-400">({subtasks.length})</span>}
         </h2>
-        <button type="button" onClick={startAdding} className="ml-auto flex items-center gap-1 text-[11px] text-slate-400 hover:text-brand-500">
+        <button type="button" onClick={startAdding} className="ml-auto flex items-center gap-1 text-[11px] text-ink-400 hover:text-brand-500">
           <Plus size={11} />
           Добавить
         </button>
@@ -72,23 +72,23 @@ export function SubtasksSection({ task, onOpenTask }: SubtasksSectionProps) {
 
       {subtasks.length > 0 && (
         <div className="flex items-center gap-2 mb-2">
-          <div className="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+          <div className="flex-1 h-1.5 rounded-full bg-ink-100 overflow-hidden">
             <div className="h-full rounded-full bg-emerald-500 transition-all duration-500" style={{ width: `${percent}%` }} />
           </div>
-          <span className="text-[11px] text-slate-500 font-medium">{percent}% готово</span>
+          <span className="text-[11px] text-ink-500 font-medium">{percent}% готово</span>
         </div>
       )}
 
-      {subtasks.length === 0 && !adding && <p className="text-xs text-slate-400">Подзадач нет</p>}
+      {subtasks.length === 0 && !adding && <p className="text-xs text-ink-400">Подзадач нет</p>}
 
       {subtasks.length > 0 && (
-        <div className="border border-slate-200 rounded-lg overflow-hidden divide-y divide-slate-100">
+        <div className="border border-ink-200 rounded-lg overflow-hidden divide-y divide-ink-100">
           {subtasks.map((subtask) => (
-            <div key={subtask.id} className="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 transition-colors">
+            <div key={subtask.id} className="flex items-center gap-2 px-3 py-2 hover:bg-ink-50 transition-colors">
               <button type="button" onClick={() => onOpenTask(subtask.id)} className="flex items-center gap-2 flex-1 min-w-0 text-left group">
                 <TaskKindIcon kind={subtask.kind} size={12} />
-                <TaskKey value={subtask.key} className={`text-[11px] ${subtask.status === "done" ? "line-through text-slate-400" : "text-slate-500"}`} />
-                <span className={`text-xs truncate group-hover:text-brand-600 ${subtask.status === "done" ? "text-slate-400" : "text-slate-700"}`}>
+                <TaskKey value={subtask.key} className={`text-[11px] ${subtask.status === "done" ? "line-through text-ink-400" : "text-ink-500"}`} />
+                <span className={`text-xs truncate group-hover:text-brand-600 ${subtask.status === "done" ? "text-ink-400" : "text-ink-700"}`}>
                   {subtask.title}
                 </span>
               </button>
@@ -125,17 +125,17 @@ export function SubtasksSection({ task, onOpenTask }: SubtasksSectionProps) {
               }
             }}
             placeholder="Что нужно сделать?"
-            className="flex-1 px-3 py-2 text-xs border border-brand-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-50 placeholder:text-slate-300"
+            className="flex-1 px-3 py-2 text-xs border border-brand-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-50 placeholder:text-ink-300"
           />
           <button
             type="button"
             onClick={create}
             disabled={!title.trim() || isSaving}
-            className="px-3 py-2 text-[11px] font-medium bg-brand-500 hover:bg-brand-600 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-lg"
+            className="px-3 py-2 text-[11px] font-medium bg-brand-500 hover:bg-brand-600 disabled:bg-ink-200 disabled:text-ink-400 text-white rounded-lg"
           >
             {isSaving ? "Создаём…" : "Добавить"}
           </button>
-          <button type="button" onClick={() => setAdding(false)} aria-label="Отменить добавление" className="p-1.5 text-slate-400 hover:text-slate-600">
+          <button type="button" onClick={() => setAdding(false)} aria-label="Отменить добавление" className="p-1.5 text-ink-400 hover:text-ink-600">
             <X size={14} />
           </button>
         </div>

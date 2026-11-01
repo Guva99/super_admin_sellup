@@ -43,7 +43,7 @@ export default function ClientDetailPage() {
   const goToTab = (next: TabId) =>
     navigate(next === DEFAULT_TAB ? `/clients/${clientId}` : `/clients/${clientId}/${next}`);
 
-  if (!client) return <div className="p-8 text-slate-400">Клиент не найден</div>;
+  if (!client) return <div className="p-8 text-ink-400">Клиент не найден</div>;
 
   // Подзадачи живут внутри своих задач, в списке бизнеса им места нет.
   const clientTasks = tasks.filter((t) => t.clientId === clientId && t.parentId === null);
@@ -52,17 +52,17 @@ export default function ClientDetailPage() {
   return (
     <div className="flex h-full">
       {/* Left sidebar */}
-      <aside className="w-64 flex-shrink-0 bg-white border-r border-slate-200 flex flex-col overflow-y-auto">
-        <div className="p-5 border-b border-slate-100">
+      <aside className="w-64 flex-shrink-0 bg-surface border-r border-ink-200 flex flex-col overflow-y-auto">
+        <div className="p-5 border-b border-ink-100">
           <Link
             to="/clients"
-            className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 mb-4 transition-colors"
+            className="flex items-center gap-1.5 text-xs text-ink-400 hover:text-ink-600 mb-4 transition-colors"
           >
             <ArrowLeft size={13} />
             Все клиенты
           </Link>
           <ClientAvatar client={client} className="w-12 h-12 rounded-xl text-sm mb-3" />
-          <h2 className="text-sm font-semibold text-slate-900 leading-snug">{client.name}</h2>
+          <h2 className="text-sm font-semibold text-ink-900 leading-snug">{client.name}</h2>
           <div className="mt-2">
             <ClientTaskKey client={client} />
           </div>
@@ -71,7 +71,7 @@ export default function ClientDetailPage() {
             {client.planName && (
               <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${
                 client.planCode === "early_access" ? "bg-violet-50 text-violet-700 border border-violet-200" :
-                client.planCode === "custom" ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-600"
+                client.planCode === "custom" ? "bg-amber-50 text-amber-700" : "bg-ink-100 text-ink-600"
               }`}>
                 {client.planName}
               </span>
@@ -83,9 +83,9 @@ export default function ClientDetailPage() {
         </div>
 
         <div className="p-5 space-y-4 flex-1">
-          <div className="bg-slate-50 rounded-lg p-3">
-            <p className="text-[10px] text-slate-400 uppercase tracking-wide font-medium">MRR</p>
-            <p className="text-lg font-semibold text-slate-900 mt-0.5 font-mono">
+          <div className="bg-ink-50 rounded-lg p-3">
+            <p className="text-[10px] text-ink-400 uppercase tracking-wide font-medium">MRR</p>
+            <p className="text-lg font-semibold text-ink-900 mt-0.5 font-mono">
               {client.mrr > 0 ? formatMoney(client.mrr) : "—"}
             </p>
           </div>
@@ -104,16 +104,16 @@ export default function ClientDetailPage() {
             <Row label="Менеджер" value={client.manager || "—"} />
           </div>
 
-          <div className="border-t border-slate-100 pt-3">
-            <p className="text-[10px] text-slate-400 uppercase tracking-wide font-medium mb-2.5">Владелец</p>
-            <p className="text-xs font-medium text-slate-700 mb-1.5">{client.owner.name || "—"}</p>
+          <div className="border-t border-ink-100 pt-3">
+            <p className="text-[10px] text-ink-400 uppercase tracking-wide font-medium mb-2.5">Владелец</p>
+            <p className="text-xs font-medium text-ink-700 mb-1.5">{client.owner.name || "—"}</p>
             {client.owner.email && (
-              <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1">
+              <div className="flex items-center gap-1.5 text-xs text-ink-500 mb-1">
                 <Mail size={11} />{client.owner.email}
               </div>
             )}
             {client.owner.phone && (
-              <div className="flex items-center gap-1.5 text-xs text-slate-500">
+              <div className="flex items-center gap-1.5 text-xs text-ink-500">
                 <Phone size={11} />{client.owner.phone}
               </div>
             )}
@@ -121,23 +121,23 @@ export default function ClientDetailPage() {
 
           {/* Open tasks summary */}
           {openTasks.length > 0 && (
-            <div className="border-t border-slate-100 pt-3">
+            <div className="border-t border-ink-100 pt-3">
               <button
                 onClick={() => goToTab("tasks")}
                 className="flex items-center justify-between w-full group"
               >
-                <p className="text-[10px] text-slate-400 uppercase tracking-wide font-medium">Открытые задачи</p>
-                <ExternalLink size={10} className="text-slate-300 group-hover:text-brand-500 transition-colors" />
+                <p className="text-[10px] text-ink-400 uppercase tracking-wide font-medium">Открытые задачи</p>
+                <ExternalLink size={10} className="text-ink-300 group-hover:text-brand-500 transition-colors" />
               </button>
               <div className="mt-2 space-y-1.5">
                 {openTasks.slice(0, 3).map((t) => (
-                  <div key={t.id} className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <div key={t.id} className="flex items-center gap-1.5 text-xs text-ink-500">
                     <TaskPriorityIcon priority={t.priority} size={12} />
                     <span className="truncate">{t.title}</span>
                   </div>
                 ))}
                 {openTasks.length > 3 && (
-                  <p className="text-[10px] text-slate-300">+{openTasks.length - 3} ещё</p>
+                  <p className="text-[10px] text-ink-300">+{openTasks.length - 3} ещё</p>
                 )}
               </div>
             </div>
@@ -145,7 +145,7 @@ export default function ClientDetailPage() {
         </div>
 
         {/* Quick add task */}
-        <div className="p-4 border-t border-slate-100 space-y-1.5">
+        <div className="p-4 border-t border-ink-100 space-y-1.5">
           <button
             onClick={() => openCreateTask({ clientId })}
             className="w-full flex items-center justify-center gap-2 py-2 text-xs font-medium text-brand-500 hover:text-brand-600 border border-brand-200 hover:border-brand-300 rounded-lg bg-brand-50/50 hover:bg-brand-50 transition-colors"
@@ -160,7 +160,7 @@ export default function ClientDetailPage() {
 
       {/* Main area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <div className="flex-shrink-0 bg-white border-b border-slate-200 px-6">
+        <div className="flex-shrink-0 bg-surface border-b border-ink-200 px-6">
           <nav className="flex gap-0">
             {TABS.map((tab) => (
               <button
@@ -169,7 +169,7 @@ export default function ClientDetailPage() {
                 className={`px-4 py-3.5 text-xs font-medium border-b-2 transition-colors ${
                   activeTab === tab.id
                     ? "border-brand-500 text-brand-600"
-                    : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+                    : "border-transparent text-ink-500 hover:text-ink-700 hover:border-ink-300"
                 }`}
               >
                 {tab.label}
@@ -211,8 +211,8 @@ export default function ClientDetailPage() {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between">
-      <span className="text-slate-400">{label}</span>
-      <span className="text-slate-700 font-medium text-right">{value}</span>
+      <span className="text-ink-400">{label}</span>
+      <span className="text-ink-700 font-medium text-right">{value}</span>
     </div>
   );
 }

@@ -103,15 +103,15 @@ export default function ClientsPage() {
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
-      <div className="flex items-center gap-3 px-6 py-3.5 bg-white border-b border-slate-200 flex-shrink-0">
+      <div className="flex items-center gap-3 px-6 py-3.5 bg-surface border-b border-ink-200 flex-shrink-0">
         <div className="relative flex-shrink-0">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Поиск клиентов..."
-            className="pl-8 pr-3 py-1.5 text-sm border border-slate-200 rounded-lg w-56 outline-none focus:border-brand-400 focus:ring-1 focus:ring-indigo-100 transition-colors"
+            className="pl-8 pr-3 py-1.5 text-sm border border-ink-200 rounded-lg w-56 outline-none focus:border-brand-400 focus:ring-1 focus:ring-indigo-100 transition-colors"
           />
         </div>
 
@@ -131,11 +131,11 @@ export default function ClientsPage() {
         )}
 
         <div className="flex items-center gap-2 flex-1">
-          <SlidersHorizontal size={13} className="text-slate-400" />
+          <SlidersHorizontal size={13} className="text-ink-400" />
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value as ClientStatus | "all")}
-            className="text-xs border border-slate-200 rounded-md px-2 py-1.5 text-slate-600 outline-none focus:border-brand-400 bg-white cursor-pointer"
+            className="text-xs border border-ink-200 rounded-md px-2 py-1.5 text-ink-600 outline-none focus:border-brand-400 bg-surface cursor-pointer"
           >
             <option value="all">Все статусы</option>
             {(Object.keys(CLIENT_STATUS_LABEL) as ClientStatus[]).map((status) => (
@@ -145,7 +145,7 @@ export default function ClientsPage() {
           <select
             value={filterNiche}
             onChange={(e) => setFilterNiche(e.target.value as ClientNiche | "all")}
-            className="text-xs border border-slate-200 rounded-md px-2 py-1.5 text-slate-600 outline-none focus:border-brand-400 bg-white cursor-pointer"
+            className="text-xs border border-ink-200 rounded-md px-2 py-1.5 text-ink-600 outline-none focus:border-brand-400 bg-surface cursor-pointer"
           >
             <option value="all">Все ниши</option>
             {(Object.keys(CLIENT_NICHE_LABEL) as ClientNiche[]).map((niche) => (
@@ -155,7 +155,7 @@ export default function ClientsPage() {
           <select
             value={filterPlan}
             onChange={(e) => setFilterPlan(e.target.value)}
-            className="text-xs border border-slate-200 rounded-md px-2 py-1.5 text-slate-600 outline-none focus:border-brand-400 bg-white cursor-pointer"
+            className="text-xs border border-ink-200 rounded-md px-2 py-1.5 text-ink-600 outline-none focus:border-brand-400 bg-surface cursor-pointer"
           >
             <option value="all">Все тарифы</option>
             {plans.map((plan) => (
@@ -165,7 +165,7 @@ export default function ClientsPage() {
           <select
             value={filterManager}
             onChange={(e) => setFilterManager(e.target.value)}
-            className="text-xs border border-slate-200 rounded-md px-2 py-1.5 text-slate-600 outline-none focus:border-brand-400 bg-white cursor-pointer"
+            className="text-xs border border-ink-200 rounded-md px-2 py-1.5 text-ink-600 outline-none focus:border-brand-400 bg-surface cursor-pointer"
           >
             <option value="all">Все менеджеры</option>
             {managers.map((m) => <option key={m} value={m}>{m}</option>)}
@@ -176,7 +176,7 @@ export default function ClientsPage() {
           {selected.size > 0 && (
             <span className="text-xs text-brand-500 font-medium">{selected.size} выбрано</span>
           )}
-          <span className="text-xs text-slate-400">{filtered.length} клиентов</span>
+          <span className="text-xs text-ink-400">{filtered.length} клиентов</span>
           <button
             onClick={openConnectBusiness}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-brand-600 border border-brand-200 rounded-lg hover:bg-brand-50 hover:border-brand-300 transition-colors"
@@ -190,7 +190,7 @@ export default function ClientsPage() {
       {/* Table */}
       <div className="flex-1 overflow-auto">
         <table className="w-full text-xs min-w-[1100px]">
-          <thead className="sticky top-0 bg-white z-10 border-b border-slate-200">
+          <thead className="sticky top-0 bg-surface z-10 border-b border-ink-200">
             <tr>
               <th className="w-10 px-4 py-3 text-left">
                 <input
@@ -200,32 +200,32 @@ export default function ClientsPage() {
                   className="accent-brand-500 cursor-pointer"
                 />
               </th>
-              <th className="px-4 py-3 text-left font-medium text-slate-500 cursor-pointer hover:text-slate-800 whitespace-nowrap" onClick={() => toggleSort("name")}>
+              <th className="px-4 py-3 text-left font-medium text-ink-500 cursor-pointer hover:text-ink-800 whitespace-nowrap" onClick={() => toggleSort("name")}>
                 <span className="flex items-center gap-1">Клиент <SortIcon k="name" /></span>
               </th>
-              <th className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap">Ниша</th>
-              <th className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap">Тариф</th>
-              <th className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap">Статус</th>
-              <th className="px-4 py-3 text-right font-medium text-slate-500 cursor-pointer hover:text-slate-800 whitespace-nowrap" onClick={() => toggleSort("mrr")}>
+              <th className="px-4 py-3 text-left font-medium text-ink-500 whitespace-nowrap">Ниша</th>
+              <th className="px-4 py-3 text-left font-medium text-ink-500 whitespace-nowrap">Тариф</th>
+              <th className="px-4 py-3 text-left font-medium text-ink-500 whitespace-nowrap">Статус</th>
+              <th className="px-4 py-3 text-right font-medium text-ink-500 cursor-pointer hover:text-ink-800 whitespace-nowrap" onClick={() => toggleSort("mrr")}>
                 <span className="flex items-center justify-end gap-1">MRR <SortIcon k="mrr" /></span>
               </th>
-              <th className="px-4 py-3 text-center font-medium text-slate-500 cursor-pointer hover:text-slate-800 whitespace-nowrap" onClick={() => toggleSort("healthScore")}>
+              <th className="px-4 py-3 text-center font-medium text-ink-500 cursor-pointer hover:text-ink-800 whitespace-nowrap" onClick={() => toggleSort("healthScore")}>
                 <span className="flex items-center justify-center gap-1">Health <SortIcon k="healthScore" /></span>
               </th>
-              <th className="px-4 py-3 text-left font-medium text-slate-500 cursor-pointer hover:text-slate-800 whitespace-nowrap" onClick={() => toggleSort("connectedAt")}>
+              <th className="px-4 py-3 text-left font-medium text-ink-500 cursor-pointer hover:text-ink-800 whitespace-nowrap" onClick={() => toggleSort("connectedAt")}>
                 <span className="flex items-center gap-1">Подключён <SortIcon k="connectedAt" /></span>
               </th>
-              <th className="px-4 py-3 text-right font-medium text-slate-500 cursor-pointer hover:text-slate-800 whitespace-nowrap" onClick={() => toggleSort("hoursThisMonth")}>
+              <th className="px-4 py-3 text-right font-medium text-ink-500 cursor-pointer hover:text-ink-800 whitespace-nowrap" onClick={() => toggleSort("hoursThisMonth")}>
                 <span className="flex items-center justify-end gap-1">Часов/мес <SortIcon k="hoursThisMonth" /></span>
               </th>
-              <th className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap">Менеджер</th>
+              <th className="px-4 py-3 text-left font-medium text-ink-500 whitespace-nowrap">Менеджер</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((client) => (
               <tr
                 key={client.id}
-                className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors group"
+                className="border-b border-ink-100 hover:bg-ink-50 cursor-pointer transition-colors group"
                 onClick={() => openClient(client.id)}
               >
                 <td className="px-4 py-2.5" onClick={(e) => { e.stopPropagation(); toggleSelect(client.id); }}>
@@ -234,21 +234,21 @@ export default function ClientsPage() {
                 <td className="px-4 py-2.5">
                   <div className="flex items-center gap-2.5">
                     <ClientAvatar client={client} className="w-7 h-7 rounded-lg text-[10px]" />
-                    <span className="font-medium text-slate-800 group-hover:text-brand-500 transition-colors">{client.name}</span>
+                    <span className="font-medium text-ink-800 group-hover:text-brand-500 transition-colors">{client.name}</span>
                   </div>
                 </td>
-                <td className="px-4 py-2.5 text-slate-500">{client.niche ? CLIENT_NICHE_LABEL[client.niche] : "—"}</td>
+                <td className="px-4 py-2.5 text-ink-500">{client.niche ? CLIENT_NICHE_LABEL[client.niche] : "—"}</td>
                 <td className="px-4 py-2.5">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     {client.planName ? (
                       <span className={`px-2 py-0.5 rounded text-[11px] font-medium ${
                         client.planCode === "early_access" ? "bg-violet-50 text-violet-700 border border-violet-200" :
-                        client.planCode === "custom" ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-600"
+                        client.planCode === "custom" ? "bg-amber-50 text-amber-700" : "bg-ink-100 text-ink-600"
                       }`}>
                         {client.planName}
                       </span>
                     ) : (
-                      <span className="text-slate-300">—</span>
+                      <span className="text-ink-300">—</span>
                     )}
                     {client.fixedPrice && (
                       <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-600 border border-orange-200">Fix</span>
@@ -258,7 +258,7 @@ export default function ClientsPage() {
                 <td className="px-4 py-2.5">
                   <StatusBadge status={client.status} />
                 </td>
-                <td className="px-4 py-2.5 text-right font-mono font-medium text-slate-700">
+                <td className="px-4 py-2.5 text-right font-mono font-medium text-ink-700">
                   {client.mrr > 0 ? formatMoney(client.mrr) : "—"}
                 </td>
                 <td className="px-4 py-2.5 text-center">
@@ -267,23 +267,23 @@ export default function ClientsPage() {
                       {client.healthScore}
                     </span>
                   ) : (
-                    <span className="text-slate-300">—</span>
+                    <span className="text-ink-300">—</span>
                   )}
                 </td>
-                <td className="px-4 py-2.5 text-slate-500">
+                <td className="px-4 py-2.5 text-ink-500">
                   {new Date(client.connectedAt).toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric" })}
                 </td>
-                <td className="px-4 py-2.5 text-right text-slate-600">
+                <td className="px-4 py-2.5 text-right text-ink-600">
                   {client.hoursThisMonth > 0 ? `${client.hoursThisMonth} ч` : "—"}
                 </td>
-                <td className="px-4 py-2.5 text-slate-500">{client.manager || "—"}</td>
+                <td className="px-4 py-2.5 text-ink-500">{client.manager || "—"}</td>
               </tr>
             ))}
           </tbody>
         </table>
         {filtered.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <p className="text-sm text-slate-400">Клиенты не найдены</p>
+            <p className="text-sm text-ink-400">Клиенты не найдены</p>
             <button onClick={openConnectBusiness} className="flex items-center gap-1.5 text-xs text-brand-500 hover:text-brand-600 transition-colors">
               <UserPlus size={12} />Подключить первый бизнес
             </button>

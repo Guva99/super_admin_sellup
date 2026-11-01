@@ -88,7 +88,7 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
 
       <nav className="flex-1 py-2 overflow-y-auto">
         <ul className="px-2 space-y-0.5">
-          {navRoutes("main").map((route) => {
+          {navRoutes("main", user?.roleKey).map((route) => {
             const Icon = route.handle.icon!;
             const badge = route.handle.showTaskBadge ? highPriorityCount : 0;
             return (
@@ -118,7 +118,7 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
       </nav>
 
       <div className="border-t border-ink-200 py-2 px-2 space-y-0.5">
-        {navRoutes("bottom").map((route) => {
+        {navRoutes("bottom", user?.roleKey).map((route) => {
           const Icon = route.handle.icon!;
           return (
             <NavLink

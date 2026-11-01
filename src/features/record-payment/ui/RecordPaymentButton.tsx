@@ -11,7 +11,7 @@ interface RecordPaymentButtonProps {
   onAdd: (input: NewPaymentInput) => Promise<Result<Payment>>;
 }
 
-const INPUT_CLASS = "w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-50 transition-colors placeholder:text-slate-300";
+const INPUT_CLASS = "w-full px-3 py-2 text-sm border border-ink-200 rounded-lg outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-50 transition-colors placeholder:text-ink-300";
 
 /**
  * «Внести платёж» на вкладке биллинга: сумма, дата, за что и чек. Кнопки нет
@@ -31,10 +31,10 @@ export function RecordPaymentButton({ clientId, onAdd }: RecordPaymentButtonProp
 
       {isOpen && (
         <ModalOverlay onClose={close} unsaved={isDirty}>
-          <div className="w-[440px] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-              <h2 className="text-sm font-semibold text-slate-900">Новый платёж</h2>
-              <button type="button" onClick={close} className="text-slate-400 hover:text-slate-600">
+          <div className="w-[440px] bg-surface rounded-2xl shadow-2xl border border-ink-200 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-ink-100">
+              <h2 className="text-sm font-semibold text-ink-900">Новый платёж</h2>
+              <button type="button" onClick={close} className="text-ink-400 hover:text-ink-600">
                 <X size={16} />
               </button>
             </div>
@@ -42,7 +42,7 @@ export function RecordPaymentButton({ clientId, onAdd }: RecordPaymentButtonProp
             <div className="p-5 space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-medium text-slate-600 block mb-1.5">Сумма, ₽ *</label>
+                  <label className="text-xs font-medium text-ink-600 block mb-1.5">Сумма, ₽ *</label>
                   <input
                     autoFocus
                     type="text"
@@ -55,13 +55,13 @@ export function RecordPaymentButton({ clientId, onAdd }: RecordPaymentButtonProp
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-slate-600 block mb-1.5">Дата платежа *</label>
+                  <label className="text-xs font-medium text-ink-600 block mb-1.5">Дата платежа *</label>
                   <input type="date" value={draft.paidAt} onChange={(e) => patch({ paidAt: e.target.value })} className={INPUT_CLASS} />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-medium text-slate-600 block mb-1.5">За что</label>
+                <label className="text-xs font-medium text-ink-600 block mb-1.5">За что</label>
                 <input
                   type="text"
                   value={draft.description}
@@ -73,11 +73,11 @@ export function RecordPaymentButton({ clientId, onAdd }: RecordPaymentButtonProp
               </div>
 
               <div>
-                <label className="text-xs font-medium text-slate-600 block mb-1.5">Чек</label>
+                <label className="text-xs font-medium text-ink-600 block mb-1.5">Чек</label>
                 {receipt ? (
                   <ReceiptDraft file={receipt} onRemove={() => attachReceipt(null)} />
                 ) : (
-                  <label className="flex items-center gap-2 px-3 py-2.5 border border-dashed border-slate-200 rounded-lg text-xs text-slate-500 hover:border-brand-300 hover:text-brand-600 cursor-pointer transition-colors">
+                  <label className="flex items-center gap-2 px-3 py-2.5 border border-dashed border-ink-200 rounded-lg text-xs text-ink-500 hover:border-brand-300 hover:text-brand-600 cursor-pointer transition-colors">
                     <Paperclip size={13} />
                     Прикрепить фото или PDF чека
                     <input
@@ -102,8 +102,8 @@ export function RecordPaymentButton({ clientId, onAdd }: RecordPaymentButtonProp
               )}
             </div>
 
-            <div className="flex justify-end gap-2 px-5 py-4 border-t border-slate-100 bg-slate-50/50">
-              <button type="button" onClick={close} className="px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-800">
+            <div className="flex justify-end gap-2 px-5 py-4 border-t border-ink-100 bg-ink-50/50">
+              <button type="button" onClick={close} className="px-3 py-2 text-xs font-medium text-ink-600 hover:text-ink-800">
                 Отмена
               </button>
               <button
@@ -135,13 +135,13 @@ function ReceiptDraft({ file, onRemove }: { file: File; onRemove: () => void }) 
   }, [file, isImage]);
 
   return (
-    <div className="flex items-center gap-3 px-3 py-2 border border-slate-200 rounded-lg bg-slate-50">
-      {isImage && url ? <img src={url} alt={file.name} className="h-12 w-16 object-cover rounded border border-slate-200" /> : <FileText size={16} className="text-slate-400 flex-shrink-0" />}
+    <div className="flex items-center gap-3 px-3 py-2 border border-ink-200 rounded-lg bg-ink-50">
+      {isImage && url ? <img src={url} alt={file.name} className="h-12 w-16 object-cover rounded border border-ink-200" /> : <FileText size={16} className="text-ink-400 flex-shrink-0" />}
       <div className="flex-1 min-w-0">
-        <p className="text-xs text-slate-700 truncate">{file.name}</p>
-        <p className="text-[10px] text-slate-400">{formatBytes(file.size)}</p>
+        <p className="text-xs text-ink-700 truncate">{file.name}</p>
+        <p className="text-[10px] text-ink-400">{formatBytes(file.size)}</p>
       </div>
-      <button type="button" onClick={onRemove} title="Убрать чек" className="text-slate-400 hover:text-red-500">
+      <button type="button" onClick={onRemove} title="Убрать чек" className="text-ink-400 hover:text-red-500">
         <X size={14} />
       </button>
     </div>

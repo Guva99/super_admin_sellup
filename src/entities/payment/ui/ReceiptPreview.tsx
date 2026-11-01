@@ -17,7 +17,7 @@ export function ReceiptPreview({ receipt, paymentId, download }: ReceiptPreviewP
   const load = useCallback(() => download(paymentId), [download, paymentId]);
 
   if (isImageReceipt(receipt)) {
-    return <BlobImage load={load} alt={receipt.name} className="h-10 w-14 object-cover rounded border border-slate-200 cursor-pointer hover:opacity-90 transition-opacity" />;
+    return <BlobImage load={load} alt={receipt.name} className="h-10 w-14 object-cover rounded border border-ink-200 cursor-pointer hover:opacity-90 transition-opacity" />;
   }
   return (
     <button
@@ -37,7 +37,7 @@ export function ReceiptPreview({ receipt, paymentId, download }: ReceiptPreviewP
 
 export function NoReceipt() {
   return (
-    <span className="flex items-center gap-1 text-[11px] text-slate-300">
+    <span className="flex items-center gap-1 text-[11px] text-ink-300">
       <ImageIcon size={11} />
       нет
     </span>

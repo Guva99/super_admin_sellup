@@ -42,7 +42,7 @@ export function Dropdown({ trigger, children, align = "left", panelClassName = "
       <div onClick={() => setOpen((v) => !v)}>{trigger(open)}</div>
       {open && (
         <div
-          className={`absolute z-30 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden ${align === "right" ? "right-0" : "left-0"} ${panelClassName}`}
+          className={`absolute z-30 mt-1 bg-surface border border-ink-200 rounded-lg shadow-lg overflow-hidden ${align === "right" ? "right-0" : "left-0"} ${panelClassName}`}
         >
           {children(() => setOpen(false))}
         </div>
@@ -65,7 +65,7 @@ export function DropdownItem({ onSelect, active, danger, children }: DropdownIte
       type="button"
       onClick={onSelect}
       className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-left transition-colors ${
-        danger ? "text-red-500 hover:bg-red-50" : active ? "bg-brand-50 text-brand-600 font-medium" : "text-slate-700 hover:bg-slate-50"
+        danger ? "text-red-500 hover:bg-red-50" : active ? "bg-brand-50 text-brand-600 font-medium" : "text-ink-700 hover:bg-ink-50"
       }`}
     >
       {children}

@@ -1,24 +1,26 @@
 import { ChevronRight } from "lucide-react";
 import { RadialBarChart, RadialBar, ResponsiveContainer } from "recharts";
 import { HealthBar, HEALTH_HEX, healthLevel, healthTextClass, type Client } from "@/entities/client";
+import { useChartColors } from "@/shared/config";
 
 export function ClientOverview({ client }: { client: Client }) {
+  const chart = useChartColors();
   return (
     <div className="space-y-5 max-w-[900px]">
-      <div className="bg-white border border-slate-200 rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-slate-900 mb-4">Health Score</h3>
+      <div className="bg-surface border border-ink-200 rounded-xl p-5">
+        <h3 className="text-sm font-semibold text-ink-900 mb-4">Health Score</h3>
         {client.healthScore > 0 ? (
           <div className="flex items-center gap-5">
             <div className="relative w-24 h-24 flex-shrink-0">
               <ResponsiveContainer width="100%" height="100%">
                 <RadialBarChart cx="50%" cy="50%" innerRadius="65%" outerRadius="100%" startAngle={180} endAngle={-180}
                   data={[{ value: client.healthScore, fill: HEALTH_HEX[healthLevel(client.healthScore)] }]}>
-                  <RadialBar dataKey="value" cornerRadius={4} background={{ fill: "#f1f5f9" }} />
+                  <RadialBar dataKey="value" cornerRadius={4} background={{ fill: chart.grid }} />
                 </RadialBarChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className={`text-xl font-bold font-mono ${healthTextClass(client.healthScore)}`}>{client.healthScore}</span>
-                <span className="text-[9px] text-slate-400">/100</span>
+                <span className="text-[9px] text-ink-400">/100</span>
               </div>
             </div>
             <div className="flex-1 max-w-[320px] space-y-3">
@@ -29,12 +31,12 @@ export function ClientOverview({ client }: { client: Client }) {
             </div>
           </div>
         ) : (
-          <p className="text-sm text-slate-400">Клиент ещё не подключён — данных нет</p>
+          <p className="text-sm text-ink-400">Клиент ещё не подключён — данных нет</p>
         )}
       </div>
-      <div className="bg-white border border-slate-200 rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-slate-900 mb-2">Заметки</h3>
-        <p className="text-sm text-slate-600 leading-relaxed">{client.notes || "Заметок нет"}</p>
+      <div className="bg-surface border border-ink-200 rounded-xl p-5">
+        <h3 className="text-sm font-semibold text-ink-900 mb-2">Заметки</h3>
+        <p className="text-sm text-ink-600 leading-relaxed">{client.notes || "Заметок нет"}</p>
       </div>
       {client.nextAction && client.nextAction !== "—" && (
         <div className="bg-brand-50 border border-indigo-100 rounded-xl p-4 flex items-center gap-3">

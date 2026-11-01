@@ -28,7 +28,7 @@ export function UserAvatar({ name, size = "sm", className = "" }: UserAvatarProp
   return (
     <span
       title={empty ? "Не назначен" : name}
-      className={`inline-flex items-center justify-center rounded-full font-semibold text-white flex-shrink-0 ${SIZES[size]} ${empty ? "bg-slate-300" : colorFor(name)} ${className}`}
+      className={`inline-flex items-center justify-center rounded-full font-semibold text-white flex-shrink-0 ${SIZES[size]} ${empty ? "bg-ink-300" : colorFor(name)} ${className}`}
     >
       {userInitials(name)}
     </span>

@@ -14,7 +14,7 @@ export function LoginForm({ controller }: { controller: LoginController }) {
       noValidate
     >
       <div>
-        <label htmlFor="login-email" className="text-xs font-medium text-slate-600 block mb-1.5">
+        <label htmlFor="login-email" className="text-xs font-medium text-ink-600 block mb-1.5">
           Email
         </label>
         <input
@@ -25,12 +25,12 @@ export function LoginForm({ controller }: { controller: LoginController }) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@sellup.ru"
-          className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-50 transition-colors placeholder:text-slate-300"
+          className="w-full px-3 py-2 text-sm border border-ink-200 rounded-lg outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-50 transition-colors placeholder:text-ink-300"
         />
       </div>
 
       <div>
-        <label htmlFor="login-password" className="text-xs font-medium text-slate-600 block mb-1.5">
+        <label htmlFor="login-password" className="text-xs font-medium text-ink-600 block mb-1.5">
           Пароль
         </label>
         <input
@@ -39,7 +39,7 @@ export function LoginForm({ controller }: { controller: LoginController }) {
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-50 transition-colors"
+          className="w-full px-3 py-2 text-sm border border-ink-200 rounded-lg outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-50 transition-colors"
         />
       </div>
 

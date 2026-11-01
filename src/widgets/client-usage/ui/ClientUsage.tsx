@@ -7,7 +7,7 @@ import type { Client } from "@/entities/client";
  */
 export function ClientUsage({ client }: { client: Client }) {
   if (client.status === "lead" || client.status === "churned") {
-    return <p className="text-sm text-slate-400">Данные об использовании отсутствуют</p>;
+    return <p className="text-sm text-ink-400">Данные об использовании отсутствуют</p>;
   }
   const stats = [
     { label: "Сотрудников", value: "0", icon: Users, color: "text-brand-500 bg-brand-50" },
@@ -21,17 +21,17 @@ export function ClientUsage({ client }: { client: Client }) {
         {stats.map((s) => {
           const Icon = s.icon;
           return (
-            <div key={s.label} className="bg-white border border-slate-200 rounded-xl p-4">
+            <div key={s.label} className="bg-surface border border-ink-200 rounded-xl p-4">
               <div className={`w-7 h-7 rounded-lg ${s.color} flex items-center justify-center mb-2`}><Icon size={13} /></div>
-              <p className="text-lg font-semibold text-slate-900 font-mono">{s.value}</p>
-              <p className="text-[11px] text-slate-400 mt-0.5">{s.label}</p>
+              <p className="text-lg font-semibold text-ink-900 font-mono">{s.value}</p>
+              <p className="text-[11px] text-ink-400 mt-0.5">{s.label}</p>
             </div>
           );
         })}
       </div>
-      <div className="bg-white border border-slate-200 rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-slate-900 mb-4">Топ функций за месяц</h3>
-        <p className="py-6 text-center text-sm text-slate-400">Нет данных</p>
+      <div className="bg-surface border border-ink-200 rounded-xl p-5">
+        <h3 className="text-sm font-semibold text-ink-900 mb-4">Топ функций за месяц</h3>
+        <p className="py-6 text-center text-sm text-ink-400">Нет данных</p>
       </div>
     </div>
   );

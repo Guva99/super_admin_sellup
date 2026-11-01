@@ -13,7 +13,7 @@ interface TabsProps<TId extends string> {
 /** Компактные табы-таблетки, как переключатель разделов в «Настройках». */
 export function Tabs<TId extends string>({ tabs, active, onChange }: TabsProps<TId>) {
   return (
-    <div role="tablist" className="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
+    <div role="tablist" className="flex gap-1 bg-ink-100 rounded-lg p-1 w-fit">
       {tabs.map((tab) => (
         <button
           key={tab.id}
@@ -21,11 +21,11 @@ export function Tabs<TId extends string>({ tabs, active, onChange }: TabsProps<T
           aria-selected={active === tab.id}
           onClick={() => onChange(tab.id)}
           className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-            active === tab.id ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+            active === tab.id ? "bg-surface text-ink-900 shadow-sm" : "text-ink-500 hover:text-ink-700"
           }`}
         >
           {tab.label}
-          {tab.count !== undefined && tab.count > 0 && <span className="ml-1 text-[10px] text-slate-400">{tab.count}</span>}
+          {tab.count !== undefined && tab.count > 0 && <span className="ml-1 text-[10px] text-ink-400">{tab.count}</span>}
         </button>
       ))}
     </div>

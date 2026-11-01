@@ -55,7 +55,7 @@ interface TaskFieldsProps {
 
 const TYPES = Object.keys(TASK_TYPE_OPTION_LABEL) as TaskType[];
 const SELECT_CLASS =
-  "text-xs font-medium text-slate-800 bg-transparent -mx-1.5 px-1.5 py-1 rounded-md hover:bg-slate-100 outline-none cursor-pointer max-w-full";
+  "text-xs font-medium text-ink-800 bg-transparent -mx-1.5 px-1.5 py-1 rounded-md hover:bg-ink-100 outline-none cursor-pointer max-w-full";
 
 /**
  * Правая колонка карточки задачи — одна и та же при создании и при правке:
@@ -64,11 +64,11 @@ const SELECT_CLASS =
  */
 export function TaskFields({ value, on, overdue = false, children }: TaskFieldsProps) {
   return (
-    <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
-      <div className="px-4 py-3 border-b border-slate-100">
+    <div className="border border-ink-200 rounded-xl overflow-hidden bg-surface">
+      <div className="px-4 py-3 border-b border-ink-100">
         <StatusDropdown value={value.status} onChange={on.status} />
       </div>
-      <Collapsible title="Детали" headerClassName="px-4 py-2.5 border-b border-slate-100 bg-slate-50/60">
+      <Collapsible title="Детали" headerClassName="px-4 py-2.5 border-b border-ink-100 bg-ink-50/60">
         <dl className="px-4 py-2">
           <TaskFieldRow label="Исполнитель">
             <AssigneePicker value={value.assignee} onChange={on.assignee} />
@@ -119,7 +119,7 @@ export function TaskFields({ value, on, overdue = false, children }: TaskFieldsP
 export function TaskFieldRow({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="grid grid-cols-[96px_1fr] items-center gap-2 py-1.5 min-h-[34px]">
-      <dt className="text-xs text-slate-500">{label}</dt>
+      <dt className="text-xs text-ink-500">{label}</dt>
       <dd className="min-w-0">{children}</dd>
     </div>
   );

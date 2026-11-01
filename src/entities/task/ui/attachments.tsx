@@ -28,7 +28,7 @@ export function AttachmentImage({ taskId, file, className }: { taskId: string; f
     };
   }, [downloadFile, taskId, file.id]);
 
-  if (!url) return <div className={`${className} bg-slate-100 animate-pulse`} />;
+  if (!url) return <div className={`${className} bg-ink-100 animate-pulse`} />;
   return (
     <img
       src={url}
@@ -63,23 +63,23 @@ export function AttachmentPreview({ taskId, file, trailing }: { taskId: string; 
   const isImg = isImageAttachment(file.type);
 
   return (
-    <div className="border border-slate-200 rounded-lg overflow-hidden">
-      <div className="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 transition-colors">
+    <div className="border border-ink-200 rounded-lg overflow-hidden">
+      <div className="flex items-center gap-2 px-3 py-2 hover:bg-ink-50 transition-colors">
         <button onClick={() => setExpanded((v) => !v)} className="flex-1 min-w-0 flex items-center gap-2 text-left">
-          {isImg ? <ImageIcon size={12} className="text-brand-400 flex-shrink-0" /> : <FileText size={12} className="text-slate-400 flex-shrink-0" />}
-          <span className="text-[11px] text-slate-700 flex-1 truncate">{file.name}</span>
-          <span className="text-[10px] text-slate-400 flex-shrink-0">{formatBytes(file.size)}</span>
-          <ChevronDown size={10} className={`text-slate-300 flex-shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`} />
+          {isImg ? <ImageIcon size={12} className="text-brand-400 flex-shrink-0" /> : <FileText size={12} className="text-ink-400 flex-shrink-0" />}
+          <span className="text-[11px] text-ink-700 flex-1 truncate">{file.name}</span>
+          <span className="text-[10px] text-ink-400 flex-shrink-0">{formatBytes(file.size)}</span>
+          <ChevronDown size={10} className={`text-ink-300 flex-shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`} />
         </button>
         {trailing}
       </div>
       {expanded && isImg && (
-        <div className="border-t border-slate-100">
+        <div className="border-t border-ink-100">
           <AttachmentImage taskId={taskId} file={file} className="w-full object-contain max-h-64 cursor-pointer" />
         </div>
       )}
       {expanded && !isImg && (
-        <div className="border-t border-slate-100 px-3 py-2">
+        <div className="border-t border-ink-100 px-3 py-2">
           <button onClick={() => download(file)} className="text-[11px] text-brand-500 hover:underline">
             Скачать файл
           </button>
@@ -97,18 +97,18 @@ export function CommentAttachment({ taskId, file }: { taskId: string; file: Task
       <AttachmentImage
         taskId={taskId}
         file={file}
-        className="rounded-lg border border-slate-200 max-w-full max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+        className="rounded-lg border border-ink-200 max-w-full max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
       />
     );
   }
   return (
     <button
       onClick={() => download(file)}
-      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-brand-50 hover:border-brand-200 transition-colors group/file"
+      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-ink-200 bg-ink-50 hover:bg-brand-50 hover:border-brand-200 transition-colors group/file"
     >
-      <FileText size={11} className="text-slate-400 group-hover/file:text-brand-500 flex-shrink-0" />
-      <span className="text-[11px] text-slate-600 group-hover/file:text-brand-600 truncate flex-1 text-left">{file.name}</span>
-      <span className="text-[10px] text-slate-400 flex-shrink-0">{formatBytes(file.size)}</span>
+      <FileText size={11} className="text-ink-400 group-hover/file:text-brand-500 flex-shrink-0" />
+      <span className="text-[11px] text-ink-600 group-hover/file:text-brand-600 truncate flex-1 text-left">{file.name}</span>
+      <span className="text-[10px] text-ink-400 flex-shrink-0">{formatBytes(file.size)}</span>
     </button>
   );
 }
@@ -124,7 +124,7 @@ export function taskImageRenderer(task: Task) {
     const key = attachmentKey(image.src);
     const file = key ? findAttachment(files, key) : null;
     if (!file || !isImageAttachment(file.type)) return null;
-    return <AttachmentImage taskId={task.id} file={file} className="rounded-lg border border-slate-200 w-full h-auto cursor-pointer hover:opacity-90 transition-opacity" />;
+    return <AttachmentImage taskId={task.id} file={file} className="rounded-lg border border-ink-200 w-full h-auto cursor-pointer hover:opacity-90 transition-opacity" />;
   };
 }
 

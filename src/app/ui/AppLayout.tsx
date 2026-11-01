@@ -50,7 +50,7 @@ export function AppLayout() {
 
   return (
     <UiActionsProvider>
-      <div className="flex h-full bg-slate-50 min-w-[1280px]">
+      <div className="flex h-full bg-ink-50 min-w-[1280px]">
         <Sidebar
           collapsed={sidebarCollapsed}
           onToggleCollapsed={() => setSidebarCollapsed((v) => !v)}
@@ -72,13 +72,13 @@ export function AppLayout() {
 
           <main className="flex-1 overflow-y-auto">
             {isLoading ? (
-              <div className="p-8 text-sm text-slate-400">Загрузка данных…</div>
+              <div className="p-8 text-sm text-ink-400">Загрузка данных…</div>
             ) : error ? (
               <div className="p-8 text-sm text-red-600">Не удалось загрузить данные: {error}</div>
             ) : (
               // Страницы грузятся лениво (см. routes.tsx) — Suspense ловит
               // момент подгрузки чанка при первом заходе в раздел.
-              <Suspense fallback={<div className="p-8 text-sm text-slate-400">Загрузка раздела…</div>}>
+              <Suspense fallback={<div className="p-8 text-sm text-ink-400">Загрузка раздела…</div>}>
                 <Outlet />
               </Suspense>
             )}

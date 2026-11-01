@@ -6,6 +6,20 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><!-- figma:title --></title>
+    <script>
+      // Тема ставится до загрузки приложения, иначе тёмная мигала бы белым на каждом F5.
+      // Выбор хранит переключатель в сайдбаре (src/shared/lib/theme.ts), до первого выбора — как в системе.
+      (function () {
+        var theme;
+        try {
+          theme = localStorage.getItem("sellup.theme");
+        } catch (e) {}
+        if (theme !== "light" && theme !== "dark") {
+          theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
     <!-- figma:head-end -->
   </head>
   <body>

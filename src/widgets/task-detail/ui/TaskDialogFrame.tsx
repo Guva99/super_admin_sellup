@@ -38,22 +38,22 @@ function DialogBody({ breadcrumb, actions, children, aside, footer }: Omit<TaskD
   const close = useModalClose(() => {});
   return (
     <>
-      <div className="w-[960px] max-w-[calc(100vw-48px)] max-h-[calc(100vh-96px)] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden">
-        <div className="flex items-center gap-3 px-6 py-3 border-b border-slate-100 flex-shrink-0">
+      <div className="w-[960px] max-w-[calc(100vw-48px)] max-h-[calc(100vh-96px)] bg-surface rounded-2xl shadow-2xl border border-ink-200 flex flex-col overflow-hidden">
+        <div className="flex items-center gap-3 px-6 py-3 border-b border-ink-100 flex-shrink-0">
           {breadcrumb}
           <span className="flex-1" />
           {actions}
-          <button type="button" onClick={close} aria-label="Закрыть" className="p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100">
+          <button type="button" onClick={close} aria-label="Закрыть" className="p-1.5 rounded-md text-ink-400 hover:text-ink-700 hover:bg-ink-100">
             <X size={16} />
           </button>
         </div>
 
         <div className="flex-1 min-h-0 grid grid-cols-[1fr_300px]">
           <div className="min-w-0 overflow-y-auto px-6 py-5 space-y-6">{children}</div>
-          <aside className="overflow-y-auto border-l border-slate-100 bg-slate-50/40 px-4 py-5 space-y-4">{aside}</aside>
+          <aside className="overflow-y-auto border-l border-ink-100 bg-ink-50/40 px-4 py-5 space-y-4">{aside}</aside>
         </div>
 
-        {footer && <div className="flex items-center justify-end gap-2 px-6 py-3.5 border-t border-slate-100 bg-slate-50/50 flex-shrink-0">{footer}</div>}
+        {footer && <div className="flex items-center justify-end gap-2 px-6 py-3.5 border-t border-ink-100 bg-ink-50/50 flex-shrink-0">{footer}</div>}
       </div>
     </>
   );

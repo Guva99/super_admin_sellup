@@ -48,7 +48,7 @@ export function RichTextEditor({ editor, insertFiles, className = "" }: RichText
   return (
     <div className={`rte ${className}`}>
       {state?.editable && (
-        <div className="flex flex-wrap items-center gap-0.5 px-1.5 py-1 border-b border-slate-100 bg-slate-50/60 rounded-t-lg">
+        <div className="flex flex-wrap items-center gap-0.5 px-1.5 py-1 border-b border-ink-100 bg-ink-50/60 rounded-t-lg">
           <ToolButton title="Жирный (⌘B)" active={state.bold} onClick={() => chain().toggleBold().run()}><Bold size={13} /></ToolButton>
           <ToolButton title="Курсив (⌘I)" active={state.italic} onClick={() => chain().toggleItalic().run()}><Italic size={13} /></ToolButton>
           <ToolButton title="Зачёркнутый" active={state.strike} onClick={() => chain().toggleStrike().run()}><Strikethrough size={13} /></ToolButton>
@@ -95,11 +95,11 @@ function ToolButton({ title, active = false, onClick, children }: { title: strin
       aria-pressed={active}
       onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
-      className={`p-1.5 rounded-md transition-colors ${active ? "bg-brand-100 text-brand-600" : "text-slate-500 hover:bg-slate-100 hover:text-slate-800"}`}
+      className={`p-1.5 rounded-md transition-colors ${active ? "bg-brand-100 text-brand-600" : "text-ink-500 hover:bg-ink-100 hover:text-ink-800"}`}
     >
       {children}
     </button>
   );
 }
 
-const Divider = () => <span className="w-px h-4 bg-slate-200 mx-1" />;
+const Divider = () => <span className="w-px h-4 bg-ink-200 mx-1" />;

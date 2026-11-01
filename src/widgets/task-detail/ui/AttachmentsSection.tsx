@@ -32,10 +32,10 @@ export function AttachmentsSection({ task }: { task: Task }) {
   return (
     <section>
       <div className="flex items-center gap-2 mb-2">
-        <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-          Вложения {task.attachments.length > 0 && <span className="text-slate-400">({task.attachments.length})</span>}
+        <h2 className="text-xs font-semibold text-ink-500 uppercase tracking-wider">
+          Вложения {task.attachments.length > 0 && <span className="text-ink-400">({task.attachments.length})</span>}
         </h2>
-        <label className="ml-auto flex items-center gap-1 text-[11px] text-slate-400 hover:text-brand-500 cursor-pointer">
+        <label className="ml-auto flex items-center gap-1 text-[11px] text-ink-400 hover:text-brand-500 cursor-pointer">
           <Paperclip size={11} />
           Прикрепить
           <input
@@ -54,7 +54,7 @@ export function AttachmentsSection({ task }: { task: Task }) {
       <div className="space-y-2">
         <UploadList queue={queue} />
         {task.attachments.length === 0 && !queue.isUploading ? (
-          <p className="text-xs text-slate-400">Файлов нет — их можно выбрать или вставить в описание из буфера</p>
+          <p className="text-xs text-ink-400">Файлов нет — их можно выбрать или вставить в описание из буфера</p>
         ) : (
           task.attachments.map((file) => (
             <AttachmentPreview
@@ -72,7 +72,7 @@ export function AttachmentsSection({ task }: { task: Task }) {
                     }}
                     aria-label={`Удалить ${file.name}`}
                     title="Удалить файл"
-                    className="p-0.5 rounded text-slate-300 hover:text-red-500 flex-shrink-0"
+                    className="p-0.5 rounded text-ink-300 hover:text-red-500 flex-shrink-0"
                   >
                     <Trash2 size={11} />
                   </button>

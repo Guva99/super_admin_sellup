@@ -11,7 +11,7 @@ export const TASK_TYPE_LABEL: Record<TaskType, string> = {
 
 export const TASK_TYPE_CLASS: Record<TaskType, string> = {
   call: "text-orange-600 bg-orange-50",
-  task: "text-slate-600 bg-slate-100",
+  task: "text-ink-600 bg-ink-100",
   update: "text-cyan-700 bg-cyan-50",
   integration: "text-blue-700 bg-blue-50",
   support: "text-violet-700 bg-violet-50",
@@ -48,7 +48,7 @@ export const TASK_STATUS_LABEL: Record<TaskStatus, string> = {
 };
 
 export const TASK_STATUS_CLASS: Record<TaskStatus, string> = {
-  todo: "bg-slate-100 text-slate-600",
+  todo: "bg-ink-100 text-ink-600",
   in_progress: "bg-brand-50 text-brand-600",
   review: "bg-amber-50 text-amber-700",
   done: "bg-emerald-50 text-emerald-700",
@@ -84,7 +84,7 @@ export const TASK_PRIORITY_COLOR: Record<TaskPriority, string> = {
 
 /** Колонки доски задач, слева направо. */
 export const TASK_COLUMNS: { id: TaskStatus; label: string; description: string; accent: string }[] = [
-  { id: "todo", label: "К выполнению", description: "Не начато", accent: "bg-slate-400" },
+  { id: "todo", label: "К выполнению", description: "Не начато", accent: "bg-ink-400" },
   { id: "in_progress", label: "В работе", description: "Активные задачи", accent: "bg-brand-500" },
   { id: "review", label: "На проверке", description: "Ожидает подтверждения", accent: "bg-amber-400" },
   { id: "done", label: "Готово", description: "Завершённые", accent: "bg-emerald-400" },

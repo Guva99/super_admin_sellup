@@ -43,4 +43,4 @@ export const HEALTH_HEX: Record<HealthLevel, string> = {
 export const healthTextClass = (score: number) => HEALTH_TEXT_CLASS[healthLevel(score)];
 
 export const healthBadgeClass = (score: number) =>
-  score === 0 ? "bg-slate-50 text-slate-400" : HEALTH_BADGE_CLASS[healthLevel(score)];
+  score === 0 ? "bg-ink-50 text-ink-400" : HEALTH_BADGE_CLASS[healthLevel(score)];

@@ -71,7 +71,7 @@ export function ImageNodeView({ node, editor, extension, updateAttributes, selec
           <img
             src={url}
             alt={alt}
-            className={`block w-full h-auto max-w-full rounded-lg border border-slate-200 ${status === "uploading" ? "opacity-60" : ""} ${editable ? "" : "cursor-zoom-in"}`}
+            className={`block w-full h-auto max-w-full rounded-lg border border-ink-200 ${status === "uploading" ? "opacity-60" : ""} ${editable ? "" : "cursor-zoom-in"}`}
             draggable={false}
             onClick={(e) => {
               if (editable || status !== null) return;
@@ -80,7 +80,7 @@ export function ImageNodeView({ node, editor, extension, updateAttributes, selec
             }}
           />
         ) : (
-          <div className="flex items-center gap-2 px-3 py-6 min-w-[200px] rounded-lg border border-dashed border-slate-200 bg-slate-50 text-xs text-slate-400">
+          <div className="flex items-center gap-2 px-3 py-6 min-w-[200px] rounded-lg border border-dashed border-ink-200 bg-ink-50 text-xs text-ink-400">
             {missing ? <ImageOff size={14} /> : <Loader2 size={14} className="animate-spin" />}
             {missing ? `Файл не найден${alt ? `: ${alt}` : ""}` : alt || "Картинка"}
           </div>
@@ -114,7 +114,7 @@ export function ImageNodeView({ node, editor, extension, updateAttributes, selec
               e.stopPropagation();
               updateAttributes({ width: null });
             }}
-            className="absolute -right-1 -bottom-1 w-3.5 h-3.5 rounded-sm bg-white border-2 border-brand-500 cursor-nwse-resize opacity-0 group-hover/image:opacity-100 transition-opacity"
+            className="absolute -right-1 -bottom-1 w-3.5 h-3.5 rounded-sm bg-surface border-2 border-brand-500 cursor-nwse-resize opacity-0 group-hover/image:opacity-100 transition-opacity"
           />
         )}
         {dragWidth !== null && (

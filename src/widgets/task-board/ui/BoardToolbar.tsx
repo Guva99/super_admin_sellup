@@ -22,18 +22,18 @@ interface BoardToolbarProps {
 /** Поиск, аватары участников, «Фильтр» и «Группировка», как в Trello. */
 export function BoardToolbar({ filters, users, clients, groupMode, onGroupModeChange, totals, onCreate }: BoardToolbarProps) {
   const { filters: f, isActive, setQuery, toggleMember, patch, reset } = filters;
-  const selectClass = "w-full text-xs border border-slate-200 rounded-md px-2 py-1.5 text-slate-600 outline-none focus:border-brand-400 bg-white cursor-pointer";
+  const selectClass = "w-full text-xs border border-ink-200 rounded-md px-2 py-1.5 text-ink-600 outline-none focus:border-brand-400 bg-surface cursor-pointer";
 
   return (
-    <div className="flex items-center gap-3 px-6 py-3 bg-white border-b border-slate-200 flex-shrink-0">
+    <div className="flex items-center gap-3 px-6 py-3 bg-surface border-b border-ink-200 flex-shrink-0">
       <label className="relative">
-        <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+        <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-400" />
         <input
           type="search"
           value={f.query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Поиск по доске"
-          className="w-56 pl-8 pr-2 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:border-brand-400 placeholder:text-slate-400"
+          className="w-56 pl-8 pr-2 py-1.5 text-xs border border-ink-200 rounded-md outline-none focus:border-brand-400 placeholder:text-ink-400"
         />
       </label>
 
@@ -47,7 +47,7 @@ export function BoardToolbar({ filters, users, clients, groupMode, onGroupModeCh
               type="button"
               onClick={() => toggleMember(user.id)}
               title={user.fullName}
-              className={`rounded-full ring-2 transition-all ${active ? "ring-brand-500 z-10 scale-110" : "ring-white hover:z-10 hover:scale-105"} ${f.memberIds.length > 0 && !active ? "opacity-50" : ""}`}
+              className={`rounded-full ring-2 transition-all ${active ? "ring-brand-500 z-10 scale-110" : "ring-surface hover:z-10 hover:scale-105"} ${f.memberIds.length > 0 && !active ? "opacity-50" : ""}`}
             >
               <UserAvatar name={user.fullName} size="sm" />
             </button>
@@ -61,7 +61,7 @@ export function BoardToolbar({ filters, users, clients, groupMode, onGroupModeCh
           <button
             type="button"
             className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-md border transition-colors ${
-              isActive || open ? "border-brand-300 text-brand-600 bg-brand-50" : "border-slate-200 text-slate-600 hover:bg-slate-50"
+              isActive || open ? "border-brand-300 text-brand-600 bg-brand-50" : "border-ink-200 text-ink-600 hover:bg-ink-50"
             }`}
           >
             <Filter size={12} />
@@ -72,7 +72,7 @@ export function BoardToolbar({ filters, users, clients, groupMode, onGroupModeCh
         {() => (
           <>
             <div>
-              <label className="text-[11px] text-slate-500 block mb-1">Бизнес</label>
+              <label className="text-[11px] text-ink-500 block mb-1">Бизнес</label>
               <select value={f.clientId} onChange={(e) => patch({ clientId: e.target.value })} className={selectClass}>
                 <option value="">Все бизнесы</option>
                 {clients.filter((c) => c.status !== "churned").map((c) => (
@@ -81,7 +81,7 @@ export function BoardToolbar({ filters, users, clients, groupMode, onGroupModeCh
               </select>
             </div>
             <div>
-              <label className="text-[11px] text-slate-500 block mb-1">Тип</label>
+              <label className="text-[11px] text-ink-500 block mb-1">Тип</label>
               <select value={f.kind} onChange={(e) => patch({ kind: e.target.value as TaskKind | "" })} className={selectClass}>
                 <option value="">Любой</option>
                 {TASK_KINDS.map((kind) => (
@@ -90,7 +90,7 @@ export function BoardToolbar({ filters, users, clients, groupMode, onGroupModeCh
               </select>
             </div>
             <div>
-              <label className="text-[11px] text-slate-500 block mb-1">Категория</label>
+              <label className="text-[11px] text-ink-500 block mb-1">Категория</label>
               <select value={f.type} onChange={(e) => patch({ type: e.target.value as TaskType | "" })} className={selectClass}>
                 <option value="">Любая</option>
                 {TASK_TYPES.map((type) => (
@@ -99,7 +99,7 @@ export function BoardToolbar({ filters, users, clients, groupMode, onGroupModeCh
               </select>
             </div>
             {isActive && (
-              <button type="button" onClick={reset} className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-red-500">
+              <button type="button" onClick={reset} className="flex items-center gap-1 text-[11px] text-ink-500 hover:text-red-500">
                 <X size={11} />
                 Сбросить фильтры
               </button>
@@ -112,9 +112,9 @@ export function BoardToolbar({ filters, users, clients, groupMode, onGroupModeCh
         trigger={(open) => (
           <button
             type="button"
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-md border transition-colors ${open ? "border-brand-300 bg-brand-50 text-brand-600" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-md border transition-colors ${open ? "border-brand-300 bg-brand-50 text-brand-600" : "border-ink-200 text-ink-600 hover:bg-ink-50"}`}
           >
-            <span className="text-slate-400">Группировка:</span>
+            <span className="text-ink-400">Группировка:</span>
             {GROUP_MODE_LABEL[groupMode]}
             <ChevronDown size={12} />
           </button>
@@ -136,12 +136,12 @@ export function BoardToolbar({ filters, users, clients, groupMode, onGroupModeCh
         }
       </Dropdown>
 
-      <div className="ml-auto flex items-center gap-3 text-xs text-slate-400">
+      <div className="ml-auto flex items-center gap-3 text-xs text-ink-400">
         <span>
-          <strong className="text-slate-700">{totals.open}</strong> в работе
+          <strong className="text-ink-700">{totals.open}</strong> в работе
         </span>
         <span>
-          <strong className="text-slate-700">{totals.done}</strong> готово
+          <strong className="text-ink-700">{totals.done}</strong> готово
         </span>
         {totals.overdue > 0 && (
           <span className="flex items-center gap-1 text-red-500 font-medium">

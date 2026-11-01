@@ -32,18 +32,18 @@ export function GroupColumns({ tasks, clients, selectedTaskId, fill, onStatusCha
       renderColumnHeader={(col, count) => (
         <div className="flex items-center gap-2 px-3.5 py-2.5 flex-shrink-0">
           <span className={`w-2 h-2 rounded-full ${col.accent}`} />
-          <span className="text-[11px] font-semibold text-slate-600 uppercase tracking-wide">{col.label}</span>
-          <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-white text-slate-500 rounded-full border border-slate-200">{count}</span>
+          <span className="text-[11px] font-semibold text-ink-600 uppercase tracking-wide">{col.label}</span>
+          <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-surface text-ink-500 rounded-full border border-ink-200">{count}</span>
         </div>
       )}
       renderEmptyColumn={(_col, isDragOver) => (
-        <div className={`h-12 rounded-lg border-2 border-dashed transition-colors ${isDragOver ? "border-brand-300 bg-brand-50" : "border-slate-200"}`} />
+        <div className={`h-12 rounded-lg border-2 border-dashed transition-colors ${isDragOver ? "border-brand-300 bg-brand-50" : "border-ink-200"}`} />
       )}
       renderColumnFooter={(col) => (
         <button
           type="button"
           onClick={() => onCreate(col.id)}
-          className="flex items-center gap-1.5 mx-2.5 mb-2.5 px-2 py-1.5 rounded-md text-xs text-slate-500 hover:text-slate-800 hover:bg-white transition-colors"
+          className="flex items-center gap-1.5 mx-2.5 mb-2.5 px-2 py-1.5 rounded-md text-xs text-ink-500 hover:text-ink-800 hover:bg-surface transition-colors"
         >
           <Plus size={13} />
           Создать

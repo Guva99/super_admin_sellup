@@ -19,7 +19,7 @@ export function Collapsible({
   defaultOpen = true,
   aside,
   className = "",
-  headerClassName = "px-4 py-2.5 border-b border-slate-100",
+  headerClassName = "px-4 py-2.5 border-b border-ink-100",
 }: CollapsibleProps) {
   const [open, setOpen] = useState(defaultOpen);
   return (
@@ -29,9 +29,9 @@ export function Collapsible({
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
-          className="flex items-center gap-1.5 flex-1 min-w-0 text-left text-slate-800 hover:text-slate-900"
+          className="flex items-center gap-1.5 flex-1 min-w-0 text-left text-ink-800 hover:text-ink-900"
         >
-          <ChevronDown size={14} className={`text-slate-400 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`} />
+          <ChevronDown size={14} className={`text-ink-400 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`} />
           <span className="text-sm font-semibold truncate">{title}</span>
         </button>
         {aside}

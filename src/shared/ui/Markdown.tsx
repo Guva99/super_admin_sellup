@@ -21,7 +21,7 @@ interface MarkdownProps {
 export function Markdown({ text, onToggleChecklist, renderImage, onResizeImage, className = "" }: MarkdownProps) {
   const blocks = parseMarkdown(text);
   return (
-    <div className={`space-y-2 text-sm text-slate-700 leading-relaxed ${className}`}>
+    <div className={`space-y-2 text-sm text-ink-700 leading-relaxed ${className}`}>
       {blocks.map((block, i) => (
         <Block key={i} block={block} onToggleChecklist={onToggleChecklist} renderImage={renderImage} onResizeImage={onResizeImage} />
       ))}
@@ -34,7 +34,7 @@ type BlockProps = Pick<MarkdownProps, "onToggleChecklist" | "renderImage" | "onR
 function Block({ block, onToggleChecklist, renderImage, onResizeImage }: BlockProps) {
   switch (block.type) {
     case "heading":
-      return <p className="font-semibold text-slate-900">{block.text}</p>;
+      return <p className="font-semibold text-ink-900">{block.text}</p>;
     case "paragraph":
       return <p className="whitespace-pre-wrap">{block.text}</p>;
     case "list":
@@ -48,7 +48,7 @@ function Block({ block, onToggleChecklist, renderImage, onResizeImage }: BlockPr
       const content = renderImage?.(image);
       if (!content) {
         return (
-          <span className="inline-flex items-center gap-1.5 text-xs text-slate-400">
+          <span className="inline-flex items-center gap-1.5 text-xs text-ink-400">
             <ImageOff size={12} />
             {image.alt || "картинка"}
           </span>
@@ -78,7 +78,7 @@ function Block({ block, onToggleChecklist, renderImage, onResizeImage }: BlockPr
                 onChange={() => onToggleChecklist?.(item.line)}
                 className="mt-1 accent-brand-500 cursor-pointer disabled:cursor-default"
               />
-              <span className={item.checked ? "line-through text-slate-400" : ""}>{item.text}</span>
+              <span className={item.checked ? "line-through text-ink-400" : ""}>{item.text}</span>
             </li>
           ))}
         </ul>

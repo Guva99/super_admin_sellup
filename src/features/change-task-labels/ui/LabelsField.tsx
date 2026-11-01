@@ -24,13 +24,13 @@ export function LabelsField({ value, onChange }: LabelsFieldProps) {
   return (
     <div className="flex flex-wrap items-center gap-1 -mx-1.5 px-1.5">
       {value.map((label) => (
-        <span key={label} className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-100 text-[11px] text-slate-700 font-medium">
+        <span key={label} className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-ink-100 text-[11px] text-ink-700 font-medium">
           {label}
           <button
             type="button"
             onClick={() => onChange(value.filter((l) => l !== label))}
             aria-label={`Убрать метку ${label}`}
-            className="text-slate-400 hover:text-red-500"
+            className="text-ink-400 hover:text-red-500"
           >
             <X size={10} />
           </button>
@@ -50,7 +50,7 @@ export function LabelsField({ value, onChange }: LabelsFieldProps) {
         onBlur={add}
         placeholder={value.length === 0 ? "Добавить метки" : "+"}
         maxLength={50}
-        className="min-w-[90px] flex-1 px-1 py-0.5 text-xs bg-transparent outline-none placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-brand-100 rounded"
+        className="min-w-[90px] flex-1 px-1 py-0.5 text-xs bg-transparent outline-none placeholder:text-ink-400 focus:bg-surface focus:ring-2 focus:ring-brand-100 rounded"
       />
     </div>
   );

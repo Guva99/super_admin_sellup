@@ -39,5 +39,8 @@ export const canManageTeam = (roleKey: string | undefined): boolean => roleKey =
 /** Платежи вносит и удаляет тот же круг, что ведёт команду: владелец и администратор. */
 export const canRecordPayments = canManageTeam;
 
+/** Посещаемость сайта бэкенд отдаёт владельцу и администратору (/analytics/*). */
+export const canViewSiteTraffic = canManageTeam;
+
 /** Владелец: удаление бизнеса и переименование ключа задач — только он. */
 export const isOwner = (roleKey: string | undefined): boolean => roleKey === "OWNER";

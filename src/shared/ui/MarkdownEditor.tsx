@@ -83,7 +83,7 @@ export function MarkdownEditor({
       onPaste={handlePaste}
       onKeyDown={handleKeyDown}
       onBlur={onBlur}
-      className={`w-full bg-white border border-slate-200 rounded-lg outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-50 resize-y placeholder:text-slate-300 transition-colors ${className}`}
+      className={`w-full bg-surface border border-ink-200 rounded-lg outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-50 resize-y placeholder:text-ink-300 transition-colors ${className}`}
     />
   );
 }
@@ -91,7 +91,7 @@ export function MarkdownEditor({
 /** Подсказка под полем — одна на все места, где правится разметка. */
 export function MarkdownHint({ canPaste = true }: { canPaste?: boolean }) {
   return (
-    <p className="text-[11px] text-slate-400">
+    <p className="text-[11px] text-ink-400">
       Списки: «- пункт», чек-листы: «- [ ] пункт»{canPaste && ", картинку можно вставить из буфера (⌘V)"}. ⌘↵ — сохранить, Esc — отмена.
     </p>
   );

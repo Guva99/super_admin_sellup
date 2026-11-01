@@ -3,7 +3,7 @@ import { useClients } from "@/entities/client";
 import { ClientAvatar } from "@/entities/client";
 import { emptyMrrHistory } from "@/entities/analytics";
 import { formatMoney } from "@/shared/lib";
-import { CHART_COLORS, valueAxis } from "@/shared/config";
+import { CHART_COLORS, useChartColors, valueAxis } from "@/shared/config";
 import { usePlans } from "@/entities/plan";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -13,6 +13,7 @@ import {
 const mrrHistory = emptyMrrHistory();
 
 export default function BillingPage() {
+  const chart = useChartColors();
   const { clients } = useClients();
   const { plans } = usePlans();
   // Цена полного тарифа — база для расчёта апсейла с раннего доступа.
@@ -38,14 +39,14 @@ export default function BillingPage() {
         ].map((k) => {
           const Icon = k.icon;
           return (
-            <div key={k.label} className="bg-white border border-slate-200 rounded-xl p-4">
+            <div key={k.label} className="bg-surface border border-ink-200 rounded-xl p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-slate-500">{k.label}</span>
+                <span className="text-xs text-ink-500">{k.label}</span>
                 <div className={`w-7 h-7 rounded-lg ${k.color} flex items-center justify-center`}>
                   <Icon size={13} />
                 </div>
               </div>
-              <p className="text-xl font-semibold text-slate-900 font-mono">{k.value}</p>
+              <p className="text-xl font-semibold text-ink-900 font-mono">{k.value}</p>
             </div>
           );
         })}
@@ -53,8 +54,8 @@ export default function BillingPage() {
 
       <div className="grid grid-cols-2 gap-4">
         {/* MRR chart */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-slate-900 mb-4">Динамика MRR</h3>
+        <div className="bg-surface border border-ink-200 rounded-xl p-5">
+          <h3 className="text-sm font-semibold text-ink-900 mb-4">Динамика MRR</h3>
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={mrrHistory} margin={{ top: 0, right: 0, left: -10, bottom: 0 }}>
               <defs>
@@ -63,9 +64,9 @@ export default function BillingPage() {
                   <stop offset="95%" stopColor={CHART_COLORS.brand} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-              <YAxis tickFormatter={(v) => `${v / 1000}k`} tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} {...valueAxis(mrrHistory.map((point) => point.mrr))} />
+              <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: chart.axis }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={(v) => `${v / 1000}k`} tick={{ fontSize: 11, fill: chart.axis }} axisLine={false} tickLine={false} {...valueAxis(mrrHistory.map((point) => point.mrr))} />
               <Tooltip
                 contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0" }}
                 formatter={(v) => [formatMoney(Number(v)), "MRR"]}
@@ -76,42 +77,42 @@ export default function BillingPage() {
         </div>
 
         {/* Cohort retention */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-slate-900 mb-4">Cohort Retention</h3>
-          <p className="py-12 text-center text-sm text-slate-400">Нет данных</p>
+        <div className="bg-surface border border-ink-200 rounded-xl p-5">
+          <h3 className="text-sm font-semibold text-ink-900 mb-4">Cohort Retention</h3>
+          <p className="py-12 text-center text-sm text-ink-400">Нет данных</p>
         </div>
       </div>
 
       {/* Early access block */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2">
+      <div className="bg-surface border border-ink-200 rounded-xl overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-ink-100 flex items-center gap-2">
           <Users size={14} className="text-violet-500" />
-          <h3 className="text-sm font-semibold text-slate-900">Ранний доступ</h3>
-          <span className="text-xs text-slate-400 ml-1">— льготная цена, переход на полный тариф</span>
+          <h3 className="text-sm font-semibold text-ink-900">Ранний доступ</h3>
+          <span className="text-xs text-ink-400 ml-1">— льготная цена, переход на полный тариф</span>
         </div>
         <table className="w-full text-xs">
-          <thead className="border-b border-slate-100">
+          <thead className="border-b border-ink-100">
             <tr>
-              <th className="px-5 py-2.5 text-left font-medium text-slate-400">Клиент</th>
-              <th className="px-5 py-2.5 text-left font-medium text-slate-400">Текущий MRR</th>
-              <th className="px-5 py-2.5 text-left font-medium text-slate-400">Fix price</th>
-              <th className="px-5 py-2.5 text-left font-medium text-slate-400">Потенциал</th>
-              <th className="px-5 py-2.5 text-left font-medium text-slate-400">Менеджер</th>
+              <th className="px-5 py-2.5 text-left font-medium text-ink-400">Клиент</th>
+              <th className="px-5 py-2.5 text-left font-medium text-ink-400">Текущий MRR</th>
+              <th className="px-5 py-2.5 text-left font-medium text-ink-400">Fix price</th>
+              <th className="px-5 py-2.5 text-left font-medium text-ink-400">Потенциал</th>
+              <th className="px-5 py-2.5 text-left font-medium text-ink-400">Менеджер</th>
             </tr>
           </thead>
           <tbody>
             {earlyAccessClients.map((c) => (
-              <tr key={c.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+              <tr key={c.id} className="border-b border-ink-50 hover:bg-ink-50 transition-colors">
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-2">
                     <ClientAvatar client={c} className="w-6 h-6 rounded-md text-[10px]" />
-                    <span className="font-medium text-slate-700">{c.name}</span>
+                    <span className="font-medium text-ink-700">{c.name}</span>
                   </div>
                 </td>
-                <td className="px-5 py-3 font-mono text-slate-700">{formatMoney(c.mrr)}</td>
-                <td className="px-5 py-3 text-slate-500">{c.fixedPrice ? "Да" : "Нет"}</td>
+                <td className="px-5 py-3 font-mono text-ink-700">{formatMoney(c.mrr)}</td>
+                <td className="px-5 py-3 text-ink-500">{c.fixedPrice ? "Да" : "Нет"}</td>
                 <td className="px-5 py-3 font-mono text-emerald-600">+{formatMoney(fullPlanPrice - c.mrr)}/мес</td>
-                <td className="px-5 py-3 text-slate-500">{c.manager || "—"}</td>
+                <td className="px-5 py-3 text-ink-500">{c.manager || "—"}</td>
               </tr>
             ))}
           </tbody>

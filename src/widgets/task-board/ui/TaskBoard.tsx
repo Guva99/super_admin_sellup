@@ -61,7 +61,7 @@ export function TaskBoard({ selectedTaskId, onOpenTask }: TaskBoardProps) {
       />
 
       {board.groups.every((g) => g.tasks.length === 0) ? (
-        <div className="flex-1 flex flex-col items-center justify-center gap-2 text-slate-300">
+        <div className="flex-1 flex flex-col items-center justify-center gap-2 text-ink-300">
           <CheckSquare size={28} />
           <p className="text-sm">{board.filters.isActive ? "Ничего не найдено" : "Задач пока нет"}</p>
           <button type="button" onClick={() => create()} className="text-xs text-brand-500 hover:underline">

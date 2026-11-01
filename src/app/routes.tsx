@@ -6,12 +6,14 @@ import {
   Wallet,
   Plug,
   BarChart3,
+  MousePointerClick,
   Settings,
   type LucideIcon,
 } from "lucide-react";
 import { lazy, type ComponentType } from "react";
 import { createBrowserRouter, type RouteObject } from "react-router-dom";
 
+import { canViewSiteTraffic } from "@/entities/user";
 import { LoginPage } from "@/pages/login";
 import { AuthenticatedApp } from "./ui/AuthenticatedApp";
 import { NotFoundPage } from "./ui/NotFoundPage";
@@ -33,6 +35,7 @@ const TasksPage = lazyPage(() => import("@/pages/tasks"), "TasksPage");
 const BillingPage = lazyPage(() => import("@/pages/billing"), "BillingPage");
 const IntegrationsPage = lazyPage(() => import("@/pages/integrations"), "IntegrationsPage");
 const MetricsPage = lazyPage(() => import("@/pages/metrics"), "MetricsPage");
+const TrafficPage = lazyPage(() => import("@/pages/traffic"), "TrafficPage");
 const SettingsPage = lazyPage(() => import("@/pages/settings"), "SettingsPage");
 
 /**
@@ -50,6 +53,8 @@ export interface RouteHandle {
   placement?: "main" | "bottom";
   /** Показывать счётчик задач высокого приоритета. */
   showTaskBadge?: boolean;
+  /** Пункт меню только для этих ролей; без поля — для всех. Страница проверяет доступ сама. */
+  visibleTo?: (roleKey: string | undefined) => boolean;
 }
 
 type AppRoute = RouteObject & {
@@ -110,15 +115,23 @@ export const APP_ROUTES: AppRoute[] = [
     handle: { title: "Метрики продукта", navLabel: "Метрики", icon: BarChart3, placement: "main" },
   },
   {
+    // Вкладка — в пути (/traffic/pages), период и карта кликов — в запросе.
+    path: "/traffic/:tab?",
+    element: <TrafficPage />,
+    handle: { title: "Посещаемость сайта", navLabel: "Посещаемость", icon: MousePointerClick, placement: "main", visibleTo: canViewSiteTraffic },
+  },
+  {
     path: "/settings",
     element: <SettingsPage />,
     handle: { title: "Настройки", navLabel: "Настройки", icon: Settings, placement: "bottom" },
   },
 ];
 
-/** Разделы меню в нужной части панели, в порядке объявления. */
-export const navRoutes = (placement: "main" | "bottom") =>
-  APP_ROUTES.filter((route) => route.handle.navLabel && route.handle.placement === placement);
+/** Разделы меню в нужной части панели, в порядке объявления, — те, что видны роли. */
+export const navRoutes = (placement: "main" | "bottom", roleKey: string | undefined) =>
+  APP_ROUTES.filter(
+    (route) => route.handle.navLabel && route.handle.placement === placement && (route.handle.visibleTo?.(roleKey) ?? true),
+  );
 
 export const router = createBrowserRouter([
   {

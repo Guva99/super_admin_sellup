@@ -39,8 +39,8 @@ export function TaskDetail({ taskId, onClose }: TaskDetailProps) {
   if (!task) {
     return (
       <ModalOverlay onClose={onClose}>
-        <div className="w-[420px] bg-white rounded-2xl shadow-2xl border border-slate-200 p-10 text-center">
-          <p className="text-sm text-slate-500">Задача не найдена — возможно, её удалили.</p>
+        <div className="w-[420px] bg-surface rounded-2xl shadow-2xl border border-ink-200 p-10 text-center">
+          <p className="text-sm text-ink-500">Задача не найдена — возможно, её удалили.</p>
           <button type="button" onClick={onClose} className="mt-3 text-xs text-brand-500 hover:underline">
             К доске
           </button>
@@ -62,7 +62,7 @@ export function TaskDetail({ taskId, onClose }: TaskDetailProps) {
         />
       }
       actions={
-        <button type="button" onClick={remove} title="Удалить задачу" className="p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50">
+        <button type="button" onClick={remove} title="Удалить задачу" className="p-1.5 rounded-md text-ink-400 hover:text-red-500 hover:bg-red-50">
           <Trash2 size={15} />
         </button>
       }

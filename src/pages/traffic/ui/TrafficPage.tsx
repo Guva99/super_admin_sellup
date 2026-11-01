@@ -12,9 +12,11 @@ import { TrafficHeatmap } from "@/widgets/traffic-heatmap";
 import { TrafficLeads } from "@/widgets/traffic-leads";
 import { TrafficOverview } from "@/widgets/traffic-overview";
 import { TrafficPages } from "@/widgets/traffic-pages";
+import { TrafficVisits } from "@/widgets/traffic-visits";
 
 const TABS = [
   { id: "overview", label: "Обзор" },
+  { id: "visits", label: "Визиты" },
   { id: "pages", label: "Страницы" },
   { id: "leads", label: "Заявки" },
   { id: "heatmap", label: "Карта кликов" },
@@ -27,8 +29,9 @@ const isDevice = (value: string | null): value is HeatmapDevice => value === "de
 
 /**
  * «Посещаемость» лендинга sellup-system.online по его собственному счётчику
- * (рядом с Яндекс.Метрикой, не вместо неё). Вкладка — в пути, период, страница
- * и устройство карты кликов — в запросе: любой вид можно открыть ссылкой.
+ * (рядом с Яндекс.Метрикой, не вместо неё). Вкладка — в пути; период, страница
+ * и устройство карты кликов, открытый визит и посетитель — в запросе: любой вид
+ * можно открыть ссылкой.
  */
 export default function TrafficPage() {
   const { user } = useSession();
@@ -87,6 +90,12 @@ function TrafficSection() {
     goToTab("heatmap", next);
   };
 
+  const onVisitsChange = useCallback(
+    (next: { visit?: string; visitor?: string }) =>
+      update({ ...(next.visit !== undefined && { visit: next.visit || null }), ...(next.visitor !== undefined && { visitor: next.visitor || null }) }),
+    [update],
+  );
+
   const onHeatmapChange = useCallback(
     (next: { pagePath?: string; device?: HeatmapDevice }) =>
       update({ ...(next.pagePath !== undefined && { path: next.pagePath }), ...(next.device && { device: next.device }) }),
@@ -106,6 +115,9 @@ function TrafficSection() {
       </div>
 
       {activeTab === "overview" && <TrafficOverview period={period} gate={aggregation} />}
+      {activeTab === "visits" && (
+        <TrafficVisits period={period} visitId={search.get("visit") ?? ""} visitorId={search.get("visitor") ?? ""} onChange={onVisitsChange} />
+      )}
       {activeTab === "pages" && <TrafficPages period={period} gate={aggregation} onOpenHeatmap={openHeatmap} />}
       {activeTab === "leads" && <TrafficLeads period={period} gate={aggregation} />}
       {activeTab === "heatmap" && (

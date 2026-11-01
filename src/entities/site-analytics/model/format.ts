@@ -80,3 +80,26 @@ export function hostOf(url: string): string {
     return url.replace(/^https?:\/\//, "").replace(/\/$/, "");
   }
 }
+
+/** Время плеера: «0:42», «12:05», «1:02:03». */
+export function formatClock(ms: number): string {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = String(total % 60).padStart(2, "0");
+  return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${s}` : `${m}:${s}`;
+}
+
+/**
+ * Короткая метка анонимного посетителя — «#K3F9»: идентификатор из браузера
+ * длинный и ничего не говорит, а различать посетителей в списке нужно.
+ */
+export function visitorLabel(visitorId: string): string {
+  // FNV-1a: одна и та же метка для одного посетителя в любом месте консоли.
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < visitorId.length; i++) {
+    hash ^= visitorId.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return `#${(hash >>> 0).toString(36).toUpperCase().padStart(4, "0").slice(-4)}`;
+}

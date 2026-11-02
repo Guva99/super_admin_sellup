@@ -4,6 +4,7 @@ import { siteAnalyticsApi } from "../api/siteAnalyticsApi";
 import { AUTO_AGGREGATE_MAX_DAYS, periodDays, periodError, withPreviousPeriod } from "./period";
 import type {
   AggregateResult,
+  Goals,
   Heatmap,
   HeatmapDevice,
   LeadFunnel,
@@ -171,6 +172,11 @@ export function useTrafficPages(period: TrafficPeriod, list: ListQuery<PageSort>
 export function useLeadFunnel(period: TrafficPeriod, list: ListQuery<LeadSort>, gate: AggregationGate) {
   const key = gate.ready ? `${periodKey(period)}:${JSON.stringify(list)}:${gate.version}` : null;
   return useLoad<LeadFunnel>(key, () => siteAnalyticsApi.leadFunnel(period, list));
+}
+
+/** Цели читают сырые события — пересчёта сводок не ждут. */
+export function useGoals(period: TrafficPeriod) {
+  return useLoad<Goals>(periodError(period) === null ? periodKey(period) : null, () => siteAnalyticsApi.goals(period));
 }
 
 /** Карта кликов читает сырые события — пересчёта сводок не ждёт. */

@@ -1,4 +1,4 @@
-import type { HeatmapDevice, TrafficGroupBy } from "./types";
+import type { GoalStat, HeatmapDevice, SitePlan, TrafficGroupBy } from "./types";
 
 /* Подписи того, что бэкенд отдаёт ключами. Неизвестный ключ показывается как есть. */
 
@@ -33,6 +33,19 @@ export const HEATMAP_DEVICE_LABEL: Record<HeatmapDevice, string> = {
   tablet: "Планшет",
   mobile: "Телефон",
 };
+
+/** Тарифы — названиями, как на сайте. */
+const PLAN_LABEL: Record<SitePlan, string> = { start: "Старт", business: "Бизнес", pro: "Про" };
+
+export const planLabel = (plan: SitePlan | undefined) => (plan ? (PLAN_LABEL[plan] ?? plan) : "");
+
+/** Цель — строкой отчёта: что сделали посетители. */
+export function goalLabel(goal: GoalStat["goal"] | undefined, plan?: SitePlan): string {
+  if (goal === "telegram") return "Переход в Telegram";
+  if (goal === "email") return "Нажатие на почту";
+  if (goal === "plan") return `Выбор тарифа «${planLabel(plan)}»`;
+  return goal ?? "";
+}
 
 export const sourceLabel = (source: string) => SOURCE_LABEL[source] ?? source;
 export const deviceLabel = (device: string) => DEVICE_LABEL[device] ?? device;

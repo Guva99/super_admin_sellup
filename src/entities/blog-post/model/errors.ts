@@ -15,6 +15,7 @@ const BLOG_MESSAGES: Array<[string, string]> = [
   ["invalid blog post: an image must be uploaded", "Картинка ещё не загрузилась — подождите и сохраните снова"],
   ["invalid blog post: unsupported block", "В тексте есть блок, который сайт не покажет, — удалите его"],
   ["invalid blog post: coverImageId", "Обложка не найдена — загрузите её заново"],
+  ["invalid blog post: coverScene", "Такой анимации сайт не знает — выберите другую"],
   ["invalid blog post: content is larger", "Статья слишком большая — больше 1 МБ"],
   ["invalid blog post:", "Проверьте поля статьи"],
 ];

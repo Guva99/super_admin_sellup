@@ -24,6 +24,8 @@ export interface BlogPost {
   rubric: string;
   excerpt: string;
   coverImageId: string | null;
+  /** Живая обложка сайта вместо картинки (BLOG_SCENES); пусто — картинка. */
+  coverScene: string;
   content: unknown;
   faq: BlogFaqItem[];
   author: string;
@@ -37,13 +39,13 @@ export interface BlogPost {
 
 export type BlogPostSummary = Pick<
   BlogPost,
-  "id" | "slug" | "title" | "rubric" | "excerpt" | "coverImageId" | "author" | "readingMinutes" | "status" | "publishedAt" | "updatedAt"
+  "id" | "slug" | "title" | "rubric" | "excerpt" | "coverImageId" | "coverScene" | "author" | "readingMinutes" | "status" | "publishedAt" | "updatedAt"
 >;
 
 /** Всё, что правит консоль; статус меняют publish / unpublish. */
 export type BlogPostInput = Pick<
   BlogPost,
-  "slug" | "title" | "seoTitle" | "seoDescription" | "rubric" | "excerpt" | "coverImageId" | "content" | "faq" | "author"
+  "slug" | "title" | "seoTitle" | "seoDescription" | "rubric" | "excerpt" | "coverImageId" | "coverScene" | "content" | "faq" | "author"
 >;
 
 export interface BlogImage {

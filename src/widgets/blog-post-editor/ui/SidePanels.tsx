@@ -2,6 +2,7 @@ import { useRef, useState, type ReactNode } from "react";
 import { ImagePlus, Lightbulb, Loader2, MessagesSquare, RotateCcw, Search, X } from "lucide-react";
 import {
   BLOG_IMAGE_ACCEPT,
+  BLOG_SCENES,
   SEO_DESCRIPTION_LIMIT,
   SEO_DESCRIPTION_MAX,
   SEO_TITLE_LIMIT,
@@ -158,12 +159,68 @@ export function RubricCoverPanel({ controller, rubrics }: { controller: BlogPost
           ))}
         </datalist>
       </Field>
-      <CoverField coverImageId={form.coverImageId} onChange={(coverImageId) => update({ coverImageId })} />
+      <CoverKind scene={form.coverScene} onChange={(coverScene) => update({ coverScene })} />
+      <CoverField
+        coverImageId={form.coverImageId}
+        onChange={(coverImageId) => update({ coverImageId })}
+        label={form.coverScene ? "Картинка для превью ссылки" : "Обложка"}
+        hint={
+          form.coverScene
+            ? "На сайте — анимация, а эту картинку покажут мессенджеры и соцсети, когда делятся ссылкой. 1200×630."
+            : "1200×630, PNG, JPEG или WebP до 5 МБ. Без обложки на сайте будет фирменная."
+        }
+      />
     </Panel>
   );
 }
 
-function CoverField({ coverImageId, onChange }: { coverImageId: string | null; onChange: (id: string | null) => void }) {
+/** Обложка — картинка или живая сцена, которую рисует сайт. */
+function CoverKind({ scene, onChange }: { scene: string; onChange: (scene: string) => void }) {
+  const chosen = BLOG_SCENES.find((item) => item.id === scene);
+  const option = (active: boolean) =>
+    `px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${active ? "bg-surface text-ink-900 shadow-sm" : "text-ink-500 hover:text-ink-800"}`;
+  return (
+    <div className="space-y-2">
+      <span className="block text-xs font-medium text-ink-700">Вид обложки</span>
+      <div role="radiogroup" aria-label="Вид обложки" className="grid grid-cols-2 gap-0.5 p-0.5 rounded-lg bg-ink-100">
+        <button type="button" role="radio" aria-checked={!scene} onClick={() => onChange("")} className={option(!scene)}>
+          Картинка
+        </button>
+        <button type="button" role="radio" aria-checked={!!scene} onClick={() => onChange(scene || BLOG_SCENES[0].id)} className={option(!!scene)}>
+          Анимация
+        </button>
+      </div>
+      {scene && (
+        <div className="rounded-lg border border-brand-100 bg-brand-50 px-3 py-2.5 space-y-1">
+          {BLOG_SCENES.length > 1 ? (
+            <select value={scene} onChange={(e) => onChange(e.target.value)} aria-label="Анимация" className={fieldClass}>
+              {BLOG_SCENES.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <p className="text-xs font-medium text-ink-800">{chosen?.label ?? scene}</p>
+          )}
+          {chosen && <p className="text-[11px] leading-snug text-ink-500">{chosen.hint}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CoverField({
+  coverImageId,
+  onChange,
+  label,
+  hint,
+}: {
+  coverImageId: string | null;
+  onChange: (id: string | null) => void;
+  label: string;
+  hint: string;
+}) {
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -185,7 +242,7 @@ function CoverField({ coverImageId, onChange }: { coverImageId: string | null; o
 
   return (
     <div className="space-y-1">
-      <span className="block text-xs font-medium text-ink-700">Обложка</span>
+      <span className="block text-xs font-medium text-ink-700">{label}</span>
       {coverImageId ? (
         <div className="relative">
           <img src={blogImageUrl(coverImageId)} alt="" className="w-full aspect-[1200/630] object-cover rounded-lg border border-ink-200" />
@@ -214,7 +271,7 @@ function CoverField({ coverImageId, onChange }: { coverImageId: string | null; o
           {busy ? "Загружаем…" : "Загрузить обложку"}
         </button>
       )}
-      <span className="block text-[11px] leading-snug text-ink-400">1200×630, PNG, JPEG или WebP до 5 МБ. Без обложки на сайте будет фирменная.</span>
+      <span className="block text-[11px] leading-snug text-ink-400">{hint}</span>
       {error && <span className="block text-[11px] text-red-600">{error}</span>}
       <input
         ref={input}

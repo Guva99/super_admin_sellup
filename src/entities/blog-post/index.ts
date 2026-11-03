@@ -11,6 +11,7 @@ export {
   SLUG_MAX,
   FAQ_MAX,
   DEFAULT_AUTHOR,
+  BLOG_SCENES,
   blogImageRef,
   blogImageKey,
   blogImageUrl,

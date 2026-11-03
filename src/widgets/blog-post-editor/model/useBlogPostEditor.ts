@@ -21,6 +21,7 @@ export interface PostForm {
   rubric: string;
   excerpt: string;
   coverImageId: string | null;
+  coverScene: string;
   content: string;
   faq: BlogFaqItem[];
   author: string;
@@ -34,6 +35,7 @@ const EMPTY_FORM: PostForm = {
   rubric: "",
   excerpt: "",
   coverImageId: null,
+  coverScene: "",
   content: "",
   faq: [],
   author: DEFAULT_AUTHOR,
@@ -47,6 +49,7 @@ const formOf = (post: BlogPost): PostForm => ({
   rubric: post.rubric,
   excerpt: post.excerpt,
   coverImageId: post.coverImageId,
+  coverScene: post.coverScene,
   content: JSON.stringify(post.content),
   faq: post.faq,
   author: post.author,

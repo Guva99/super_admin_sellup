@@ -18,6 +18,18 @@ export const EXCERPT_MAX = 600;
 export const SLUG_MAX = 100;
 export const FAQ_MAX = 30;
 
+/**
+ * Живые обложки — сцены, которые рисует сайт (sellup_web, pages/blog/scenes) вместо
+ * картинки. Тот же список в бэкенде (service/blog.go, blogScenes). Новая сцена — во всех трёх.
+ */
+export const BLOG_SCENES = [
+  {
+    id: "ai-seller-chat",
+    label: "ИИ-продавец: переписка с покупателем",
+    hint: "Слева шаги, справа телефон: покупатель спрашивает, ИИ отвечает, собирает заказ и передаёт менеджеру.",
+  },
+] as const;
+
 /** Автор по умолчанию — так же подставляет бэкенд, если поле пустое. */
 export const DEFAULT_AUTHOR = "Команда SellUp";
 

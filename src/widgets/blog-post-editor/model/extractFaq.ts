@@ -3,9 +3,9 @@ import type { BlogFaqItem } from "@/entities/blog-post";
 /*
  * «Вопросы и ответы» из вставленного текста — в отдельный список статьи.
  * В документах их пишут разделом в конце: заголовок «Вопросы и ответы», дальше
- * либо подзаголовок-вопрос и абзацы ответа, либо абзац «Вопрос? Ответ…»
- * (вопрос иногда жирным). Раздел уходит из текста — на сайте он станет
- * раскрывающимся списком и разметкой FAQ для поисковиков.
+ * подзаголовок-вопрос и абзацы ответа, абзац-вопрос «…?» и абзацы ответа под ним
+ * или один абзац «Вопрос? Ответ…» (вопрос иногда жирным). Раздел уходит из
+ * текста — на сайте он станет раскрывающимся списком и разметкой FAQ.
  */
 
 type Node = { type: string; attrs?: Record<string, unknown>; content?: Node[]; text?: string; marks?: Array<{ type: string }> };
@@ -64,10 +64,15 @@ export function extractFaq(content: string): ExtractedFaq | null {
       else if (items.length > 0) items[items.length - 1].answer = [items[items.length - 1].answer, text].filter(Boolean).join("\n\n");
       continue;
     }
+    // Абзац — только вопрос («…?»): ответ — в абзацах под ним.
+    if (node.type === "paragraph" && text.endsWith("?") && text.length <= 300) {
+      items.push({ question: text, answer: "" });
+      continue;
+    }
     const item = node.type === "paragraph" ? splitParagraph(node) : null;
     if (item) items.push(item);
     // Абзац без вопроса — продолжение прошлого ответа.
-    else if (items.length > 0) items[items.length - 1].answer = `${items[items.length - 1].answer}\n\n${text}`;
+    else if (items.length > 0) items[items.length - 1].answer = [items[items.length - 1].answer, text].filter(Boolean).join("\n\n");
   }
   const complete = items.filter((item) => item.question && item.answer);
   if (complete.length === 0) return null;

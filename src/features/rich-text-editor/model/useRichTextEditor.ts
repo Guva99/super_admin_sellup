@@ -152,7 +152,8 @@ export function useRichTextEditor({
         if (!image) continue;
         const node = view.state.schema.nodes.image.create({
           src: "",
-          alt: raw.name,
+          // У статьи подпись видна на сайте: «Снимок экрана….png» под картинкой ни к чему.
+          alt: article ? "" : raw.name,
           previewUrl: started.previewUrl,
           uploadId: started.id,
           status: "uploading",

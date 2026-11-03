@@ -42,5 +42,8 @@ export const canRecordPayments = canManageTeam;
 /** Посещаемость сайта бэкенд отдаёт владельцу и администратору (/analytics/*). */
 export const canViewSiteTraffic = canManageTeam;
 
+/** Статьи блога лендинга бэкенд даёт писать владельцу и администратору (/blog/*). */
+export const canEditBlog = canManageTeam;
+
 /** Владелец: удаление бизнеса и переименование ключа задач — только он. */
 export const isOwner = (roleKey: string | undefined): boolean => roleKey === "OWNER";

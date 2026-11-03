@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, ImageOff, Loader2, RotateCcw } from "lucide-react";
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
-import { attachmentKey, MIN_IMAGE_WIDTH } from "@/shared/lib";
+import { MIN_IMAGE_WIDTH } from "@/shared/lib";
 import type { TaskImageOptions, UploadStatus } from "../model/imageExtension";
 
 /**
@@ -10,14 +10,14 @@ import type { TaskImageOptions, UploadStatus } from "../model/imageExtension";
  * режиме чтения открывает лайтбокс.
  */
 export function ImageNodeView({ node, editor, extension, updateAttributes, selected }: NodeViewProps) {
-  const { resolver, onRetry } = extension.options as TaskImageOptions;
+  const { resolver, onRetry, refs } = extension.options as TaskImageOptions;
   const src = String(node.attrs.src ?? "");
   const alt = String(node.attrs.alt ?? "");
   const width = node.attrs.width as number | null;
   const status = node.attrs.status as UploadStatus;
   const previewUrl = node.attrs.previewUrl as string | null;
   const uploadId = node.attrs.uploadId as string | null;
-  const attachmentId = attachmentKey(src);
+  const attachmentId = refs.key(src);
 
   const [url, setUrl] = useState<string | null>(previewUrl);
   const [missing, setMissing] = useState(false);

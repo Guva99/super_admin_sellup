@@ -7,6 +7,7 @@ import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table
 import { Placeholder } from "@tiptap/extensions";
 import { Markdown } from "tiptap-markdown";
 import { TaskImage, type TaskImageOptions } from "./imageExtension";
+import type { EditorVariant } from "./types";
 import { TaskItemView } from "../ui/TaskItemView";
 
 /**
@@ -39,7 +40,8 @@ const ChecklistItem = TaskItem.extend({
 
 interface BuildOptions {
   placeholder: string;
-  image: Pick<TaskImageOptions, "resolver" | "uploader" | "onRetry">;
+  image: Pick<TaskImageOptions, "resolver" | "uploader" | "onRetry" | "refs">;
+  variant: EditorVariant;
 }
 
 /**
@@ -47,7 +49,23 @@ interface BuildOptions {
  * ссылки, таблицы и картинки. В хранилище уходит markdown, а не HTML:
  * сырой HTML на входе выключен (`html: false`) — так нечему стать XSS.
  */
-export function buildExtensions({ placeholder, image }: BuildOptions) {
+export function buildExtensions({ placeholder, image, variant }: BuildOptions) {
+  if (variant === "article") {
+    // Статья блога: H1 — её заголовок, внутри текста — с H2. Чек-листов нет, а
+    // документ хранится как есть (JSON), без markdown: сайт рисует его по узлам.
+    return [
+      StarterKit.configure({
+        heading: { levels: [2, 3, 4] },
+        link: { openOnClick: false, autolink: true },
+      }),
+      Table.configure({ resizable: false }),
+      TableRow,
+      TableHeader,
+      TableCell,
+      Placeholder.configure({ placeholder }),
+      TaskImage.configure({ ...image, allowBase64: false }),
+    ];
+  }
   return [
     StarterKit.configure({
       heading: { levels: [1, 2, 3] },

@@ -24,6 +24,7 @@ const PAGE_TYPE_LABEL: Record<string, string> = {
   home: "Главная",
   feature: "Возможность",
   legal: "Документы",
+  blog: "Блог",
   archive: "Старая версия",
   other: "Другое",
 };

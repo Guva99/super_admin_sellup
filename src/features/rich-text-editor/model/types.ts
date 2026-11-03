@@ -14,7 +14,19 @@ export interface ImageUploader {
   retry: (id: string) => Promise<Result<{ id: string }>>;
 }
 
-/** Картинки по ссылке `attach:<id>`: как достать blob-URL и что делать по клику. */
+/**
+ * Как картинка записана в тексте: ссылка из id файла и id обратно из ссылки.
+ * У задач — `attach:<id>`, у статей блога — `blog-image:<id>`.
+ */
+export interface ImageRefs {
+  ref: (id: string) => string;
+  key: (src: string) => string | null;
+}
+
+/** Где живёт редактор: в задаче — markdown и чек-листы, в статье — документ и H2–H4. */
+export type EditorVariant = "task" | "article";
+
+/** Картинки по ссылке из ImageRefs: как достать URL и что делать по клику. */
 export interface ImageResolver {
   load: (attachmentId: string) => Promise<Result<string>>;
   open: (url: string, alt: string) => void;

@@ -1,11 +1,12 @@
 import Image from "@tiptap/extension-image";
 import { ReactNodeViewRenderer } from "@tiptap/react";
-import { attachmentKey } from "@/shared/lib";
+import { attachmentKey, attachmentRef } from "@/shared/lib";
 import { ImageNodeView } from "../ui/ImageNodeView";
-import type { ImageResolver, ImageUploader } from "./types";
+import type { ImageRefs, ImageResolver, ImageUploader } from "./types";
 
 export interface TaskImageOptions {
   resolver: ImageResolver;
+  refs: ImageRefs;
   uploader: ImageUploader | null;
   /** Повтор упавшей загрузки; связывает узел с очередью через локальный id. */
   onRetry: (uploadId: string) => void;
@@ -30,14 +31,29 @@ export const TaskImage = Image.extend<TaskImageOptions>({
       allowBase64: false,
       ...this.parent?.(),
       resolver: { load: async () => ({ ok: false, error: { code: "unknown", message: "no resolver" } }), open: () => {} },
+      refs: { ref: attachmentRef, key: attachmentKey },
       uploader: null,
       onRetry: () => {},
     };
   },
 
+  // Своя картинка в HTML (копирование внутри редактора) — с data-src, а не src.
+  parseHTML() {
+    return [{ tag: 'img[src]:not([src^="data:"])' }, { tag: "img[data-src]" }];
+  },
+
   addAttributes() {
     return {
-      src: { default: "" },
+      src: {
+        default: "",
+        parseHTML: (el) => el.getAttribute("src") || el.getAttribute("data-src") || "",
+        // Своя ссылка (attach:, blog-image:) — не адрес: без node view (пока редактор не
+        // смонтирован, при копировании) браузер попытался бы её открыть. Кладём в data-src.
+        renderHTML: (attrs) => {
+          const src = String(attrs.src ?? "");
+          return /^(https?:|blob:|data:)/.test(src) ? { src } : { "data-src": src };
+        },
+      },
       alt: {
         default: "",
         // Из markdown приходит `alt|360` — ширина едет в отдельный атрибут.

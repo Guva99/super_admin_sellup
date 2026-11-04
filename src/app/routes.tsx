@@ -7,13 +7,15 @@ import {
   Plug,
   BarChart3,
   MousePointerClick,
+  FileText,
+  Globe,
   Settings,
   type LucideIcon,
 } from "lucide-react";
 import { lazy, type ComponentType } from "react";
 import { createBrowserRouter, type RouteObject } from "react-router-dom";
 
-import { canViewSiteTraffic } from "@/entities/user";
+import { canEditBlog, canViewSiteTraffic } from "@/entities/user";
 import { LoginPage } from "@/pages/login";
 import { AuthenticatedApp } from "./ui/AuthenticatedApp";
 import { NotFoundPage } from "./ui/NotFoundPage";
@@ -36,6 +38,8 @@ const BillingPage = lazyPage(() => import("@/pages/billing"), "BillingPage");
 const IntegrationsPage = lazyPage(() => import("@/pages/integrations"), "IntegrationsPage");
 const MetricsPage = lazyPage(() => import("@/pages/metrics"), "MetricsPage");
 const TrafficPage = lazyPage(() => import("@/pages/traffic"), "TrafficPage");
+const BlogPostsPage = lazyPage(() => import("@/pages/blog-posts"), "BlogPostsPage");
+const BlogPostPage = lazyPage(() => import("@/pages/blog-post"), "BlogPostPage");
 const SettingsPage = lazyPage(() => import("@/pages/settings"), "SettingsPage");
 
 /**
@@ -55,7 +59,16 @@ export interface RouteHandle {
   showTaskBadge?: boolean;
   /** Пункт меню только для этих ролей; без поля — для всех. Страница проверяет доступ сама. */
   visibleTo?: (roleKey: string | undefined) => boolean;
+  /** Пункт стоит внутри раскрывающегося раздела меню (NAV_GROUPS), а не сам по себе. */
+  group?: NavGroupId;
 }
+
+/** Разделы-папки меню: подпись и иконка; пункты внутри — маршруты с этим group. */
+export const NAV_GROUPS = {
+  landing: { label: "Лендинг", icon: Globe },
+} satisfies Record<string, { label: string; icon: LucideIcon }>;
+
+export type NavGroupId = keyof typeof NAV_GROUPS;
 
 type AppRoute = RouteObject & {
   path: string;
@@ -118,7 +131,25 @@ export const APP_ROUTES: AppRoute[] = [
     // Вкладка — в пути (/traffic/pages), период и карта кликов — в запросе.
     path: "/traffic/:tab?",
     element: <TrafficPage />,
-    handle: { title: "Посещаемость сайта", navLabel: "Посещаемость", icon: MousePointerClick, placement: "main", visibleTo: canViewSiteTraffic },
+    handle: {
+      title: "Аналитика лендинга",
+      navLabel: "Аналитика",
+      icon: MousePointerClick,
+      placement: "main",
+      group: "landing",
+      visibleTo: canViewSiteTraffic,
+    },
+  },
+  {
+    path: "/landing/posts",
+    element: <BlogPostsPage />,
+    handle: { title: "Статьи блога", navLabel: "Статьи", icon: FileText, placement: "main", group: "landing", visibleTo: canEditBlog },
+  },
+  {
+    // new — новая статья; id появляется с первым сохранением.
+    path: "/landing/posts/:postId",
+    element: <BlogPostPage />,
+    handle: { title: "Статья блога" },
   },
   {
     path: "/settings",

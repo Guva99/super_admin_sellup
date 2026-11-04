@@ -138,6 +138,28 @@ export interface LeadFunnel extends PagedList<LeadPage> {
   totals: LeadTotals;
 }
 
+/** Тарифы лендинга — PlanId в sellup_web (sections/pricing/pricing.ts). */
+export type SitePlan = "start" | "business" | "pro";
+
+/** Цель лендинга помимо формы заявки: Telegram, почта, выбор тарифа (тогда plan — какого). */
+export interface GoalStat {
+  goal: "telegram" | "email" | "plan";
+  plan?: SitePlan;
+  events: number;
+  visitors: number;
+  /** Доля от зашедших за период, %. */
+  visitorRate: number;
+}
+
+export interface Goals {
+  /** Зашедшие за период — от них считается доля. */
+  visitors: number;
+  /** Все цели, даже недостигнутые, в постоянном порядке. */
+  items: GoalStat[];
+  /** false — период начался раньше самых старых хранимых событий (90 дней), счёт только за его конец. */
+  complete: boolean;
+}
+
 export type HeatmapDevice = "desktop" | "tablet" | "mobile";
 
 export interface HeatmapClick {
@@ -253,7 +275,7 @@ export interface Visits {
 }
 
 export interface VisitEvent {
-  type: "session_start" | "page_view" | "click" | "scroll" | "lead_form_open" | "lead_submit";
+  type: "session_start" | "page_view" | "click" | "scroll" | "lead_form_open" | "lead_submit" | "goal";
   occurredAt: string;
   pagePath: string;
   clickX?: number;
@@ -261,6 +283,9 @@ export interface VisitEvent {
   clickPinned?: boolean;
   scrollY?: number;
   scrollDepthPercent?: number;
+  /** Только у цели. */
+  goal?: GoalStat["goal"];
+  plan?: SitePlan;
 }
 
 /**

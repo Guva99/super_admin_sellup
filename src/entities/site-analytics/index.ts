@@ -14,6 +14,9 @@ export type {
   LeadPage,
   LeadTotals,
   LeadFunnel,
+  Goals,
+  GoalStat,
+  SitePlan,
   ListQuery,
   SortDirection,
   Heatmap,
@@ -57,6 +60,8 @@ export {
   hostOf,
   formatClock,
   visitorLabel,
+  goalLabel,
+  planLabel,
 } from "./model/format";
 export {
   useTrafficAggregation,
@@ -64,6 +69,7 @@ export {
   useTrafficSeries,
   useTrafficPages,
   useLeadFunnel,
+  useGoals,
   useHeatmap,
   useVisits,
   useVisit,

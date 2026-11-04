@@ -2,6 +2,7 @@ import { apiFetch, type Result } from "@/shared/api";
 import type {
   AggregateResult,
   CleanupResult,
+  Goals,
   Heatmap,
   HeatmapDevice,
   LeadFunnel,
@@ -33,6 +34,9 @@ export const siteAnalyticsApi = {
 
   leadFunnel: (period: TrafficPeriod, list: ListQuery<LeadSort>): Promise<Result<LeadFunnel>> =>
     apiFetch(`/analytics/leads/funnel?${query({ ...period, ...list })}`),
+
+  /** Цели помимо формы заявки. Читает сырые события — пересчёта сводок не ждёт. */
+  goals: (period: TrafficPeriod): Promise<Result<Goals>> => apiFetch(`/analytics/goals?${query({ ...period })}`),
 
   /** Читает сырые события — пересчёта сводок не ждёт. */
   heatmap: (period: TrafficPeriod, pagePath: string, device: HeatmapDevice): Promise<Result<Heatmap>> =>

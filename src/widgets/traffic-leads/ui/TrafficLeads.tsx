@@ -5,6 +5,8 @@ import {
   SortHeader,
   formatCount,
   formatPercent,
+  goalLabel,
+  useGoals,
   useLeadFunnel,
   type AggregationGate,
   type LeadSort,
@@ -55,9 +57,60 @@ function FunnelSteps({ totals, exact }: { totals: LeadTotals; exact: boolean }) 
 }
 
 /**
+ * Цели помимо формы: связались напрямую (Telegram, почта) или выбрали тариф.
+ * Читаются из сырых событий, поэтому пересчёта сводок не ждут.
+ */
+function GoalsCard({ period }: { period: TrafficPeriod }) {
+  const { data, isLoading, error } = useGoals(period);
+  return (
+    <div className="bg-surface border border-ink-200 rounded-xl overflow-hidden">
+      <div className="px-5 py-3.5 border-b border-ink-100">
+        <h3 className="text-sm font-semibold text-ink-900">Другие цели</h3>
+        <p className="text-xs text-ink-400 mt-0.5">
+          Написали напрямую или присмотрели тариф. «Выбрать тариф» открывает форму заявки — дальше посетитель идёт по воронке выше. Цели
+          считаются с тех пор, как их включили на сайте.
+        </p>
+      </div>
+      {error && (
+        <div role="alert" className="flex items-center gap-2 mx-5 my-3 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-xs text-red-600">
+          <AlertCircle size={13} />
+          {error}
+        </div>
+      )}
+      <div className={`overflow-x-auto transition-opacity ${isLoading ? "opacity-60" : ""}`}>
+        <table className="w-full text-xs">
+          <thead className="text-ink-400 border-b border-ink-100">
+            <tr>
+              <th className="px-5 py-2.5 text-left font-medium">Цель</th>
+              <th className="px-3 py-2.5 text-right font-medium">Посетителей</th>
+              <th className="px-3 py-2.5 text-right font-medium">Раз</th>
+              <th className="px-5 py-2.5 text-right font-medium">Из зашедших</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-ink-50">
+            {data?.items.map((item) => (
+              <tr key={`${item.goal}:${item.plan ?? ""}`} className="hover:bg-ink-50/60">
+                <td className="px-5 py-2.5 text-ink-800">{goalLabel(item.goal, item.plan)}</td>
+                <td className="px-3 py-2.5 text-right font-medium text-ink-800">{formatCount(item.visitors)}</td>
+                <td className="px-3 py-2.5 text-right text-ink-600">{formatCount(item.events)}</td>
+                <td className="px-5 py-2.5 text-right text-ink-600">{formatPercent(item.visitorRate)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {!data && !error && <div className="h-[180px] animate-pulse" />}
+      </div>
+      {data && !data.complete && (
+        <p className="px-5 py-3 border-t border-ink-100 text-xs text-ink-400">Период длиннее хранения событий (90 дней) — цели посчитаны только за его конец.</p>
+      )}
+    </div>
+  );
+}
+
+/**
  * Вкладка «Заявки» — вместо воронки товаров магазина: у лендинга одна
- * конверсия, форма заявки. Сверху — воронка сайта, ниже — по страницам:
- * где открывают форму и где её отправляют.
+ * конверсия, форма заявки. Сверху — воронка сайта, под ней — другие цели
+ * (Telegram, почта, тариф), ниже — по страницам: где открывают форму и где её отправляют.
  */
 export function TrafficLeads({ period, gate }: { period: TrafficPeriod; gate: AggregationGate }) {
   const [query, setQuery] = useState(FIRST_PAGE);
@@ -74,6 +127,8 @@ export function TrafficLeads({ period, gate }: { period: TrafficPeriod; gate: Ag
       )}
 
       {data ? <FunnelSteps totals={data.totals} exact={data.uniqueVisitorsExact} /> : <div className="h-[168px] bg-surface border border-ink-200 rounded-xl animate-pulse" />}
+
+      <GoalsCard period={period} />
 
       <div className="bg-surface border border-ink-200 rounded-xl overflow-hidden">
         <div className="px-5 py-3.5 border-b border-ink-100">

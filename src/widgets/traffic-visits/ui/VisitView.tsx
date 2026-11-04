@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef } from "react";
-import { AlertCircle, ArrowLeft, FileText, Film, MousePointerClick, Send, ScrollText, Users } from "lucide-react";
+import { AlertCircle, ArrowLeft, FileText, Film, Mail, MousePointerClick, Send, ScrollText, Tag, Users } from "lucide-react";
 import {
   deviceLabel,
   formatClock,
   formatDuration,
   hostOf,
+  planLabel,
   sourceLabel,
   useVisit,
   visitorLabel,
@@ -29,6 +30,11 @@ function describe(event: VisitEvent): { icon: typeof FileText; text: string; det
       return { icon: FileText, text: "Открыл форму заявки", detail: event.pagePath };
     case "lead_submit":
       return { icon: Send, text: "Отправил заявку", detail: event.pagePath };
+    case "goal":
+      if (event.goal === "telegram") return { icon: Send, text: "Перешёл в Telegram", detail: event.pagePath };
+      if (event.goal === "email") return { icon: Mail, text: "Нажал на почту", detail: event.pagePath };
+      if (event.goal === "plan") return { icon: Tag, text: `Выбрал тариф «${planLabel(event.plan)}»`, detail: event.pagePath };
+      return null;
     default:
       return null;
   }
@@ -37,6 +43,7 @@ function describe(event: VisitEvent): { icon: typeof FileText; text: string; det
 const EVENT_TONE: Partial<Record<VisitEvent["type"], string>> = {
   lead_form_open: "text-amber-600",
   lead_submit: "text-emerald-600",
+  goal: "text-brand-600",
 };
 
 interface ChronologyProps {

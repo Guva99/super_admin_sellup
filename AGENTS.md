@@ -48,6 +48,7 @@ shared/    переиспользуемое: ui, lib, config, api
 | Стор | Файл | Хук | Где смонтирован |
 |---|---|---|---|
 | Сессия | `entities/session/model/store.tsx` | `useSession()` | `app/App.tsx` |
+| Кабинет бизнеса | `entities/cabinet/model/useCabinet.ts` | `useCabinet()`, `usePublicPlans()` | локально в `pages/cabinet` и `features/auth-signup` |
 | Клиенты | `entities/client/model/store.tsx` | `useClients()`, `useClient(id)` | `app/ui/AuthenticatedApp.tsx` |
 | Тарифы | `entities/plan/model/store.tsx` | `usePlans()` | `app/ui/AuthenticatedApp.tsx` |
 | Задачи | `entities/task/model/store.tsx` | `useTasks()` | `app/ui/AuthenticatedApp.tsx` |
@@ -335,10 +336,32 @@ shared/    переиспользуемое: ui, lib, config, api
 раздела в `NAV_GROUPS` (так устроен «Лендинг»: «Аналитика» и «Статьи»). Раздел стоит там,
 где первый его пункт; свёрнут он или нет — помнит браузер, в узком меню видны только иконки.
 
-Публичный маршрут один — `/login`. Всё из `APP_ROUTES` вложено в
-`AuthenticatedApp`, который без сессии уводит на
+Публичные маршруты: `/login`, `/signup` (регистрация бизнеса, тариф — `?plan=`),
+`/forgot-password`, `/reset-password` и `/verify-email` (ссылки из писем). Всё из
+`APP_ROUTES` вложено в `RootApp` → `AuthenticatedApp`, который без сессии уводит на
 `/login?from=<куда шёл>`; после входа пользователь возвращается туда.
 Ушёл сам через «Выйти» — на чистый `/login`.
+
+### Кабинет бизнеса
+
+Консоль — это и кабинет бизнесов. Вход один (`/auth/login`), в ответе `user.kind`:
+`staff` — сотрудник SellUp, видит консоль; `client` — человек бизнеса, видит только
+свой кабинет (`pages/cabinet`, данные — `entities/cabinet`, `GET /cabinet/me`).
+Развилка — `app/ui/RootApp.tsx`: у бизнеса нет меню и разделов консоли, любой их
+адрес уводит его на `/`. Сторы консоли (клиенты, задачи…) для него не монтируются.
+Доступ решает бэкенд: токен бизнеса консольные ручки не пускают, а `/cabinet/*` не
+пускает сотрудника — не полагайтесь на то, что кнопку «не видно».
+
+- Регистрация (`features/auth-signup`, `POST /public/signup`) создаёт бизнес лидом в
+  первой колонке воронки, на выбранном тарифе, без пробного периода, и сразу входит.
+  Тарифы — `GET /public/plans` (тарифы лендинга: Старт, Бизнес, Про).
+- Адрес бизнеса (`slug`): `<slug>.sellup-system.online` — магазин,
+  `admin.<slug>.sellup-system.online` — админка. Подсказка из названия — `slugFromName`,
+  занятость — `GET /public/slugs/{slug}`; правила повторяют `backend/internal/service/slug.go`.
+- Письма (подтверждение почты, сброс пароля) шлёт бэкенд, ссылки ведут на эту консоль.
+- Ход подключения в кабинете — те же этапы онбординга, что сотрудники ведут в карточке
+  бизнеса: что отметили там, бизнес видит у себя.
+- Кабинет — для людей с телефона: в отличие от консоли (`min-w-[1280px]`) он резиновый.
 
 Состояние интерфейса, которое стоит переживать перезагрузку и быть ссылкой,
 живёт в URL: вкладка карточки клиента (`/clients/:id/:tab`), фильтр по

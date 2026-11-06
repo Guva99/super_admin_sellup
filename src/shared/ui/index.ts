@@ -10,3 +10,4 @@ export { ResizableImage } from "./ResizableImage";
 export { BlobImage } from "./BlobImage";
 export { Lightbox } from "./Lightbox";
 export { UserAvatar, userInitials } from "./UserAvatar";
+export { AuthCard } from "./AuthCard";

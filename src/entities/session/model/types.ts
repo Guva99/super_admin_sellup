@@ -1,10 +1,23 @@
-/** Текущий пользователь — поля из ответа POST /auth/login. */
+/**
+ * Текущий пользователь — поля из ответа POST /auth/login (и /public/signup).
+ *
+ * kind — кто вошёл: staff — сотрудник SellUp, видит консоль; client —
+ * человек бизнеса, видит свой кабинет. У сессий, сохранённых до появления
+ * кабинета, поля нет — это всегда сотрудники.
+ */
 export interface SessionUser {
   id: string;
   email: string;
   fullName: string;
   roleKey: string;
+  kind?: "staff" | "client";
+  /** Только для кабинета: бизнес, его роль в нём, подтверждена ли почта. */
+  clientId?: string;
+  clientRole?: "OWNER" | "MEMBER";
+  emailVerified?: boolean;
 }
+
+export const isClientUser = (user: SessionUser | null | undefined): boolean => user?.kind === "client";
 
 export type SessionStatus = "authenticated" | "anonymous";
 

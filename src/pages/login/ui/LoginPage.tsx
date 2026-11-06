@@ -1,7 +1,7 @@
-import { CircleDot } from "lucide-react";
-import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useSession } from "@/entities/session";
 import { useLogin, LoginForm } from "@/features/auth-login";
+import { AuthCard } from "@/shared/ui";
 
 /**
  * Разрешаем возвращаться только на внутренние пути: ?from=https://evil.site
@@ -10,6 +10,10 @@ import { useLogin, LoginForm } from "@/features/auth-login";
 const safeReturnPath = (from: string | null) =>
   from && from.startsWith("/") && !from.startsWith("//") && !from.startsWith("/login") ? from : "/";
 
+/**
+ * Один вход для сотрудников SellUp и для бизнесов: после входа сотрудник
+ * попадает в консоль, бизнес — в свой кабинет (см. app/ui/RootApp).
+ */
 export default function LoginPage() {
   const { status } = useSession();
   const navigate = useNavigate();
@@ -22,23 +26,23 @@ export default function LoginPage() {
   if (status === "authenticated") return <Navigate to={returnTo} replace />;
 
   return (
-    <div className="min-h-full flex items-center justify-center bg-ink-50 px-4">
-      <div className="w-full max-w-[360px]">
-        <div className="flex items-center gap-2.5 mb-8 justify-center">
-          <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
-            <CircleDot size={16} className="text-white" />
-          </div>
-          <span className="text-base font-semibold text-ink-900">SellUp Console</span>
-        </div>
-
-        <div className="bg-surface rounded-2xl border border-ink-200 p-6">
-          <h1 className="text-sm font-semibold text-ink-900">Вход в консоль</h1>
-          <p className="text-xs text-ink-500 mt-1 mb-5">
-            {sessionExpired ? "Сессия закончилась — войдите снова, чтобы продолжить." : "Войдите, чтобы продолжить."}
-          </p>
-          <LoginForm controller={controller} />
-        </div>
-      </div>
-    </div>
+    <AuthCard
+      title="Вход"
+      subtitle={sessionExpired ? "Сессия закончилась — войдите снова, чтобы продолжить." : "Войдите, чтобы продолжить."}
+      footer={
+        <>
+          Нет кабинета?{" "}
+          <Link to="/signup" className="text-brand-600 hover:underline">
+            Зарегистрировать бизнес
+          </Link>
+          <span className="mx-1.5 text-ink-300">·</span>
+          <Link to="/forgot-password" className="text-brand-600 hover:underline">
+            Забыли пароль?
+          </Link>
+        </>
+      }
+    >
+      <LoginForm controller={controller} />
+    </AuthCard>
   );
 }

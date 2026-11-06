@@ -75,6 +75,8 @@ function Description({ event, format, onOpenTask }: { event: ClientHistoryEvent;
       return text("бизнес подключён");
     case "client.lead_submitted":
       return text("заявка с сайта");
+    case "client.self_registered":
+      return text("зарегистрировался в кабинете с сайта");
     case "client.deleted":
       return text("бизнес удалён");
     case "client.stage_changed":

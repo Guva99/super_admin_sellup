@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { setSessionExpiredHandler, tokenStorage, type Result } from "@/shared/api";
-import { sessionApi } from "../api/sessionApi";
+import { sessionApi, type LoginResponse, type SignupInput } from "../api/sessionApi";
 import type { SessionEndReason, SessionStatus, SessionUser } from "./types";
 
 /**
@@ -15,6 +15,10 @@ export interface SessionStore {
   user: SessionUser | null;
   endReason: SessionEndReason;
   login: (email: string, password: string) => Promise<Result<SessionUser>>;
+  /** Регистрация бизнеса: в ответе та же сессия, что у входа. */
+  signup: (input: SignupInput) => Promise<Result<SessionUser>>;
+  /** Почта подтверждена — убрать напоминание, не дожидаясь нового входа. */
+  markEmailVerified: () => void;
   logout: () => void;
 }
 
@@ -90,8 +94,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(timer);
   }, [user, end]);
 
-  const login = useCallback(async (email: string, password: string): Promise<Result<SessionUser>> => {
-    const result = await sessionApi.login(email, password);
+  const start = useCallback((result: Result<LoginResponse>): Result<SessionUser> => {
     if (!result.ok) return result;
     const { user: loggedIn, ...tokens } = result.data;
     tokenStorage.set(tokens);
@@ -99,6 +102,22 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setUser(loggedIn);
     setEndReason(null);
     return { ok: true, data: loggedIn };
+  }, []);
+
+  const login = useCallback(
+    async (email: string, password: string) => start(await sessionApi.login(email, password)),
+    [start],
+  );
+
+  const signup = useCallback(async (input: SignupInput) => start(await sessionApi.signup(input)), [start]);
+
+  const markEmailVerified = useCallback(() => {
+    setUser((current) => {
+      if (!current || current.emailVerified !== false) return current;
+      const next = { ...current, emailVerified: true };
+      writeUser(next);
+      return next;
+    });
   }, []);
 
   const logout = useCallback(() => {
@@ -109,8 +128,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [end]);
 
   const value = useMemo<SessionStore>(
-    () => ({ status: user ? "authenticated" : "anonymous", user, endReason, login, logout }),
-    [user, endReason, login, logout],
+    () => ({ status: user ? "authenticated" : "anonymous", user, endReason, login, signup, markEmailVerified, logout }),
+    [user, endReason, login, signup, markEmailVerified, logout],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

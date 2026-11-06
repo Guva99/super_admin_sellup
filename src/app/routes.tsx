@@ -12,12 +12,12 @@ import {
   Settings,
   type LucideIcon,
 } from "lucide-react";
-import { lazy, type ComponentType } from "react";
+import { lazy, Suspense, type ComponentType, type ReactNode } from "react";
 import { createBrowserRouter, type RouteObject } from "react-router-dom";
 
 import { canEditBlog, canViewSiteTraffic } from "@/entities/user";
 import { LoginPage } from "@/pages/login";
-import { AuthenticatedApp } from "./ui/AuthenticatedApp";
+import { RootApp } from "./ui/RootApp";
 import { NotFoundPage } from "./ui/NotFoundPage";
 
 /**
@@ -41,6 +41,13 @@ const TrafficPage = lazyPage(() => import("@/pages/traffic"), "TrafficPage");
 const BlogPostsPage = lazyPage(() => import("@/pages/blog-posts"), "BlogPostsPage");
 const BlogPostPage = lazyPage(() => import("@/pages/blog-post"), "BlogPostPage");
 const SettingsPage = lazyPage(() => import("@/pages/settings"), "SettingsPage");
+const SignupPage = lazyPage(() => import("@/pages/signup"), "SignupPage");
+const ForgotPasswordPage = lazyPage(() => import("@/pages/password-reset"), "ForgotPasswordPage");
+const ResetPasswordPage = lazyPage(() => import("@/pages/password-reset"), "ResetPasswordPage");
+const VerifyEmailPage = lazyPage(() => import("@/pages/verify-email"), "VerifyEmailPage");
+
+/** Публичные страницы лежат вне каркаса — у них свой Suspense. */
+const standalone = (page: ReactNode) => <Suspense fallback={null}>{page}</Suspense>;
 
 /**
  * Данные раздела, которые нужны шапке и меню. Кладутся в route.handle,
@@ -166,15 +173,21 @@ export const navRoutes = (placement: "main" | "bottom", roleKey: string | undefi
 
 export const router = createBrowserRouter([
   {
-    // Единственный публичный маршрут. Импортирован статически, а не лениво:
-    // для невошедшего пользователя это первый экран, ждать его чанк незачем.
+    // Импортирован статически, а не лениво: для невошедшего пользователя это
+    // первый экран, ждать его чанк незачем.
     path: "/login",
     element: <LoginPage />,
   },
+  // Без входа: регистрация бизнеса и ссылки из писем кабинета.
+  { path: "/signup", element: standalone(<SignupPage />) },
+  { path: "/forgot-password", element: standalone(<ForgotPasswordPage />) },
+  { path: "/reset-password", element: standalone(<ResetPasswordPage />) },
+  { path: "/verify-email", element: standalone(<VerifyEmailPage />) },
   {
-    // Всё остальное — только после входа (см. AuthenticatedApp).
+    // Всё остальное — только после входа: сотруднику консоль
+    // (AuthenticatedApp), бизнесу — его кабинет (см. RootApp).
     path: "/",
-    element: <AuthenticatedApp />,
+    element: <RootApp />,
     children: [...APP_ROUTES, { path: "*", element: <NotFoundPage />, handle: { title: "Страница не найдена" } }],
   },
 ]);

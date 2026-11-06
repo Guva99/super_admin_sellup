@@ -47,6 +47,16 @@ const MESSAGES: Record<string, string> = {
   "a receipt must be an image or a PDF": "Чек — картинка или PDF",
   "file content does not match its extension": "Содержимое файла не совпадает с расширением",
   "attachmentIds must be your own files that are not attached yet": "Вложения черновика устарели — прикрепите файлы заново",
+  // Регистрация бизнеса и кабинет.
+  "this address is already taken": "Этот адрес уже занят — выберите другой",
+  "an account with this email already exists": "Кабинет с этой почтой уже есть — войдите или восстановите пароль",
+  "address must be 3–30 Latin letters, digits or hyphens, starting and ending with a letter or digit":
+    "Адрес — от 3 до 30 латинских букв, цифр или дефисов",
+  "this address is reserved": "Этот адрес зарезервирован — выберите другой",
+  "planCode must be one of the tariffs on the site": "Выберите тариф",
+  "phone must have 10 to 15 digits": "Телефон — от 10 до 15 цифр",
+  "the link is invalid or expired": "Ссылка недействительна или устарела — запросите новую",
+  "too many requests, try again later": "Слишком много попыток — подождите минуту",
 };
 
 const BY_CODE: Record<ApiError["code"], string> = {

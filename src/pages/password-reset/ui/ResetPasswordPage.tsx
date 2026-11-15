@@ -1,6 +1,7 @@
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { cabinetApi } from "@/entities/cabinet";
 import { sessionApi, useSession } from "@/entities/session";
 import { describeApiError } from "@/shared/api";
 import { AuthCard } from "@/shared/ui";
@@ -15,7 +16,9 @@ export default function ResetPasswordPage() {
   // Ссылка из письма «ваш магазин готов»: пароль задаётся впервые.
   const isInvite = searchParams.get("invite") === "1";
   const [adminUrl, setAdminUrl] = useState<string | null>(null);
-  const { status, logout } = useSession();
+  const { status, login, logout } = useSession();
+  // После письма «ваш магазин готов» владелец сразу уходит в админку.
+  const [isEntering, setIsEntering] = useState(false);
   const [password, setPassword] = useState("");
   const [repeat, setRepeat] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,6 +37,25 @@ export default function ResetPasswordPage() {
     if (status === "authenticated") logout();
     setAdminUrl(result.data?.addresses?.admin ?? null);
     setDone(true);
+    if (isInvite && result.data?.email) void enterAdmin(result.data.email);
+  };
+
+  /**
+   * Пароль только что задан: входим с ним в кабинет и берём одноразовую
+   * ссылку в админку магазина. Не вышло (вход из кабинета не настроен,
+   * магазин ещё не поднят) — остаётся экран с кнопками, ничего не теряется.
+   */
+  const enterAdmin = async (email: string) => {
+    setIsEntering(true);
+    const session = await login(email, password);
+    if (session.ok) {
+      const link = await cabinetApi.adminLogin();
+      if (link.ok) {
+        window.location.assign(link.data.url);
+        return;
+      }
+    }
+    setIsEntering(false);
   };
 
   if (!token) {
@@ -62,20 +84,25 @@ export default function ResetPasswordPage() {
           <p className="flex gap-2 text-sm text-ink-700">
             <CheckCircle2 size={18} className="text-emerald-600 flex-shrink-0" />
             {isInvite ? "Пароль задан." : "Пароль изменён."}{" "}
-            {adminUrl ? "Откройте админку магазина и войдите с этим паролем." : "Войдите с новым паролем."}
+            {isEntering ? "" : "Войдите с новым паролем."}
           </p>
-          {adminUrl ? (
+          {isEntering ? (
+            <p className="flex items-center justify-center gap-2 text-sm text-ink-500">
+              <Loader2 size={14} className="animate-spin" /> Открываем админку магазина…
+            </p>
+          ) : adminUrl ? (
             <>
-              <a
-                href={adminUrl}
+              {/* В админку магазина пускает одноразовая ссылка из кабинета,
+                  а не этот пароль напрямую, — поэтому ведём в кабинет. */}
+              <Link
+                to="/login"
                 className="block text-center w-full py-2.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold"
               >
-                Открыть админку
-              </a>
-              <p className="text-xs text-ink-400 text-center break-all">{adminUrl.replace(/^https?:\/\//, "")}</p>
-              <Link to="/login" className="block text-center text-xs text-brand-600 hover:underline">
-                Войти в кабинет SellUp
+                Войти в кабинет
               </Link>
+              <p className="text-xs text-ink-400 text-center">
+                В кабинете нажмите «Открыть админку» — откроется {adminUrl.replace(/^https?:\/\//, "")}
+              </p>
             </>
           ) : (
             <Link

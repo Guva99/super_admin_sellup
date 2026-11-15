@@ -41,6 +41,6 @@ export const sessionApi = {
   resetPassword: (
     token: string,
     password: string,
-  ): Promise<Result<{ addresses?: { storefront: string; admin: string } }>> =>
+  ): Promise<Result<{ addresses?: { storefront: string; admin: string }; email?: string }>> =>
     apiFetch("/auth/password/reset", { method: "POST", body: { token, password }, auth: false }),
 };

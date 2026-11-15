@@ -4,6 +4,9 @@ import type { CabinetOverview, PublicPlan, SlugAvailability } from "../model/typ
 export const cabinetApi = {
   me: (): Promise<Result<CabinetOverview>> => apiFetch("/cabinet/me"),
 
+  /** «Открыть админку»: одноразовая ссылка в админку магазина, живёт минуту. */
+  adminLogin: (): Promise<Result<{ url: string }>> => apiFetch("/cabinet/admin-login", { method: "POST" }),
+
   resendVerification: (): Promise<Result<void>> => apiFetch("/cabinet/email/resend", { method: "POST" }),
 
   publicPlans: (): Promise<Result<PublicPlan[]>> => apiFetch("/public/plans", { auth: false }),

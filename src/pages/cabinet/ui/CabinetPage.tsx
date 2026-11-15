@@ -89,6 +89,7 @@ function Overview({ overview }: { overview: CabinetOverview }) {
             <AddressLink label="Админка" href={addresses.admin} enabled={launched} />
           </div>
         )}
+        {addresses && launched && <OpenAdminButton />}
         {addresses && !launched && (
           <p className="text-[11px] text-ink-400 mt-2">Адреса закреплены за вами и откроются после запуска.</p>
         )}
@@ -134,6 +135,47 @@ function Overview({ overview }: { overview: CabinetOverview }) {
         </dl>
       </section>
     </>
+  );
+}
+
+/**
+ * «Открыть админку»: кабинет просит одноразовую ссылку и уводит по ней —
+ * в админке магазина владелец оказывается уже вошедшим, без второго пароля.
+ */
+function OpenAdminButton() {
+  const [isOpening, setIsOpening] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const open = async () => {
+    setIsOpening(true);
+    setError(null);
+    const result = await cabinetApi.adminLogin();
+    if (!result.ok) {
+      setIsOpening(false);
+      setError(describeApiError(result.error));
+      return;
+    }
+    // Ссылка живёт минуту и работает один раз — уходим по ней сразу.
+    window.location.assign(result.data.url);
+  };
+
+  return (
+    <div className="mt-3">
+      <button
+        type="button"
+        onClick={() => void open()}
+        disabled={isOpening}
+        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-500 hover:bg-brand-600 disabled:opacity-60 text-white text-sm font-semibold transition-colors"
+      >
+        {isOpening ? <Loader2 size={14} className="animate-spin" /> : <ExternalLink size={14} />}
+        Открыть админку
+      </button>
+      {error && (
+        <p role="alert" className="mt-2 text-xs text-red-600">
+          {error}
+        </p>
+      )}
+    </div>
   );
 }
 

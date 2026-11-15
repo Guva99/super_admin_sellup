@@ -56,6 +56,9 @@ const MESSAGES: Record<string, string> = {
   "planCode must be one of the tariffs on the site": "Выберите тариф",
   "phone must have 10 to 15 digits": "Телефон — от 10 до 15 цифр",
   "the link is invalid or expired": "Ссылка недействительна или устарела — запросите новую",
+  "set the business's address before sending access": "Сначала задайте адрес магазина",
+  "the business has no owner email to send access to": "У бизнеса не указана почта владельца",
+  "slug can't be combined with other fields": "Адрес сохраняется отдельно от других полей",
   "too many requests, try again later": "Слишком много попыток — подождите минуту",
 };
 

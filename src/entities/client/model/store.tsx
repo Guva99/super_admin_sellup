@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { describeApiError, type Result } from "@/shared/api";
-import { createClient, deleteClient, getClients, moveClientStage, updateClientTaskKey, updateOnboardingStep as saveOnboardingStep } from "../api/clientApi";
+import { createClient, deleteClient, getClients, moveClientStage, sendAccessInvite, updateClientSlug, updateClientTaskKey, updateOnboardingStep as saveOnboardingStep } from "../api/clientApi";
+import { accessInviteProblem } from "./accessInvite";
 import type { Client, ClientStage, NewClientInput, OnboardingStep } from "./types";
 
 /**
@@ -20,6 +21,13 @@ export interface ClientsStore {
   dismissMutationError: () => void;
   addClient: (input: NewClientInput) => Promise<Result<Client>>;
   moveStage: (id: string, stage: ClientStage) => void;
+  /** Сообщение об удачном действии (письмо доступа ушло); null — нечего сказать. */
+  mutationNotice: string | null;
+  dismissMutationNotice: () => void;
+  /** Задать адрес магазина. Ошибку показывает вызывающая форма. */
+  setSlug: (id: string, slug: string) => Promise<Result<Client>>;
+  /** Отправить владельцу письмо доступа. Возвращает почту, на которую оно ушло. */
+  inviteOwner: (id: string) => Promise<Result<{ email: string; resent: boolean }>>;
   /** Переименовать ключ задач бизнеса. Ошибку показывает вызывающая форма. */
   setTaskKey: (id: string, taskKey: string) => Promise<Result<Client>>;
   /**
@@ -38,6 +46,7 @@ export function ClientsProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mutationError, setMutationError] = useState<string | null>(null);
+  const [mutationNotice, setMutationNotice] = useState<string | null>(null);
 
   // Актуальный список для откатов, без пересоздания колбэков на каждое изменение.
   const clientsRef = useRef(clients);
@@ -78,6 +87,17 @@ export function ClientsProvider({ children }: { children: ReactNode }) {
     [replaceClient],
   );
 
+  const setSlug = useCallback(
+    async (id: string, slug: string) => {
+      const result = await updateClientSlug(id, slug);
+      if (result.ok) replaceClient(result.data);
+      return result;
+    },
+    [replaceClient],
+  );
+
+  const inviteOwner = useCallback(async (id: string) => sendAccessInvite(id), []);
+
   const removeClient = useCallback(async (id: string) => {
     const result = await deleteClient(id);
     if (result.ok) setClients((prev) => prev.filter((c) => c.id !== id));
@@ -93,7 +113,16 @@ export function ClientsProvider({ children }: { children: ReactNode }) {
       moveClientStage(id, stage).then((result) => {
         if (result.ok) {
           // Ответ сервера несёт новый статус, MRR и «дней в статусе».
-          replaceClient(result.data);
+          replaceClient(result.data.client);
+          // «Активен» — магазин готов: владельцу уходит письмо с доступом.
+          const invite = result.data.accessInvite;
+          if (invite?.sent) {
+            setMutationNotice(`Письмо с доступом отправлено на ${invite.email} — «${before.name}»`);
+          } else if (invite) {
+            setMutationError(
+              `«${before.name}» переведён, но письмо с доступом не отправлено: ${accessInviteProblem(invite.reason)}. Отправьте его из карточки клиента.`,
+            );
+          }
         } else {
           replaceClient(before);
           setMutationError(`Не удалось переместить «${before.name}»: ${describeApiError(result.error)}`);
@@ -142,6 +171,7 @@ export function ClientsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const dismissMutationError = useCallback(() => setMutationError(null), []);
+  const dismissMutationNotice = useCallback(() => setMutationNotice(null), []);
 
   const value = useMemo<ClientsStore>(
     () => ({
@@ -150,13 +180,17 @@ export function ClientsProvider({ children }: { children: ReactNode }) {
       error,
       mutationError,
       dismissMutationError,
+      mutationNotice,
+      dismissMutationNotice,
       addClient,
       moveStage,
+      setSlug,
+      inviteOwner,
       setTaskKey,
       removeClient,
       updateOnboardingStep,
     }),
-    [clients, isLoading, error, mutationError, dismissMutationError, addClient, moveStage, setTaskKey, removeClient, updateOnboardingStep],
+    [clients, isLoading, error, mutationError, dismissMutationError, mutationNotice, dismissMutationNotice, addClient, moveStage, setSlug, inviteOwner, setTaskKey, removeClient, updateOnboardingStep],
   );
 
   return <ClientsContext.Provider value={value}>{children}</ClientsContext.Provider>;

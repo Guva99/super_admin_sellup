@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useState } from "react";
-import { AlertCircle, X } from "lucide-react";
+import { AlertCircle, CheckCircle2, X } from "lucide-react";
 import { Outlet, useMatches } from "react-router-dom";
 
 import { useClients } from "@/entities/client";
@@ -69,6 +69,17 @@ export function AppLayout() {
               </button>
             </div>
           ))}
+
+          {/* Удачное действие, о котором стоит сказать: ушло письмо с доступом. */}
+          {clients.mutationNotice && (
+            <div role="status" className="flex items-center gap-2 px-5 py-2 bg-emerald-50 border-b border-emerald-100 text-xs text-emerald-700 flex-shrink-0">
+              <CheckCircle2 size={13} className="flex-shrink-0" />
+              <span className="flex-1">{clients.mutationNotice}</span>
+              <button onClick={clients.dismissMutationNotice} aria-label="Скрыть" className="text-emerald-500 hover:text-emerald-700">
+                <X size={13} />
+              </button>
+            </div>
+          )}
 
           <main className="flex-1 overflow-y-auto">
             {isLoading ? (

@@ -21,7 +21,34 @@ export interface ClientDto {
   companySize: string;
   fixedPrice: boolean;
   createdAt: string;
+  /** Адрес на нашем домене: <slug>.sellup-system.online; null — ещё не задан. */
+  slug: string | null;
+  /** Свободные данные; у заявки с лендинга — что бизнес просил. */
+  metadata: {
+    source?: string;
+    message?: string;
+    request?: { sections?: string[]; needsSite?: boolean };
+  } | null;
   onboardingSteps: OnboardingStepDto[];
+}
+
+/** Что стало с письмом доступа, когда перенос в воронке сделал бизнес готовым. */
+export interface AccessInviteOutcomeDto {
+  sent: boolean;
+  email?: string;
+  reason?: "NO_SLUG" | "NO_EMAIL" | "EMAIL_TAKEN" | "INVALID_EMAIL" | "FAILED";
+}
+
+/** Ответ на перенос в воронке: клиент и, если бизнес стал готов, судьба письма. */
+export interface MovedClientDto extends ClientDto {
+  accessInvite?: AccessInviteOutcomeDto;
+}
+
+/** Ответ на ручную отправку письма доступа. */
+export interface AccessInviteDto {
+  email: string;
+  addresses: { storefront: string; admin: string };
+  resent: boolean;
 }
 
 export interface OnboardingStepDto {

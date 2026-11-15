@@ -70,6 +70,17 @@ export function toOnboardingStep(dto: OnboardingStepDto): OnboardingStep {
   };
 }
 
+/** Заявка есть только у бизнеса, пришедшего с формы лендинга. */
+function toClientRequest(dto: ClientDto): Client["request"] {
+  const metadata = dto.metadata;
+  if (!metadata || metadata.source !== "public_signup") return null;
+  return {
+    sections: metadata.request?.sections ?? [],
+    needsSite: metadata.request?.needsSite ?? null,
+    message: metadata.message ?? "",
+  };
+}
+
 export function toClient(dto: ClientDto): Client {
   const status = STATUS[dto.status];
   const monthlyPrice = dto.monthlyPrice ?? 0;
@@ -93,6 +104,8 @@ export function toClient(dto: ClientDto): Client {
     // В MRR клиент попадает только в «Запуск / Активен».
     mrr: status === "active" ? monthlyPrice : 0,
     connectedAt: dto.createdAt,
+    slug: dto.slug || null,
+    request: toClientRequest(dto),
     // Календарные дни по Москве: перенос в 23:50 и просмотр в 00:10 — уже «1 день».
     daysInStatus: calendarDaysSince(dto.stageChangedAt),
     owner: {

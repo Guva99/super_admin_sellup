@@ -49,6 +49,22 @@ export interface ClientHealth {
   support: number;
 }
 
+/** Что бизнес просил в заявке на лендинге. */
+export interface ClientRequest {
+  /** Ключи модулей: CRM, WAREHOUSE… */
+  sections: string[];
+  /** null — в заявке не ответили. */
+  needsSite: boolean | null;
+  message: string;
+}
+
+/** Письмо «ваш магазин готов» после переноса в «Активен». */
+export interface AccessInviteOutcome {
+  sent: boolean;
+  email?: string;
+  reason?: "NO_SLUG" | "NO_EMAIL" | "EMAIL_TAKEN" | "INVALID_EMAIL" | "FAILED";
+}
+
 export interface ClientOwner {
   name: string;
   email: string;
@@ -78,6 +94,10 @@ export interface Client {
   healthScore: number;
   health: ClientHealth;
   connectedAt: string;
+  /** Адрес магазина на нашем домене (<slug>.sellup-system.online); null — не задан. */
+  slug: string | null;
+  /** Заявка с лендинга; null — бизнес подключён иначе. */
+  request: ClientRequest | null;
   hoursThisMonth: number;
   manager: string;
   owner: ClientOwner;

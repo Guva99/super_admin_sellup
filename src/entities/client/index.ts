@@ -5,6 +5,8 @@ export type {
   ClientStage,
   ClientHealth,
   ClientOwner,
+  ClientRequest,
+  AccessInviteOutcome,
   Integration,
   NewClientInput,
   OnboardingStep,
@@ -44,4 +46,5 @@ export { ClientPipelineCard } from "./ui/ClientPipelineCard";
 
 export { stepHoursSpent, onboardingHoursSpent } from "./model/onboardingTime";
 export { MAX_TASK_KEY_LENGTH, INTERNAL_TASK_KEY, normaliseTaskKeyInput, taskKeyError } from "./model/taskKey";
+export { CLIENT_ROOT_DOMAIN, clientAddresses, normaliseSlugInput, slugError, accessInviteProblem, CLIENT_SECTION_LABEL } from "./model/accessInvite";
 export { ClientsProvider, useClients, useClient, type ClientsStore } from "./model/store";

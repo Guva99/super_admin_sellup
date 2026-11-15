@@ -34,6 +34,13 @@ export const sessionApi = {
   forgotPassword: (email: string): Promise<Result<void>> =>
     apiFetch("/auth/password/forgot", { method: "POST", body: { email }, auth: false }),
 
-  resetPassword: (token: string, password: string): Promise<Result<void>> =>
+  /**
+   * Новый пароль по ссылке из письма — восстановления или «ваш магазин готов».
+   * В ответе адреса магазина, если они у бизнеса уже есть: туда и идти дальше.
+   */
+  resetPassword: (
+    token: string,
+    password: string,
+  ): Promise<Result<{ addresses?: { storefront: string; admin: string } }>> =>
     apiFetch("/auth/password/reset", { method: "POST", body: { token, password }, auth: false }),
 };

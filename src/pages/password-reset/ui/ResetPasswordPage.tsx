@@ -12,6 +12,9 @@ const INPUT =
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token") ?? "";
+  // Ссылка из письма «ваш магазин готов»: пароль задаётся впервые.
+  const isInvite = searchParams.get("invite") === "1";
+  const [adminUrl, setAdminUrl] = useState<string | null>(null);
   const { status, logout } = useSession();
   const [password, setPassword] = useState("");
   const [repeat, setRepeat] = useState("");
@@ -29,6 +32,7 @@ export default function ResetPasswordPage() {
     if (!result.ok) return setError(describeApiError(result.error));
     // Сервер закрыл все сессии — и эту вкладку тоже.
     if (status === "authenticated") logout();
+    setAdminUrl(result.data?.addresses?.admin ?? null);
     setDone(true);
   };
 
@@ -43,19 +47,44 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <AuthCard title="Новый пароль" subtitle={done ? undefined : "Придумайте пароль не короче 8 символов."}>
+    <AuthCard
+      title={isInvite ? "Ваш магазин готов" : "Новый пароль"}
+      subtitle={
+        done
+          ? undefined
+          : isInvite
+            ? "Задайте пароль не короче 8 символов — с ним вы будете входить в админку магазина."
+            : "Придумайте пароль не короче 8 символов."
+      }
+    >
       {done ? (
         <div className="space-y-4">
           <p className="flex gap-2 text-sm text-ink-700">
             <CheckCircle2 size={18} className="text-emerald-600 flex-shrink-0" />
-            Пароль изменён. Войдите с новым паролем.
+            {isInvite ? "Пароль задан." : "Пароль изменён."}{" "}
+            {adminUrl ? "Откройте админку магазина и войдите с этим паролем." : "Войдите с новым паролем."}
           </p>
-          <Link
-            to="/login"
-            className="block text-center w-full py-2.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold"
-          >
-            Войти
-          </Link>
+          {adminUrl ? (
+            <>
+              <a
+                href={adminUrl}
+                className="block text-center w-full py-2.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold"
+              >
+                Открыть админку
+              </a>
+              <p className="text-xs text-ink-400 text-center break-all">{adminUrl.replace(/^https?:\/\//, "")}</p>
+              <Link to="/login" className="block text-center text-xs text-brand-600 hover:underline">
+                Войти в кабинет SellUp
+              </Link>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              className="block text-center w-full py-2.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold"
+            >
+              Войти
+            </Link>
+          )}
         </div>
       ) : (
         <form
@@ -72,8 +101,8 @@ export default function ResetPasswordPage() {
             autoFocus
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Новый пароль"
-            aria-label="Новый пароль"
+            placeholder={isInvite ? "Пароль" : "Новый пароль"}
+            aria-label={isInvite ? "Пароль" : "Новый пароль"}
             className={INPUT}
           />
           <input

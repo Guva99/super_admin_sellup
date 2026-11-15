@@ -1,6 +1,6 @@
 import { apiFetch, err, ok, type Result } from "@/shared/api";
 import type { AccessInviteOutcome, Client, ClientStage, NewClientInput, OnboardingStep } from "../model/types";
-import type { AccessInviteDto, ClientDto, MovedClientDto, OnboardingStepDto } from "./dto";
+import type { AccessInviteDto, ClientDto, InstallationDto, MovedClientDto, OnboardingStepDto } from "./dto";
 import { toClient, toCreateClientBody, toOnboardingStep, toStageDto, toStepStatusDto } from "./mapper";
 
 const mapResult = <D, T>(result: Result<D>, map: (dto: D) => T): Result<T> =>
@@ -85,4 +85,17 @@ export async function updateOnboardingStep(
     await apiFetch<OnboardingStepDto>(`/clients/${clientId}/onboarding-steps/${stepId}`, { method: "PATCH", body }),
     toOnboardingStep,
   );
+}
+
+/** Установка бизнеса: что с ней сейчас. */
+export async function getInstallation(id: string): Promise<Result<InstallationDto>> {
+  return apiFetch<InstallationDto>(`/clients/${id}/installation`);
+}
+
+/**
+ * Создать (или обновить до последнего релиза) установку бизнеса. Задача
+ * уходит агенту ячейки; результат виден в `getInstallation`.
+ */
+export async function startInstallation(id: string): Promise<Result<unknown>> {
+  return apiFetch(`/clients/${id}/installation`, { method: "POST" });
 }

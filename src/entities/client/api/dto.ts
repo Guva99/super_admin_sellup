@@ -44,6 +44,22 @@ export interface MovedClientDto extends ClientDto {
   accessInvite?: AccessInviteOutcomeDto;
 }
 
+/** Установка бизнеса на ячейке: последняя задача агента и состояние. */
+export interface InstallationDto {
+  task: {
+    id: string;
+    status: "PENDING" | "RUNNING" | "DONE" | "FAILED";
+    error: string | null;
+    createdAt: string;
+    finishedAt: string | null;
+  } | null;
+  deployment: {
+    status: "PENDING" | "CREATING" | "RUNNING" | "UPDATING" | "FAILED";
+    version: string;
+    error: string | null;
+  } | null;
+}
+
 /** Ответ на ручную отправку письма доступа. */
 export interface AccessInviteDto {
   email: string;

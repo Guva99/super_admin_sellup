@@ -5,7 +5,7 @@ import { TaskPriorityIcon, useTasks } from "@/entities/task";
 import { DeleteClientButton } from "@/features/delete-client";
 import { ClientTaskKey } from "@/features/edit-client-task-key";
 import { useOnboardingActions } from "@/features/manage-onboarding";
-import { ClientAccess, ClientRequestSummary } from "@/features/send-client-access";
+import { ClientAccess, ClientInstallation, ClientRequestSummary } from "@/features/send-client-access";
 import { formatMoney, useUiActions } from "@/shared/lib";
 import { ClientOverview } from "@/widgets/client-overview";
 import { ClientOnboarding } from "@/widgets/client-onboarding";
@@ -125,6 +125,10 @@ export default function ClientDetailPage() {
               <ClientRequestSummary request={client.request} />
             </div>
           )}
+
+          <div className="border-t border-ink-100 pt-3">
+            <ClientInstallation client={client} />
+          </div>
 
           <div className="border-t border-ink-100 pt-3">
             <ClientAccess client={client} />

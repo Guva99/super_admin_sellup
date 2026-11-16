@@ -190,4 +190,8 @@ export const router = createBrowserRouter([
     element: <RootApp />,
     children: [...APP_ROUTES, { path: "*", element: <NotFoundPage />, handle: { title: "Страница не найдена" } }],
   },
-]);
+],
+  // Консоль может жить не в корне домена (сборка с CONSOLE_BASE_PATH): адреса
+  // роутера считаются от этого пути. В корне BASE_URL — "/", basename не нужен.
+  { basename: import.meta.env.BASE_URL.replace(/\/$/, "") || undefined },
+);

@@ -1,16 +1,5 @@
 import type { AccessInviteOutcome } from "./types";
 
-/** Домен, на котором живут магазины клиентов: <slug>.<домен>. */
-export const CLIENT_ROOT_DOMAIN = (import.meta.env.VITE_CLIENT_ROOT_DOMAIN ?? "sellup-system.online").replace(/^\.+|\.+$/g, "");
-
-/** Адреса магазина по его slug: витрина и админка. */
-export function clientAddresses(slug: string) {
-  return {
-    storefront: `https://${slug}.${CLIENT_ROOT_DOMAIN}`,
-    admin: `https://admin.${slug}.${CLIENT_ROOT_DOMAIN}`,
-  };
-}
-
 /** Что вводят в поле адреса: строчные латинские буквы, цифры и дефис. */
 export const normaliseSlugInput = (value: string) => value.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 30);
 
@@ -20,6 +9,8 @@ export function slugError(slug: string): string | null {
   if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(slug) || slug.includes("--")) {
     return "Латинские буквы, цифры и дефис; начинается и кончается буквой или цифрой";
   }
+  // Читается как адрес чужой админки (admin-<адрес> на dev-стенде).
+  if (slug.startsWith("admin-") || slug.endsWith("-admin")) return "Адрес не может начинаться с admin- или кончаться на -admin";
   return null;
 }
 

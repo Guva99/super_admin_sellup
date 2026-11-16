@@ -46,7 +46,7 @@ export { ClientPipelineCard } from "./ui/ClientPipelineCard";
 
 export { stepHoursSpent, onboardingHoursSpent } from "./model/onboardingTime";
 export { MAX_TASK_KEY_LENGTH, INTERNAL_TASK_KEY, normaliseTaskKeyInput, taskKeyError } from "./model/taskKey";
-export { CLIENT_ROOT_DOMAIN, clientAddresses, normaliseSlugInput, slugError, accessInviteProblem, CLIENT_SECTION_LABEL } from "./model/accessInvite";
-export { getInstallation, startInstallation } from "./api/clientApi";
-export type { InstallationDto } from "./api/dto";
+export { normaliseSlugInput, slugError, accessInviteProblem, CLIENT_SECTION_LABEL } from "./model/accessInvite";
+export { getInstallation, startInstallation, attachExternalInstallation, detachExternalInstallation } from "./api/clientApi";
+export type { InstallationDto, ExternalInstallationInput } from "./api/dto";
 export { ClientsProvider, useClients, useClient, type ClientsStore } from "./model/store";

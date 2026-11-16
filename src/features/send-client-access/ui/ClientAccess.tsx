@@ -1,13 +1,10 @@
 import { Check, Loader2, Pencil, Send, X } from "lucide-react";
-import { CLIENT_ROOT_DOMAIN, clientAddresses, type Client } from "@/entities/client";
+import { type Client } from "@/entities/client";
 import { useClientAccess } from "../model/useClientAccess";
-
-const stripScheme = (url: string) => url.replace(/^https?:\/\//, "");
 
 /** Адрес магазина и письмо с доступом — в боковой колонке карточки клиента. */
 export function ClientAccess({ client }: { client: Client }) {
   const access = useClientAccess(client);
-  const addresses = client.slug ? clientAddresses(client.slug) : null;
   const canSend = Boolean(client.slug && client.owner.email);
 
   return (
@@ -37,21 +34,15 @@ export function ClientAccess({ client }: { client: Client }) {
               <X size={12} />
             </button>
           </div>
-          <p className="text-[10px] text-ink-400 break-all">
-            {access.draft || "адрес"}.{CLIENT_ROOT_DOMAIN}
-          </p>
+          <p className="text-[10px] text-ink-400">Из него строятся адреса сайта и админки — они в блоке «Установка».</p>
         </div>
-      ) : addresses ? (
-        <div className="space-y-1 text-xs">
-          <div className="flex items-start gap-1.5">
-            <div className="min-w-0 flex-1 space-y-1">
-              <AddressLink label="Сайт" url={addresses.storefront} />
-              <AddressLink label="Админка" url={addresses.admin} />
-            </div>
-            <button type="button" onClick={access.startEdit} title="Изменить адрес" className="mt-0.5 text-ink-300 hover:text-brand-500 transition-colors">
-              <Pencil size={11} />
-            </button>
-          </div>
+      ) : client.slug ? (
+        <div className="flex items-center gap-1.5 text-xs">
+          <span className="text-ink-400">Адрес</span>
+          <span className="font-mono text-ink-700 font-medium">{client.slug}</span>
+          <button type="button" onClick={access.startEdit} title="Изменить адрес" className="text-ink-300 hover:text-brand-500 transition-colors">
+            <Pencil size={11} />
+          </button>
         </div>
       ) : (
         <button type="button" onClick={access.startEdit} className="text-xs text-brand-600 hover:underline">
@@ -87,15 +78,4 @@ export function ClientAccess({ client }: { client: Client }) {
     </div>
   );
 
-}
-
-function AddressLink({ label, url }: { label: string; url: string }) {
-  return (
-    <div className="flex gap-1.5">
-      <span className="text-ink-400 flex-shrink-0">{label}</span>
-      <a href={url} target="_blank" rel="noreferrer" className="min-w-0 break-all text-ink-700 hover:text-brand-600 font-medium">
-        {stripScheme(url)}
-      </a>
-    </div>
-  );
 }

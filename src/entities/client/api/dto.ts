@@ -57,7 +57,23 @@ export interface InstallationDto {
     status: "PENDING" | "CREATING" | "RUNNING" | "UPDATING" | "FAILED";
     version: string;
     error: string | null;
+    /** Магазин сделан не агентом (проект, работавший до платформы). */
+    external: boolean;
+    adminUrl: string | null;
+    storefrontUrl: string | null;
+    ssoAudience: string | null;
   } | null;
+  /** Где магазин: те же адреса, что в письмах и кабинете. */
+  addresses?: { storefront: string; admin: string };
+  /** Имя установки, для которой подписываются ссылки «Открыть админку». */
+  installationName?: string;
+}
+
+/** Привязка существующей установки. */
+export interface ExternalInstallationInput {
+  adminUrl: string;
+  storefrontUrl: string;
+  installationName: string;
 }
 
 /** Ответ на ручную отправку письма доступа. */

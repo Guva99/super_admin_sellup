@@ -60,6 +60,9 @@ const MESSAGES: Record<string, string> = {
   "the shop has no address yet": "У магазина ещё нет адреса — он появится перед запуском",
   "the shop is not available": "Магазин сейчас недоступен — напишите менеджеру",
   "only the owner can open the shop's admin": "Открыть админку из кабинета может только владелец",
+  "the business has an external installation — detach it first": "У клиента привязана существующая установка — сначала отвяжите её",
+  "external installation needs an https admin address and a name of 3–30 Latin letters, digits or hyphens":
+    "Нужен адрес админки с https:// и имя установки — 3–30 латинских букв, цифр или дефисов",
   "no cell is registered": "Нет ни одной ячейки — зарегистрируйте сервер (POST /cells)",
   "no release is published": "Нет опубликованного релиза — сначала опубликуйте релиз",
   "the latest release has no admin or storefront image": "В последнем релизе нет образа админки или витрины",

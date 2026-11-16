@@ -1,6 +1,6 @@
 import { apiFetch, err, ok, type Result } from "@/shared/api";
 import type { AccessInviteOutcome, Client, ClientStage, NewClientInput, OnboardingStep } from "../model/types";
-import type { AccessInviteDto, ClientDto, InstallationDto, MovedClientDto, OnboardingStepDto } from "./dto";
+import type { AccessInviteDto, ClientDto, ExternalInstallationInput, InstallationDto, MovedClientDto, OnboardingStepDto } from "./dto";
 import { toClient, toCreateClientBody, toOnboardingStep, toStageDto, toStepStatusDto } from "./mapper";
 
 const mapResult = <D, T>(result: Result<D>, map: (dto: D) => T): Result<T> =>
@@ -98,4 +98,17 @@ export async function getInstallation(id: string): Promise<Result<InstallationDt
  */
 export async function startInstallation(id: string): Promise<Result<unknown>> {
   return apiFetch(`/clients/${id}/installation`, { method: "POST" });
+}
+
+/**
+ * Привязать магазин, сделанный не агентом, — например, проект, который
+ * работал на сервере до платформы. Агент такую установку не трогает.
+ */
+export async function attachExternalInstallation(id: string, input: ExternalInstallationInput): Promise<Result<unknown>> {
+  return apiFetch(`/clients/${id}/installation/external`, { method: "PUT", body: input });
+}
+
+/** Отвязать внешнюю установку; сам магазин не меняется. */
+export async function detachExternalInstallation(id: string): Promise<Result<void>> {
+  return apiFetch(`/clients/${id}/installation/external`, { method: "DELETE" });
 }

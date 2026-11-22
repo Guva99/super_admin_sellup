@@ -45,5 +45,9 @@ export const canViewSiteTraffic = canManageTeam;
 /** Статьи блога лендинга бэкенд даёт писать владельцу и администратору (/blog/*). */
 export const canEditBlog = canManageTeam;
 
+/** Модули клиента включают владелец, администратор и менеджер (RolesManageOps). */
+export const canManageClientModules = (roleKey: string | undefined): boolean =>
+  roleKey === "OWNER" || roleKey === "ADMIN" || roleKey === "MANAGER";
+
 /** Владелец: удаление бизнеса и переименование ключа задач — только он. */
 export const isOwner = (roleKey: string | undefined): boolean => roleKey === "OWNER";

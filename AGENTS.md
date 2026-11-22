@@ -54,6 +54,7 @@ shared/    переиспользуемое: ui, lib, config, api
 | Задачи | `entities/task/model/store.tsx` | `useTasks()` | `app/ui/AuthenticatedApp.tsx` |
 | История задачи | `entities/task-history/model/useTaskHistory.ts` | `useTaskHistory(id, revision)` | локально в `widgets/task-detail` |
 | Платежи бизнеса | `entities/payment/model/usePayments.ts` | `usePayments(clientId)` | локально в `widgets/client-billing` |
+| Модули бизнеса | `entities/client-module/model/useClientModules.ts` | `useClientModules(clientId)` | локально в `features/toggle-client-module` (карточка клиента) |
 | История бизнеса | `entities/client-history/model/useClientHistory.ts` | `useClientHistory(clientId)` | локально в `widgets/client-history` |
 | Статьи блога | `entities/blog-post/model/useBlogPosts.ts` | `useBlogPosts()`; одна статья — `widgets/blog-post-editor/model/useBlogPostEditor.ts` | локально в `pages/blog-posts` и `widgets/blog-post-editor` |
 | Посещаемость сайта | `entities/site-analytics/model/useTrafficData.ts` | `useTrafficAggregation(period)`, `useTrafficOverview(…)`, `useVisits(…)`, `useVisit(id)` и соседи | локально в `pages/traffic` и `widgets/traffic-*` |
@@ -79,6 +80,7 @@ shared/    переиспользуемое: ui, lib, config, api
 «Настройки → Тарифы»), **задачи** (`entities/task` — задачи, комментарии, файлы),
 **сотрудники** (`entities/user` — исполнители задач и «Настройки → Команда»),
 **платежи** (`entities/payment` — вкладка «Биллинг» карточки бизнеса),
+**модули админки** (`entities/client-module` — включает менеджер после созвона, общая IRP берёт их из реестра клиентов),
 **история бизнеса** (`entities/client-history` — вкладка «История») и
 **вложения** (`entities/attachment` — файлы и картинки в описании задачи;
 загрузка с прогрессом — `features/attachment-upload`, редактор — `features/rich-text-editor`)

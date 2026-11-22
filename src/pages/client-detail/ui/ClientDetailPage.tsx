@@ -6,6 +6,7 @@ import { DeleteClientButton } from "@/features/delete-client";
 import { ClientTaskKey } from "@/features/edit-client-task-key";
 import { useOnboardingActions } from "@/features/manage-onboarding";
 import { ClientAccess, ClientInstallation, ClientRequestSummary } from "@/features/send-client-access";
+import { ClientModules, useToggleClientModules } from "@/features/toggle-client-module";
 import { formatMoney, useUiActions } from "@/shared/lib";
 import { ClientOverview } from "@/widgets/client-overview";
 import { ClientOnboarding } from "@/widgets/client-onboarding";
@@ -39,6 +40,7 @@ export default function ClientDetailPage() {
   const { tasks, updateTask, deleteTask } = useTasks();
   const { openCreateTask } = useUiActions();
   const { updateStep, addStepToTasks, removeStepFromTasks } = useOnboardingActions();
+  const modules = useToggleClientModules(clientId ?? "");
 
   const activeTab: TabId = isTabId(tab) ? tab : DEFAULT_TAB;
   const goToTab = (next: TabId) =>
@@ -128,6 +130,10 @@ export default function ClientDetailPage() {
 
           <div className="border-t border-ink-100 pt-3">
             <ClientInstallation client={client} />
+          </div>
+
+          <div className="border-t border-ink-100 pt-3">
+            <ClientModules controller={modules} />
           </div>
 
           <div className="border-t border-ink-100 pt-3">

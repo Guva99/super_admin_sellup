@@ -1,0 +1,104 @@
+name: Console — dev
+
+# Проверка типов и сборка на каждом пуше и PR; выкатка на dev-стенд
+# (https://devback.sellup-system.online/console/) — только пуш в dev.
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [dev, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      # Dev-стенд: консоль под /console/ рядом с IRP, control plane под /cp.
+      - name: Build
+        env:
+          CONSOLE_BASE_PATH: /console/
+          VITE_API_URL: https://devback.sellup-system.online/cp
+        run: pnpm exec vite build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: console-dist
+          path: dist
+          retention-days: 7
+
+  deploy:
+    name: Deploy to dev
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: deploy-dev
+      cancel-in-progress: false
+    env:
+      SSH_OPTS: -i ~/.ssh/deploy_key -o UserKnownHostsFile=~/.ssh/known_hosts -o StrictHostKeyChecking=yes -o BatchMode=yes -o ConnectTimeout=10
+      TARGET: /var/www/sellup_console
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: console-dist
+          path: dist
+
+      - name: Проверка секретов
+        run: |
+          missing=""
+          [ -n "${{ secrets.DEPLOY_HOST }}" ] || missing="$missing DEPLOY_HOST"
+          [ -n "${{ secrets.DEPLOY_USER }}" ] || missing="$missing DEPLOY_USER"
+          [ -n "${{ secrets.DEPLOY_SSH_KEY }}" ] || missing="$missing DEPLOY_SSH_KEY"
+          [ -n "${{ secrets.DEPLOY_KNOWN_HOSTS }}" ] || missing="$missing DEPLOY_KNOWN_HOSTS"
+          if [ -n "$missing" ]; then
+            echo "Не заданы секреты репозитория:$missing (Settings → Secrets and variables → Actions)"
+            exit 1
+          fi
+
+      - name: Set up SSH
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          umask 077
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      # Сначала новые файлы сборки (старые не удаляем: открытая вкладка ещё
+      # грузит прошлые чанки), потом index.html — он и переключает версию.
+      # Чанки старше 14 дней чистим.
+      - name: Upload
+        run: |
+          set -euo pipefail
+          dest="${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}"
+          rsync -az -e "ssh $SSH_OPTS" dist/assets/ "$dest:$TARGET/assets/"
+          rsync -az --delete --exclude 'assets/' -e "ssh $SSH_OPTS" dist/ "$dest:$TARGET/"
+          ssh $SSH_OPTS "$dest" "find '$TARGET/assets' -type f -mtime +14 -delete; echo '${GITHUB_SHA::7}' > '$TARGET/.revision'"
+
+      - name: Smoke test
+        run: |
+          set -euo pipefail
+          for _ in 1 2 3 4 5; do
+            if curl -fsS https://devback.sellup-system.online/console/ | grep -q '/console/assets/'; then
+              echo "консоль отвечает"; exit 0
+            fi
+            sleep 3
+          done
+          echo "консоль не отвечает или отдаёт не ту сборку"; exit 1
+
+      - name: Clean up SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
